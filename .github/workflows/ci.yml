@@ -23,6 +23,7 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
+  NPM_VERSION: '11'
 
 jobs:
   # ========== 质量检查 ==========
@@ -36,6 +37,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Use npm ${{ env.NPM_VERSION }}
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - run: npm ci --prefer-offline
 
@@ -73,6 +77,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
+      - name: Use npm ${{ env.NPM_VERSION }}
+        run: npm install -g npm@${{ env.NPM_VERSION }}
 
       - run: npm ci --prefer-offline
 
