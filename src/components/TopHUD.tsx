@@ -2,10 +2,9 @@ import { Activity, Wifi, WifiOff, RefreshCw, Settings, RotateCcw } from 'lucide-
 import { useDigitalHumanStore } from '../store/digitalHumanStore';
 import { useChatSessionStore } from '../store/chatSessionStore';
 import { useSystemStore, type ConnectionStatus } from '../store/systemStore';
-import type { ChatTransportMode } from '../core/dialogue/chatTransport';
+import type { ChatTransportMode } from '../core/dialogue/dialogueService';
 
 const TRANSPORT_LABELS: Record<Exclude<ChatTransportMode, 'auto'>, string> = {
-  websocket: 'WebSocket',
   http: 'HTTP',
   sse: 'SSE',
 } as const;

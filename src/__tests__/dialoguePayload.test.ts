@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeDialogueRequestPayload } from '../core/dialogue/dialoguePayload';
+import { normalizeDialogueRequestPayload } from '../core/dialogue/dialogueService';
 
 describe('normalizeDialogueRequestPayload', () => {
   it('derives messages from userText when messages are missing', () => {

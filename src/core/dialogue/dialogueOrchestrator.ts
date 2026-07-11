@@ -4,14 +4,14 @@
  * 管理对话轮次的生命周期，处理并发控制和状态管理。
  */
 import { ChatResponsePayload, type StreamCallbacks } from './dialogueService';
-import { getDefaultChatTransport, type ChatTransport } from './chatTransport';
+import { getDefaultChatTransport, type ChatTransport } from './dialogueService';
 import type { DigitalHumanEngine } from '../avatar/DigitalHumanEngine';
 import { loggers } from '../../lib/logger';
 import {
   createIdleDialogueTurnSnapshot,
   type DialogueTurnMode,
   type DialogueTurnSnapshot,
-} from './dialogueTurnLifecycle';
+} from './dialogueService';
 
 const logger = loggers.orchestrator;
 

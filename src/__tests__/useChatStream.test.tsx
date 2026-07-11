@@ -41,10 +41,20 @@ const streamMock = vi.fn(
   },
 );
 
-vi.mock('../core/dialogue/chatTransport', () => ({
+vi.mock('../core/dialogue/dialogueService', () => ({
   getDefaultChatTransport: () => ({
     send: vi.fn(),
     stream: streamMock,
+  }),
+  createIdleDialogueTurnSnapshot: () => ({
+    status: 'idle',
+    mode: null,
+    turnId: null,
+    userText: null,
+    replyText: '',
+    error: null,
+    startedAt: null,
+    updatedAt: Date.now(),
   }),
 }));
 

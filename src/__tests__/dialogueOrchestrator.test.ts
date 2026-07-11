@@ -3,11 +3,11 @@ import {
   DialogueOrchestrator,
   handleDialogueResponse,
 } from '../core/dialogue/dialogueOrchestrator';
-import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueTurnLifecycle';
-import type { ChatTransport } from '../core/dialogue/chatTransport';
+import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueService';
+import type { ChatTransport } from '../core/dialogue/dialogueService';
 
 // Mock transport to control turn behavior
-vi.mock('../core/dialogue/chatTransport', () => {
+vi.mock('../core/dialogue/dialogueService', () => {
   const defaultSendResult = {
     response: { replyText: 'ok', emotion: 'neutral', action: 'idle' },
     connectionStatus: 'connected',
@@ -30,6 +30,16 @@ vi.mock('../core/dialogue/chatTransport', () => {
     getDefaultChatTransport: () => ({
       send,
       stream,
+    }),
+    createIdleDialogueTurnSnapshot: () => ({
+      status: 'idle',
+      mode: null,
+      turnId: null,
+      userText: null,
+      replyText: '',
+      error: null,
+      startedAt: null,
+      updatedAt: Date.now(),
     }),
     __setMockStream: (gen: AsyncGenerator<string, any, unknown>) => {
       mockStreamGenerator = gen;
@@ -122,7 +132,7 @@ describe('dialogue turn lifecycle seam', () => {
 
   beforeEach(async () => {
     orchestrator = new DialogueOrchestrator();
-    const { __resetMockTransport } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __resetMockTransport } = (await import('../core/dialogue/dialogueService')) as any;
     __resetMockTransport();
   });
 
@@ -157,7 +167,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('publishes sending then complete for standard turns', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const deferred = createDeferred<{
       response: { replyText: string; emotion: string; action: string };
       connectionStatus: 'connected';
@@ -200,7 +210,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('publishes sending then error for standard turn failures', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const deferred = createDeferred<never>();
     __setMockSendResult(deferred.promise);
 
@@ -225,7 +235,8 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('clears pending state when send throws synchronously before awaiting', async () => {
-    const { __setMockSendImplementation } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendImplementation } =
+      (await import('../core/dialogue/dialogueService')) as any;
     __setMockSendImplementation(() => {
       throw new Error('sync send broke');
     });
@@ -254,7 +265,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('allows a new turn immediately after aborting a pending turn', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const firstTurn = createDeferred<{
       response: { replyText: string; emotion: string; action: string };
       connectionStatus: 'connected';
@@ -291,7 +302,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('clears loading immediately when aborting a pending turn', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const firstTurn = createDeferred<{
       response: { replyText: string; emotion: string; action: string };
       connectionStatus: 'connected';
@@ -320,7 +331,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('aborts a pending turn when reset is called and keeps the snapshot idle', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const pendingTurn = createDeferred<{
       response: { replyText: string; emotion: string; action: string };
       connectionStatus: 'connected';
@@ -368,7 +379,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('does not reuse the aborted turn id when reset is followed by an immediate new turn', async () => {
-    const { __setMockSendResult } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockSendResult } = (await import('../core/dialogue/dialogueService')) as any;
     const firstTurn = createDeferred<{
       response: { replyText: string; emotion: string; action: string };
       connectionStatus: 'connected';
@@ -424,7 +435,7 @@ describe('dialogue turn lifecycle seam', () => {
   });
 
   it('publishes sending, streaming, then complete for streaming turns', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
     __setMockStream(tokens(['你', '好']));
 
     const snapshots: DialogueTurnSnapshot[] = [];
@@ -459,7 +470,7 @@ describe('runDialogueTurnStream', () => {
   beforeEach(async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     orchestrator = new DialogueOrchestrator();
-    const { __resetMockTransport } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __resetMockTransport } = (await import('../core/dialogue/dialogueService')) as any;
     __resetMockTransport();
   });
 
@@ -468,7 +479,7 @@ describe('runDialogueTurnStream', () => {
   });
 
   it('accumulates tokens and calls onStreamToken progressively', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
     __setMockStream(tokens(['你', '好', '！']));
 
     const streamTokens: string[] = [];
@@ -496,7 +507,7 @@ describe('runDialogueTurnStream', () => {
   });
 
   it('calls setLoading with true then false', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
     __setMockStream(tokens(['ok']));
 
     const setLoading = vi.fn();
@@ -507,7 +518,7 @@ describe('runDialogueTurnStream', () => {
   });
 
   it('rejects concurrent requests', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
 
     // First request: slow generator that blocks
     let resolveFirst: () => void;
@@ -540,7 +551,7 @@ describe('runDialogueTurnStream', () => {
   });
 
   it('calls onError on stream failure', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
 
     async function* failingGen(): AsyncGenerator<string> {
       yield 'partial';
@@ -576,7 +587,7 @@ describe('runDialogueTurnStream', () => {
 
   it('clears pending state when stream transport throws synchronously before awaiting', async () => {
     const { __setMockStreamImplementation } =
-      (await import('../core/dialogue/chatTransport')) as any;
+      (await import('../core/dialogue/dialogueService')) as any;
     __setMockStreamImplementation(() => {
       throw new Error('sync stream broke');
     });
@@ -612,7 +623,7 @@ describe('runDialogueTurnStream', () => {
   });
 
   it('propagates connection error when stream transport returns fallback status', async () => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
 
     async function* offlineFallbackGen(): AsyncGenerator<string, any, unknown> {
       yield '离线回复';
@@ -648,7 +659,7 @@ describe('runDialogueTurnStream', () => {
     ['abortPendingTurn', (orchestrator: DialogueOrchestrator) => orchestrator.abortPendingTurn()],
     ['reset', (orchestrator: DialogueOrchestrator) => orchestrator.reset()],
   ])('closes the active stream generator on %s', async (_label, closeTurn) => {
-    const { __setMockStream } = (await import('../core/dialogue/chatTransport')) as any;
+    const { __setMockStream } = (await import('../core/dialogue/dialogueService')) as any;
     const { generator, nextStep, returnSpy } = createControlledPendingStream();
     __setMockStream(generator);
 

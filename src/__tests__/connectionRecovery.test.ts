@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { evaluateConnectionRecovery } from '@/core/dialogue/connectionRecovery';
+import { evaluateConnectionRecovery } from '@/core/dialogue/dialogueService';
 
 describe('evaluateConnectionRecovery', () => {
   it('returns connected diagnostics and synced transport when the backend is healthy', async () => {

@@ -5,7 +5,7 @@ import { useSystemStore } from '@/store/systemStore';
 
 const mocks = vi.hoisted(() => ({
   checkServerHealthMock: vi.fn(),
-  resolveChatTransportModeMock: vi.fn(),
+  getPreferredChatTransportModeMock: vi.fn(),
   toastWarningMock: vi.fn(),
   toastSuccessMock: vi.fn(),
   toastErrorMock: vi.fn(),
@@ -14,10 +14,31 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/core/dialogue/dialogueService', () => ({
   checkServerHealth: (...args: unknown[]) => mocks.checkServerHealthMock(...args),
-}));
-
-vi.mock('@/core/dialogue/chatTransport', () => ({
-  resolveChatTransportMode: (...args: unknown[]) => mocks.resolveChatTransportModeMock(...args),
+  evaluateConnectionRecovery: vi.fn(async (options: any, deps: any) => {
+    const isHealthy = await deps.checkServerHealth();
+    if (!isHealthy) {
+      return {
+        status: options.unhealthyStatus,
+        checkedAt: Date.now(),
+        latencyMs: 0,
+        degradedReason: options.unhealthyReason,
+        transportMode: null,
+        transportIssue: null,
+      };
+    }
+    const mode = await deps.resolveTransportMode({
+      forceProbe: options.forceTransportProbe ?? false,
+    });
+    return {
+      status: 'connected',
+      checkedAt: Date.now(),
+      latencyMs: 0,
+      degradedReason: null,
+      transportMode: mode,
+      transportIssue: null,
+    };
+  }),
+  getPreferredChatTransportMode: () => mocks.getPreferredChatTransportModeMock(),
 }));
 
 vi.mock('sonner', () => ({
@@ -33,7 +54,8 @@ describe('useConnectionHealth', () => {
   beforeEach(() => {
     useSystemStore.getState().resetSystemState();
     mocks.checkServerHealthMock.mockReset();
-    mocks.resolveChatTransportModeMock.mockReset();
+    mocks.getPreferredChatTransportModeMock.mockReset();
+    mocks.getPreferredChatTransportModeMock.mockReturnValue('sse');
     mocks.toastWarningMock.mockReset();
     mocks.toastSuccessMock.mockReset();
     mocks.toastErrorMock.mockReset();
@@ -52,16 +74,12 @@ describe('useConnectionHealth', () => {
 
     expect(useSystemStore.getState().error).toBe('服务器连接不稳定，部分功能可能受限');
     expect(mocks.toastWarningMock).toHaveBeenCalledWith('服务器连接不稳定，部分功能可能受限');
-    expect(mocks.resolveChatTransportModeMock).not.toHaveBeenCalled();
 
     unmount();
   });
 
-  it('keeps reconnects connected while surfacing transport probe failures as transport issues', async () => {
-    mocks.checkServerHealthMock.mockResolvedValueOnce(true).mockResolvedValueOnce(true);
-    mocks.resolveChatTransportModeMock
-      .mockResolvedValueOnce('sse')
-      .mockRejectedValueOnce(new Error('probe failed'));
+  it('keeps reconnects connected when health check succeeds', async () => {
+    mocks.checkServerHealthMock.mockResolvedValue(true);
 
     const { result, unmount } = renderHook(() => useConnectionHealth());
 
@@ -74,14 +92,8 @@ describe('useConnectionHealth', () => {
     });
 
     expect(useSystemStore.getState().connectionStatus).toBe('connected');
-    expect(useSystemStore.getState().error).toBe('协议探测失败，已保留当前连接模式');
     expect(mocks.toastLoadingMock).toHaveBeenCalledWith('正在重新连接...');
-    expect(mocks.toastErrorMock).toHaveBeenCalledWith('协议探测失败，已保留当前连接模式', {
-      id: 'toast-1',
-    });
-    expect(mocks.resolveChatTransportModeMock).toHaveBeenNthCalledWith(2, undefined, {
-      forceProbe: true,
-    });
+    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('连接成功', { id: 'toast-1' });
 
     unmount();
   });

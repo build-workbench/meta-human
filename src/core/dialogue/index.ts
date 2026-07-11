@@ -1,52 +1,43 @@
 export {
   sendUserInput,
+  streamUserInput,
   checkServerHealth,
   clearRemoteSession,
-  streamUserInput,
   DialogueApiError,
   resetDialogueServiceRoutingForTests,
   applyRuntimeApiEndpoints,
   resetRuntimeApiEndpoints,
-} from './dialogueService';
-export { DialogueEndpointRouter } from './dialogueEndpointRouter';
-export { normalizeDialogueRequestPayload } from './dialoguePayload';
-export {
-  sendDialogueHttpRequest,
-  sendDialogueStreamRequest,
+  normalizeDialogueRequestPayload,
   normalizeDialogueError,
   fetchWithTimeout,
-} from './dialogueHttpClient';
-export {
-  getCachedChatTransportCapabilities,
-  getChatTransport,
+  sendDialogueHttpRequest,
+  sendDialogueStreamRequest,
+  parseApiEndpoints,
+  evaluateConnectionRecovery,
   getDefaultChatTransport,
+  getChatTransport,
   getPreferredChatTransportMode,
-  httpChatTransport,
-  probeChatTransportCapabilities,
-  resetChatTransportProbeCache,
-  resolveChatTransportMode,
   setChatTransportOverride,
+  httpChatTransport,
   sseChatTransport,
-  webSocketChatTransport,
-} from './chatTransport';
+  createIdleDialogueTurnSnapshot,
+} from './dialogueService';
+
 export type {
   ChatRequestPayload,
   ChatResponsePayload,
   DialogueServiceResult,
   DialogueServiceConfig,
   StreamCallbacks,
-} from './dialogueService';
-export type {
+  ChatTransportMode,
+  ChatTransport,
   DialogueMessage,
   DialogueMessageRole,
-  DialogueRequestPayload,
-} from './dialoguePayload';
-export type { ChatTransport, ChatTransportCapabilities, ChatTransportMode } from './chatTransport';
-export type {
+  DialogueTurnStatus,
   DialogueTurnMode,
   DialogueTurnSnapshot,
-  DialogueTurnStatus,
-} from './dialogueTurnLifecycle';
+  ConnectionRecoveryResult,
+} from './dialogueService';
 
 export { DialogueOrchestrator, handleDialogueResponse } from './dialogueOrchestrator';
 export type {
@@ -54,6 +45,7 @@ export type {
   DialogueTurnOptions,
   DialogueOrchestratorDependencies,
 } from './dialogueOrchestrator';
+
 export {
   CHARACTER_PRESETS,
   DEFAULT_CHARACTER_ID,
