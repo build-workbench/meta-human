@@ -40,7 +40,7 @@ describe('core architecture', () => {
   });
 
   it('does not export React-facing service hooks from src/core', () => {
-    const coreServicesPath = 'src/core/services.ts';
+    const coreServicesPath = 'src/core/createServices.ts';
     const source = readFileSync(coreServicesPath, 'utf8');
 
     // Check for React-facing exports from @/services

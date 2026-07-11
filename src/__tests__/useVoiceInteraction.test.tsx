@@ -2,8 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ServicesProvider } from '@/services';
-import type { Services } from '@/core/services';
-import type { ServiceComposition } from '@/core/serviceComposition';
+import type { Services } from '@/core/createServices';
 import { useVoiceInteraction } from '@/hooks/useVoiceInteraction';
 
 function createVoice(name: string, lang: string): SpeechSynthesisVoice {
@@ -16,8 +15,8 @@ function createVoice(name: string, lang: string): SpeechSynthesisVoice {
   } as SpeechSynthesisVoice;
 }
 
-function createTestComposition(voices: SpeechSynthesisVoice[]): ServiceComposition {
-  const services: Services = {
+function createTestServices(voices: SpeechSynthesisVoice[]): Services {
+  return {
     dialogue: {
       abortPendingTurn: vi.fn(),
     } as unknown as Services['dialogue'],
@@ -35,11 +34,6 @@ function createTestComposition(voices: SpeechSynthesisVoice[]): ServiceCompositi
       stop: vi.fn(),
     } as unknown as Services['asr'],
   };
-
-  return {
-    services,
-    dispose: vi.fn(),
-  };
 }
 
 describe('useVoiceInteraction', () => {
@@ -49,12 +43,12 @@ describe('useVoiceInteraction', () => {
 
   it('prefers voices matching the current UI language and speaks with that language', () => {
     localStorage.setItem('preferred-lang', 'en');
-    const composition = createTestComposition([
+    const services = createTestServices([
       createVoice('Chinese Voice', 'zh-CN'),
       createVoice('English Voice', 'en-US'),
     ]);
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <ServicesProvider composition={composition}>{children}</ServicesProvider>
+      <ServicesProvider services={services}>{children}</ServicesProvider>
     );
 
     const { result } = renderHook(() => useVoiceInteraction(), { wrapper });
@@ -65,7 +59,7 @@ describe('useVoiceInteraction', () => {
       result.current.speak('Hello there');
     });
 
-    expect(composition.services.tts.speakWithOptions).toHaveBeenCalledWith(
+    expect(services.tts.speakWithOptions).toHaveBeenCalledWith(
       'Hello there',
       expect.objectContaining({
         lang: 'en',
@@ -78,9 +72,9 @@ describe('useVoiceInteraction', () => {
     localStorage.setItem('preferred-lang', 'en');
     const chineseVoice = createVoice('Chinese Voice', 'zh-CN');
     const englishVoice = createVoice('English Voice', 'en-US');
-    const composition = createTestComposition([chineseVoice, englishVoice]);
+    const services = createTestServices([chineseVoice, englishVoice]);
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <ServicesProvider composition={composition}>{children}</ServicesProvider>
+      <ServicesProvider services={services}>{children}</ServicesProvider>
     );
 
     const firstMount = renderHook(() => useVoiceInteraction(), { wrapper });

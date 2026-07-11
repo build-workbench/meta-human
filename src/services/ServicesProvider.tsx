@@ -1,65 +1,74 @@
 /**
- * 服务容器 Provider。
+ * 服务容器 Provider + Context + Hooks。
  *
  * 通过 React Context 提供应用级单例服务。
  */
 
-import { useEffect, useRef, type ReactNode } from 'react';
-import { createServiceComposition, type ServiceComposition } from '@/core/serviceComposition';
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
+import { createServices, disposeServices, type Services } from '@/core/createServices';
 import { applyRuntimeApiEndpoints } from '@/core/dialogue/dialogueService';
 import { useSystemStore } from '@/store/systemStore';
-import { ServicesContext } from './servicesContext';
+import { DigitalHumanEngine } from '@/core/avatar/DigitalHumanEngine';
+import { TTSService, ASRService } from '@/core/audio/audioService';
+import { DialogueOrchestrator } from '@/core/dialogue/dialogueOrchestrator';
 
-// ============================================================================
-// Provider
-// ============================================================================
+export const ServicesContext = createContext<Services | null>(null);
 
 interface ServicesProviderProps {
   children: ReactNode;
-  composition?: ServiceComposition;
-  createComposition?: () => ServiceComposition;
+  services?: Services;
 }
 
-/**
- * 提供应用级服务单例。
- * 在应用根组件包装使用。
- */
-export function ServicesProvider({
-  children,
-  composition,
-  createComposition,
-}: ServicesProviderProps) {
-  const ownedCompositionRef = useRef<ServiceComposition | null>(null);
+export function ServicesProvider({ children, services }: ServicesProviderProps) {
+  const ownedRef = useRef<Services | null>(null);
 
-  if (composition === undefined && ownedCompositionRef.current === null) {
-    ownedCompositionRef.current = createComposition?.() ?? createServiceComposition();
+  if (services === undefined && ownedRef.current === null) {
+    ownedRef.current = createServices();
   }
 
-  const serviceComposition = composition ?? ownedCompositionRef.current!;
+  const svc = services ?? ownedRef.current!;
 
-  // 启动时应用持久化的运行时 API 端点配置（优先于 env）
   useEffect(() => {
-    if (composition) return;
+    if (services) return;
     const { runtimeApiConfig } = useSystemStore.getState();
     if (runtimeApiConfig?.baseUrl) {
       applyRuntimeApiEndpoints(runtimeApiConfig.baseUrl, runtimeApiConfig.fallbacks ?? '');
     }
-  }, [composition]);
+  }, [services]);
 
   useEffect(() => {
-    if (composition) {
-      return;
-    }
-
+    if (services) return;
     return () => {
-      ownedCompositionRef.current?.dispose();
-      ownedCompositionRef.current = null;
+      if (ownedRef.current) {
+        disposeServices(ownedRef.current);
+        ownedRef.current = null;
+      }
     };
-  }, [composition]);
+  }, [services]);
 
-  return (
-    <ServicesContext.Provider value={serviceComposition.services}>
-      {children}
-    </ServicesContext.Provider>
-  );
+  return <ServicesContext.Provider value={svc}>{children}</ServicesContext.Provider>;
+}
+
+export function useServices(): Services {
+  const services = useContext(ServicesContext);
+  if (!services) {
+    throw new Error('useServices must be used within ServicesProvider');
+  }
+  return services;
+}
+
+export function useEngine(): DigitalHumanEngine {
+  return useServices().engine;
+}
+
+export function useTTS(): TTSService {
+  return useServices().tts;
+}
+
+export function useASR(): ASRService {
+  return useServices().asr;
+}
+
+export function useDialogue(): DialogueOrchestrator {
+  return useServices().dialogue;
 }
