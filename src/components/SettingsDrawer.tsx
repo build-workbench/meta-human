@@ -6,9 +6,7 @@ import { useFocusTrap, useTheme } from '../hooks';
 import ControlPanel from './ControlPanel';
 import ExpressionControlPanel from './ExpressionControlPanel';
 import BehaviorControlPanel from './BehaviorControlPanel';
-import VisionMirrorPanel from './VisionMirrorPanel';
 import VoiceInteractionPanel from './VoiceInteractionPanel';
-import type { UserEmotion } from '../core/vision/visionMapper';
 import { getAvatarStatusLabel } from '../core/avatar/avatarSourceAdapter';
 import { CHARACTER_PRESETS } from '../core/dialogue/characterPresets';
 import {
@@ -36,11 +34,9 @@ interface SettingsDrawerProps {
   avatarFileName: string | null;
   avatarLoadStatus: 'idle' | 'ready' | 'error';
   avatarLoadError: string | null;
-  onEmotionChange: (emotion: UserEmotion) => void;
-  onHeadMotion: (motion: 'nod' | 'shakeHead' | 'raiseHand' | 'waveHand') => void;
 }
 
-const TABS = ['basic', 'expression', 'behavior', 'avatar', 'vision', 'voice', 'config'] as const;
+const TABS = ['basic', 'expression', 'behavior', 'avatar', 'voice', 'config'] as const;
 
 export default function SettingsDrawer({
   show,
@@ -61,8 +57,6 @@ export default function SettingsDrawer({
   avatarFileName,
   avatarLoadStatus,
   avatarLoadError,
-  onEmotionChange,
-  onHeadMotion,
 }: SettingsDrawerProps) {
   const isPlaying = useDigitalHumanStore((s) => s.isPlaying);
   const isRecording = useDigitalHumanStore((s) => s.isRecording);
@@ -249,12 +243,6 @@ export default function SettingsDrawer({
                     {avatarLoadError}
                   </div>
                 )}
-              </div>
-            )}
-            {activeTab === 'vision' && (
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-400">
-                Vision Mirror Module requires camera access.
-                <VisionMirrorPanel onEmotionChange={onEmotionChange} onHeadMotion={onHeadMotion} />
               </div>
             )}
             {activeTab === 'voice' && (

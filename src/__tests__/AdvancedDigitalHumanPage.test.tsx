@@ -42,14 +42,11 @@ vi.mock('@/hooks/useAdvancedDigitalHumanController', () => ({
     closeSettings: vi.fn(),
     handleAvatarUpload: vi.fn(),
     handleBehaviorChange: vi.fn(),
-    handleEmotionChange: vi.fn(),
     handleExpressionChange: vi.fn(),
-    handleHeadMotion: vi.fn(),
     handleModelLoad: vi.fn(),
     handleNewSession: vi.fn(),
     handlePlayPause: vi.fn(),
     handleReset: vi.fn(),
-    handleToggleImmersiveAr: vi.fn(),
     handleToggleRecording: vi.fn(),
     handleUseBuiltInAvatar: vi.fn(),
     handleVoiceCommand: vi.fn(),
@@ -98,13 +95,12 @@ describe('AdvancedDigitalHumanPage', () => {
 
   it('passes the active custom avatar model url into the viewer', () => {
     useDigitalHumanStore.setState({
-      ...(useDigitalHumanStore.getState() as unknown as Record<string, unknown>),
       avatarSource: {
         kind: 'custom',
         fileName: 'avatar.glb',
         modelUrl: 'blob:avatar-1',
       },
-    } as unknown as Partial<ReturnType<typeof useDigitalHumanStore.getState>>);
+    });
 
     render(<AdvancedDigitalHumanPage />);
 
@@ -115,12 +111,12 @@ describe('AdvancedDigitalHumanPage', () => {
     );
   });
 
-  it('passes the immersive ar toggle handler into the HUD', () => {
+  it('passes the new session handler into the HUD', () => {
     render(<AdvancedDigitalHumanPage />);
 
     expect(topHUDMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        onToggleImmersiveAr: expect.any(Function),
+        onNewSession: expect.any(Function),
       }),
     );
   });

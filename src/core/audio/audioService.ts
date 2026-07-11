@@ -1,5 +1,4 @@
 import { loggers } from '../../lib/logger';
-import { VoiceCommandExecutor } from '../voiceCommand';
 import type { TTSCallbacks, ASRStateAdapter } from './audioAdapters';
 import type { DialogueOrchestrator } from '../dialogue/dialogueOrchestrator';
 
@@ -97,10 +96,6 @@ export class TTSService {
     }
   }
 
-  /**
-   * Cleanup resources and remove event listeners.
-   * Call this when disposing the service.
-   */
   dispose(): void {
     if (this.synth && this.voiceLoadHandler) {
       this.synth.onvoiceschanged = null;
@@ -152,7 +147,6 @@ export class TTSService {
       utterance.pitch = mergedConfig.pitch!;
       utterance.volume = mergedConfig.volume!;
 
-      // 选择合适的语音
       const preferredVoice = this.voices.find((voice) =>
         voice.lang.includes(mergedConfig.lang!.split('-')[0]),
       );
@@ -213,7 +207,6 @@ export class TTSService {
     utterance.pitch = pitch;
     utterance.volume = volume;
 
-    // 选择中文语音或指定语音
     let selectedVoice: SpeechSynthesisVoice | undefined;
     if (voiceName) {
       selectedVoice = this.voices.find((voice) => voice.name === voiceName);
@@ -247,7 +240,6 @@ export class TTSService {
     this.synth.speak(utterance);
   }
 
-  /** Nullify handlers on the current utterance so cancel() won't fire onerror. */
   private cancelCurrentUtterance(): void {
     if (this.currentUtterance) {
       this.currentUtterance.onstart = null;
@@ -258,17 +250,11 @@ export class TTSService {
     this.stopVisemeLoop();
   }
 
-  /**
-   * 启动嘴型驱动循环。
-   * Web Speech API 的 boundary 事件兼容性差，改用基于时间的正弦+随机扰动
-   * 模拟音节开合，~16Hz 更新 mouthOpen（0-1）。
-   */
   private startVisemeLoop(): void {
     this.stopVisemeLoop();
     this.visemeStartTime = Date.now();
     this.visemeTimer = setInterval(() => {
       const elapsed = (Date.now() - this.visemeStartTime) / 1000;
-      // 主频 ~5Hz 模拟音节，叠加慢速起伏 + 随机扰动
       const base = Math.abs(Math.sin(elapsed * Math.PI * 5));
       const wobble = 0.3 * Math.sin(elapsed * Math.PI * 1.5);
       const noise = (Math.random() - 0.5) * 0.2;
@@ -336,7 +322,6 @@ export class ASRService {
   private mode: 'command' | 'dictation' = 'command';
   private pendingRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private recognitionGeneration = 0;
-  private voiceCommandExecutor: VoiceCommandExecutor;
   private dialogue: DialogueRuntime;
 
   constructor(
@@ -357,32 +342,6 @@ export class ASRService {
     this.state = state;
     this.tts = tts;
     this.dialogue = dialogue;
-
-    // Initialize voice command executor
-    this.voiceCommandExecutor = new VoiceCommandExecutor({
-      systemControls: {
-        play: () => this.state.play(),
-        pause: () => this.state.pause(),
-        reset: () => this.state.reset(),
-        setMuted: (m) => this.state.setMuted(m),
-      },
-      avatarControls: {
-        setEmotion: (e) => this.state.setEmotion(e),
-        setExpression: (e) => this.state.setExpression(e),
-        setAnimation: (a) => this.state.setAnimation(a),
-        setBehavior: (b) => this.state.setBehavior(b),
-        speak: (text) => {
-          void this.tts.speak(text).catch((err: unknown) => {
-            logger.warn('Speech failed:', err instanceof Error ? err.message : err);
-          });
-        },
-      },
-      onUnhandled: async (text: string) => {
-        if (this.sendToBackend) {
-          await this.sendToDialogueService(text);
-        }
-      },
-    });
 
     if (this.isSupportedFlag && typeof window !== 'undefined') {
       this.initRecognition();
@@ -412,7 +371,6 @@ export class ASRService {
       (window as unknown as { SpeechRecognition?: SpeechRecognitionConstructor }).SpeechRecognition;
     if (!SpeechRecognition) return;
 
-    // Increment generation counter to invalidate old callbacks
     this.recognitionGeneration++;
     const currentGeneration = this.recognitionGeneration;
 
@@ -424,14 +382,12 @@ export class ASRService {
     this.recognition.maxAlternatives = this.config.maxAlternatives!;
 
     this.recognition.onstart = () => {
-      // Only process if this is still the current generation
       if (currentGeneration !== this.recognitionGeneration) return;
       this.state.setBehavior('listening');
       this.callbacks.onStart?.();
     };
 
     this.recognition.onresult = (event: SpeechRecognitionEventLike) => {
-      // Only process if this is still the current generation
       if (currentGeneration !== this.recognitionGeneration) return;
 
       let finalTranscript = '';
@@ -449,12 +405,10 @@ export class ASRService {
         }
       }
 
-      // 通知临时结果
       if (interimTranscript) {
         this.callbacks.onTranscript?.(interimTranscript, false);
       }
 
-      // 处理最终结果
       if (finalTranscript) {
         this.callbacks.onTranscript?.(finalTranscript, true);
         if (this.onResultCallback) {
@@ -467,7 +421,6 @@ export class ASRService {
     };
 
     this.recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
-      // Only process if this is still the current generation
       if (currentGeneration !== this.recognitionGeneration) return;
 
       logger.error('语音识别错误:', event.error);
@@ -479,7 +432,6 @@ export class ASRService {
     };
 
     this.recognition.onend = () => {
-      // Only process if this is still the current generation
       if (currentGeneration !== this.recognitionGeneration) return;
 
       this.state.setRecording(false);
@@ -532,7 +484,6 @@ export class ASRService {
       logger.error('启动语音识别失败:', error);
       this.state.setRecording(false);
 
-      // 处理已经在运行的情况
       if (error instanceof Error && error.message?.includes('already started')) {
         this.recognition.stop();
         this.pendingRestartTimer = setTimeout(() => {
@@ -548,7 +499,6 @@ export class ASRService {
   }
 
   stop(): void {
-    this.voiceCommandExecutor.abort();
     if (this.pendingRestartTimer) {
       clearTimeout(this.pendingRestartTimer);
       this.pendingRestartTimer = null;
@@ -560,41 +510,26 @@ export class ASRService {
         // 忽略停止错误
       }
     }
-    // Clear event handlers to allow garbage collection
     this.onResultCallback = null;
     this.mode = 'command';
-    // Increment generation to invalidate any pending callbacks
     this.recognitionGeneration++;
   }
 
-  /**
-   * Cleanup resources and remove event listeners.
-   * Call this when disposing the service.
-   */
   dispose(): void {
-    // Clear all preset timers first to prevent memory leaks
-    this.voiceCommandExecutor.abort();
-
-    // Stop recognition and cleanup
     this.stop();
-
-    // Clear recognition instance and callbacks
     this.recognition = null;
     this.callbacks = {};
     this.onResultCallback = null;
 
-    // Clear any pending restart timer
     if (this.pendingRestartTimer) {
       clearTimeout(this.pendingRestartTimer);
       this.pendingRestartTimer = null;
     }
 
-    // Increment generation to invalidate any pending callbacks
     this.recognitionGeneration++;
   }
 
   abort(): void {
-    this.voiceCommandExecutor.abort();
     if (this.pendingRestartTimer) {
       clearTimeout(this.pendingRestartTimer);
       this.pendingRestartTimer = null;
@@ -610,12 +545,12 @@ export class ASRService {
     this.state.setBehavior('idle');
   }
 
-  // 处理语音输入 - 使用 VoiceCommandExecutor
   private async processVoiceInput(text: string): Promise<void> {
-    this.voiceCommandExecutor.execute(text);
+    if (this.sendToBackend) {
+      await this.sendToDialogueService(text);
+    }
   }
 
-  // 发送到对话服务
   private async sendToDialogueService(text: string): Promise<void> {
     try {
       await this.dialogue.runDialogueTurn(text, {
@@ -639,25 +574,5 @@ export class ASRService {
       this.state.setError('对话服务暂时不可用，请稍后重试');
       this.state.setBehavior('idle');
     }
-  }
-
-  // 预设动作：打招呼（委托给 VoiceCommandExecutor）
-  performGreeting(): void {
-    this.voiceCommandExecutor.presetActions.greeting();
-  }
-
-  // 预设动作：跳舞（委托给 VoiceCommandExecutor）
-  performDance(): void {
-    this.voiceCommandExecutor.presetActions.dance();
-  }
-
-  // 预设动作：点头（委托给 VoiceCommandExecutor）
-  performNod(): void {
-    this.voiceCommandExecutor.presetActions.nod();
-  }
-
-  // 预设动作：摇头（委托给 VoiceCommandExecutor）
-  performShakeHead(): void {
-    this.voiceCommandExecutor.presetActions.shakeHead();
   }
 }

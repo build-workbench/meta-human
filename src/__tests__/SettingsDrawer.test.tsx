@@ -22,10 +22,6 @@ vi.mock('@/components/BehaviorControlPanel', () => ({
   default: () => <div data-testid="behavior-panel" />,
 }));
 
-vi.mock('@/components/VisionMirrorPanel', () => ({
-  default: () => <div data-testid="vision-panel" />,
-}));
-
 vi.mock('@/components/VoiceInteractionPanel', () => ({
   default: () => <div data-testid="voice-panel" />,
 }));
@@ -52,8 +48,6 @@ describe('SettingsDrawer', () => {
         avatarFileName={null}
         avatarLoadStatus="ready"
         avatarLoadError={null}
-        onEmotionChange={vi.fn()}
-        onHeadMotion={vi.fn()}
       />,
     );
 
@@ -84,8 +78,6 @@ describe('SettingsDrawer', () => {
         avatarFileName="avatar.glb"
         avatarLoadStatus="error"
         avatarLoadError="load failed"
-        onEmotionChange={vi.fn()}
-        onHeadMotion={vi.fn()}
       />,
     );
 

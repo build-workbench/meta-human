@@ -1,88 +1,135 @@
 /**
  * 语音命令处理 Hook。
  *
- * 使用 VoiceCommandExecutor 处理语音命令。
+ * 内联解析命令字符串并执行对应动作。
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { useEngine, useASR, useTTS } from '@/services';
-import { VoiceCommandExecutor } from '@/core/voiceCommand';
+import { useEngine, useTTS } from '@/services';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import type { ExpressionType } from '@/core/avatar/avatarContract';
 
 interface UseVoiceCommandHandlerOptions {
   onChatSend?: (text: string) => void;
 }
 
+const EXPRESSION_RESET_MS = 3000;
+const PRESET_RESET_MS: Record<string, number> = {
+  greeting: 4000,
+  dance: 6000,
+  nod: 2000,
+  shakeHead: 2000,
+};
+
+const PRESET_SPEECH: Record<string, string> = {
+  greeting: '您好！很高兴见到您！有什么可以帮助您的吗？',
+  dance: '让我为您跳一支舞！',
+  nod: '好的，我明白了。',
+  shakeHead: '不太确定呢。',
+};
+
+function parseCommand(input: string): string | null {
+  const trimmed = input.trim().toLowerCase();
+  const commands: Record<string, string> = {
+    播放: 'play',
+    开始: 'play',
+    暂停: 'pause',
+    停止: 'pause',
+    重置: 'reset',
+    复位: 'reset',
+    取消静音: 'unmute',
+    静音: 'mute',
+    打招呼: 'greeting',
+    问好: 'greeting',
+    跳舞: 'dance',
+    点头: 'nod',
+    摇头: 'shakeHead',
+    说话: 'speak',
+    表情: 'expression',
+  };
+  return commands[trimmed] ?? null;
+}
+
 export function useVoiceCommandHandler(options: UseVoiceCommandHandlerOptions = {}) {
   const engine = useEngine();
-  const asr = useASR();
   const tts = useTTS();
   const { onChatSend } = options;
 
-  // Create executor once, not on every call
-  const executor = useMemo(
-    () =>
-      new VoiceCommandExecutor({
-        systemControls: {
-          play: () => engine.play(),
-          pause: () => engine.pause(),
-          reset: () => engine.reset(),
-          setMuted: () => {
-            /* Not applicable in this context */
-          },
-        },
-        avatarControls: {
-          setEmotion: (e) => engine.setEmotion(e),
-          setExpression: (e) => engine.setExpression(e),
-          setAnimation: (a) => engine.playAnimation(a),
-          setBehavior: (b) => engine.setBehavior(b),
-          speak: (text) => {
-            void tts.speak(text).catch(() => undefined);
-          },
-        },
-        onUnhandled: (text) => {
-          onChatSend?.(text);
-        },
-      }),
-    [engine, tts, onChatSend],
-  );
-
   const handleVoiceCommand = useCallback(
     (command: string) => {
-      const handled = executor.execute(command);
-
-      if (!handled) {
-        // Command was not recognized, already handled by onUnhandled
+      const action = parseCommand(command);
+      if (!action) {
+        onChatSend?.(command);
         return;
       }
 
-      // Show toast notifications for specific commands
-      const result = executor.parse(command);
-      if (result.action) {
-        switch (result.action.type) {
-          case 'greeting':
-            asr.performGreeting();
-            toast.success('执行打招呼动作');
-            break;
-          case 'dance':
-            asr.performDance();
-            toast.success('开始跳舞');
-            break;
-          case 'expression':
-            toast.success(`切换到 ${result.action.expression} 表情`);
-            break;
-          case 'speak':
-            toast.success('开始说话');
-            break;
-          default:
-            break;
+      switch (action) {
+        case 'play':
+          engine.play();
+          break;
+        case 'pause':
+          engine.pause();
+          break;
+        case 'reset':
+          engine.reset();
+          break;
+        case 'mute':
+          useDigitalHumanStore.getState().setMuted(true);
+          break;
+        case 'unmute':
+          useDigitalHumanStore.getState().setMuted(false);
+          break;
+        case 'greeting':
+        case 'dance':
+        case 'nod':
+        case 'shakeHead': {
+          const speech = PRESET_SPEECH[action];
+          if (action === 'greeting') {
+            engine.setEmotion('happy');
+            engine.setExpression('smile');
+            engine.setBehavior('greeting');
+            engine.playAnimation('wave');
+          } else if (action === 'dance') {
+            engine.playAnimation('dance');
+            engine.setBehavior('excited');
+            engine.setEmotion('happy');
+          } else if (action === 'nod') {
+            engine.playAnimation('nod');
+            engine.setBehavior('listening');
+          } else {
+            engine.playAnimation('shakeHead');
+          }
+          void tts.speak(speech).catch(() => undefined);
+          toast.success(
+            `执行${action === 'greeting' ? '打招呼' : action === 'dance' ? '跳舞' : action === 'nod' ? '点头' : '摇头'}动作`,
+          );
+          setTimeout(() => {
+            engine.setEmotion('neutral');
+            engine.setExpression('neutral');
+            engine.setBehavior('idle');
+            engine.playAnimation('idle');
+          }, PRESET_RESET_MS[action]);
+          break;
         }
+        case 'speak':
+          void tts.speak('您好！有什么可以帮助您的吗？').catch(() => undefined);
+          toast.success('开始说话');
+          break;
+        case 'expression': {
+          const expressions: ExpressionType[] = ['smile', 'surprise', 'laugh'];
+          const randomExpr = expressions[Math.floor(Math.random() * expressions.length)];
+          engine.setExpression(randomExpr);
+          toast.success(`切换到 ${randomExpr} 表情`);
+          setTimeout(() => engine.setExpression('neutral'), EXPRESSION_RESET_MS);
+          break;
+        }
+        default:
+          break;
       }
     },
-    [executor, asr],
+    [engine, tts, onChatSend],
   );
 
-  return {
-    handleVoiceCommand,
-  };
+  return { handleVoiceCommand };
 }

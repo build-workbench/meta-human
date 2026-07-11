@@ -3,21 +3,16 @@
  *
  * 主要功能：
  * - 加载和管理 3D 模型
- * - 提供自适应渲染（根据设备能力）
  * - 暴露模型加载回调
  */
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
-import { useSystemStore } from '@/store/systemStore';
-import { getDeviceCapabilities } from '@/core/performance';
 import { loggers } from '@/lib/logger';
 import { Scene } from './Scene';
-import { PerformanceTracker } from './PerformanceTracker';
-import { ImmersiveSessionBridge } from './ImmersiveSessionBridge';
 
 const logger = loggers.app;
 
@@ -40,16 +35,6 @@ export default function DigitalHumanViewer({
   );
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // 检测设备能力以实现自适应渲染
-  const deviceCaps = useMemo(() => getDeviceCapabilities(), []);
-
-  // 性能追踪
-  const startModelLoad = useSystemStore((s) => s.startModelLoad);
-  const completeModelLoad = useSystemStore((s) => s.completeModelLoad);
-  const failModelLoad = useSystemStore((s) => s.failModelLoad);
-  const immersiveSession = useSystemStore((s) => s.immersiveSession);
-  const loadStartTimeRef = useRef<number | null>(null);
-
   // 使用 ref 存储回调以避免重新触发加载效果
   const onModelLoadRef = useRef(onModelLoad);
   onModelLoadRef.current = onModelLoad;
@@ -68,19 +53,13 @@ export default function DigitalHumanViewer({
 
     setLoadStatus('loading');
     setLoadError(null);
-    startModelLoad(modelUrl);
-    loadStartTimeRef.current = performance.now();
 
     loader.load(
       modelUrl,
       (gltf) => {
         if (cancelled) return;
-        const loadTime = loadStartTimeRef.current
-          ? Math.round(performance.now() - loadStartTimeRef.current)
-          : 0;
         setModelScene(gltf.scene);
         setLoadStatus('ready');
-        completeModelLoad(loadTime);
         onModelLoadRef.current?.(gltf.scene);
       },
       undefined,
@@ -96,7 +75,6 @@ export default function DigitalHumanViewer({
         setModelScene(null);
         setLoadStatus('error');
         setLoadError(message);
-        failModelLoad(message);
         onModelLoadRef.current?.({ type: 'procedural-fallback', error: message });
       },
     );
@@ -104,7 +82,7 @@ export default function DigitalHumanViewer({
     return () => {
       cancelled = true;
     };
-  }, [modelUrl, startModelLoad, completeModelLoad, failModelLoad]);
+  }, [modelUrl]);
 
   // 模型卸载时释放资源
   useEffect(() => {
@@ -121,42 +99,6 @@ export default function DigitalHumanViewer({
           materials.forEach((mat) => {
             if (mat instanceof THREE.Material) {
               try {
-                // 释放材质上的所有纹理
-                const textureProps = [
-                  'map',
-                  'normalMap',
-                  'roughnessMap',
-                  'metalnessMap',
-                  'emissiveMap',
-                  'aoMap',
-                  'lightMap',
-                  'alphaMap',
-                  'envMap',
-                  'bumpMap',
-                  'displacementMap',
-                  'specularMap',
-                  'clearcoatMap',
-                  'clearcoatRoughnessMap',
-                  'clearcoatNormalMap',
-                  'sheenRoughnessMap',
-                  'sheenColorMap',
-                  'iridescenceMap',
-                  'iridescenceThicknessMap',
-                  'thicknessMap',
-                  'transmissionMap',
-                ] as const;
-
-                textureProps.forEach((prop) => {
-                  try {
-                    const texture = (mat as unknown as Record<string, THREE.Texture | null>)[prop];
-                    if (texture) {
-                      texture.dispose();
-                    }
-                  } catch (error) {
-                    logger.warn(`Failed to dispose texture ${prop}:`, error);
-                  }
-                });
-
                 mat.dispose();
               } catch (error) {
                 logger.warn('Failed to dispose material:', error);
@@ -179,15 +121,14 @@ export default function DigitalHumanViewer({
         使用方向键旋转视图，加减键缩放，R键重置视角。按Tab键切换到其他控件。
       </div>
       <Canvas
-        shadows={deviceCaps.enableShadows}
-        dpr={deviceCaps.recommendedDPR}
+        shadows
+        dpr={[1, 2]}
         gl={{
-          antialias: deviceCaps.tier !== 'low',
-          powerPreference: deviceCaps.tier === 'high' ? 'high-performance' : 'default',
+          antialias: true,
+          powerPreference: 'high-performance',
           alpha: true,
         }}
       >
-        <ImmersiveSessionBridge session={immersiveSession} />
         {(loadStatus === 'loading' || loadStatus === 'error') && (
           <Html center>
             <div className="px-4 py-2 rounded-xl bg-black/70 text-white text-sm border border-white/10 shadow-lg">
@@ -195,8 +136,7 @@ export default function DigitalHumanViewer({
             </div>
           </Html>
         )}
-        <Scene autoRotate={autoRotate} modelScene={modelScene} deviceCaps={deviceCaps} />
-        <PerformanceTracker />
+        <Scene autoRotate={autoRotate} modelScene={modelScene} />
       </Canvas>
 
       {showControls && (

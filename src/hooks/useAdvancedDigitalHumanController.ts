@@ -13,8 +13,6 @@ import { useEngine, useASR } from '@/services';
 import { usePlaybackController } from './usePlaybackController';
 import { useSessionManager } from './useSessionManager';
 import { useVoiceCommandHandler } from './useVoiceCommandHandler';
-import type { UserEmotion } from '@/core/vision/visionMapper';
-import { requestImmersiveArSession } from '@/core/performance/arSession';
 import { revokeCustomAvatarObjectUrl } from '@/core/avatar/avatarSourceAdapter';
 
 export function useAdvancedDigitalHumanController() {
@@ -31,17 +29,10 @@ export function useAdvancedDigitalHumanController() {
   const setCustomAvatar = useDigitalHumanStore((s) => s.setCustomAvatar);
   const activateProceduralAvatar = useDigitalHumanStore((s) => s.useProceduralAvatar);
   const setAvatarLoadState = useDigitalHumanStore((s) => s.setAvatarLoadState);
-  const recordVisionEmotion = useDigitalHumanStore((s) => s.recordVisionEmotion);
-  const recordVisionMotion = useDigitalHumanStore((s) => s.recordVisionMotion);
   const error = useSystemStore((s) => s.error);
   const clearError = useSystemStore((s) => s.clearError);
   const setConnectionStatus = useSystemStore((s) => s.setConnectionStatus);
   const setError = useSystemStore((s) => s.setError);
-  const immersiveMode = useSystemStore((s) => s.immersiveMode);
-  const immersiveSession = useSystemStore((s) => s.immersiveSession);
-  const startImmersiveAr = useSystemStore((s) => s.startImmersiveAr);
-  const setImmersiveSession = useSystemStore((s) => s.setImmersiveSession);
-  const clearImmersiveSession = useSystemStore((s) => s.clearImmersiveSession);
 
   // 服务
   const engine = useEngine();
@@ -139,38 +130,6 @@ export function useAdvancedDigitalHumanController() {
     [activateProceduralAvatar, avatarSource, handleModelLoad, setAvatarLoadState, setError],
   );
 
-  const handleToggleImmersiveAr = useCallback(async () => {
-    if (immersiveMode === 'ar-active' && immersiveSession) {
-      await immersiveSession.end();
-      clearImmersiveSession();
-      toast.info('已退出 AR 模式');
-      return;
-    }
-
-    startImmersiveAr();
-
-    try {
-      const session = await requestImmersiveArSession();
-      session.addEventListener('end', () => {
-        clearImmersiveSession();
-      });
-      setImmersiveSession(session);
-      toast.success('已进入 AR 模式');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '进入 AR 模式失败';
-      clearImmersiveSession(message);
-      setError(message);
-      toast.info(message);
-    }
-  }, [
-    clearImmersiveSession,
-    immersiveMode,
-    immersiveSession,
-    setError,
-    setImmersiveSession,
-    startImmersiveAr,
-  ]);
-
   // 录音控制
   const handleToggleRecording = useCallback(() => {
     const isRecording = useDigitalHumanStore.getState().isRecording;
@@ -205,24 +164,6 @@ export function useAdvancedDigitalHumanController() {
     [engine],
   );
 
-  // 情绪控制
-  const handleEmotionChange = useCallback(
-    (emotion: UserEmotion) => {
-      recordVisionEmotion(emotion);
-      engine.setEmotion(emotion);
-    },
-    [engine, recordVisionEmotion],
-  );
-
-  // 头部动作
-  const handleHeadMotion = useCallback(
-    (motion: 'nod' | 'shakeHead' | 'raiseHand' | 'waveHand') => {
-      recordVisionMotion(motion);
-      engine.playAnimation(motion);
-    },
-    [engine, recordVisionMotion],
-  );
-
   // 语音命令处理（需要外部传入 handleChatSend）
   const { handleVoiceCommand } = useVoiceCommandHandler();
 
@@ -240,10 +181,7 @@ export function useAdvancedDigitalHumanController() {
       // 回调
       closeSettings,
       handleBehaviorChange,
-      handleEmotionChange,
       handleExpressionChange,
-      handleHeadMotion,
-      handleToggleImmersiveAr,
       handleAvatarLoad,
       handleAvatarUpload,
       handleModelLoad: handleAvatarLoad,
@@ -268,10 +206,7 @@ export function useAdvancedDigitalHumanController() {
       showSettings,
       closeSettings,
       handleBehaviorChange,
-      handleEmotionChange,
       handleExpressionChange,
-      handleHeadMotion,
-      handleToggleImmersiveAr,
       handleAvatarLoad,
       handleAvatarUpload,
       handleUseBuiltInAvatar,
