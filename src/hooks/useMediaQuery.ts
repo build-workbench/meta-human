@@ -19,18 +19,6 @@ export function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-export function useIsMobile(): boolean {
-  return useMediaQuery('(max-width: 768px)');
-}
-
-export function useIsTablet(): boolean {
-  return useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
-}
-
-export function useIsDesktop(): boolean {
-  return useMediaQuery('(min-width: 1025px)');
-}
-
 export function usePrefersReducedMotion(): boolean {
   return useMediaQuery('(prefers-reduced-motion: reduce)');
 }
@@ -40,7 +28,6 @@ export function usePrefersReducedMotion(): boolean {
  * Uses a ref to avoid re-renders in animation loops.
  */
 export function useIsTabVisibleRef(): { readonly current: boolean } {
-  // Use a mutable object that persists across renders
   const ref = useRef(
     typeof document !== 'undefined' ? document.visibilityState === 'visible' : true,
   );
