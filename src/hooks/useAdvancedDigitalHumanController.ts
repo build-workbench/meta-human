@@ -9,18 +9,20 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
-import { useEngine, useASR } from '@/services';
-import { usePlaybackController } from './usePlaybackController';
-import { useSessionManager } from './useSessionManager';
+import { useEngine, useASR, useDialogue } from '@/services';
 import { useVoiceCommandHandler } from './useVoiceCommandHandler';
 import { revokeCustomAvatarObjectUrl } from '@/core/avatar/avatarSourceAdapter';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { clearRemoteSession } from '@/core/dialogue/dialogueService';
 
 export function useAdvancedDigitalHumanController() {
-  // 子 hooks
-  const playback = usePlaybackController();
-  const session = useSessionManager();
+  // 服务
+  const engine = useEngine();
+  const asr = useASR();
+  const dialogue = useDialogue();
 
   // 直接访问 store
+  const isPlaying = useDigitalHumanStore((s) => s.isPlaying);
   const autoRotate = useDigitalHumanStore((s) => s.autoRotate);
   const toggleAutoRotate = useDigitalHumanStore((s) => s.toggleAutoRotate);
   const toggleMute = useDigitalHumanStore((s) => s.toggleMute);
@@ -33,14 +35,39 @@ export function useAdvancedDigitalHumanController() {
   const clearError = useSystemStore((s) => s.clearError);
   const setConnectionStatus = useSystemStore((s) => s.setConnectionStatus);
   const setError = useSystemStore((s) => s.setError);
-
-  // 服务
-  const engine = useEngine();
-  const asr = useASR();
+  const resetSystemState = useSystemStore((s) => s.resetSystemState);
+  const sessionId = useChatSessionStore((s) => s.sessionId);
+  const initChatSession = useChatSessionStore((s) => s.initSession);
 
   // 本地状态
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+
+  // 播放控制（内联自 usePlaybackController）
+  const handlePlayPause = useCallback(() => {
+    if (isPlaying) {
+      engine.pause();
+      toast.info('已暂停');
+    } else {
+      engine.play();
+      toast.success('已播放');
+    }
+  }, [isPlaying, engine]);
+
+  const handleReset = useCallback(() => {
+    engine.reset();
+    toast.info('系统已重置');
+  }, [engine]);
+
+  // 会话管理（内联自 useSessionManager）
+  const handleNewSession = useCallback(() => {
+    const oldSessionId = sessionId;
+    dialogue.abortPendingTurn();
+    initChatSession();
+    resetSystemState();
+    toast.success('已开启新会话');
+    void clearRemoteSession(oldSessionId);
+  }, [dialogue, sessionId, initChatSession, resetSystemState]);
 
   // 设置面板控制
   const toggleSettings = useCallback(() => {
@@ -169,9 +196,14 @@ export function useAdvancedDigitalHumanController() {
 
   return useMemo(
     () => ({
-      // 来自子 hooks
-      ...playback,
-      ...session,
+      // 播放控制
+      isPlaying,
+      handlePlayPause,
+      handleReset,
+
+      // 会话管理
+      sessionId,
+      handleNewSession,
 
       // 本地状态
       activeTab,
@@ -199,8 +231,11 @@ export function useAdvancedDigitalHumanController() {
       clearError,
     }),
     [
-      playback,
-      session,
+      isPlaying,
+      handlePlayPause,
+      handleReset,
+      sessionId,
+      handleNewSession,
       activeTab,
       autoRotate,
       showSettings,

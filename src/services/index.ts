@@ -1,10 +1,10 @@
+export { ServicesProvider } from './ServicesProvider';
 export {
-  ServicesProvider,
   ServicesContext,
   useServices,
   useEngine,
   useTTS,
   useASR,
   useDialogue,
-} from './ServicesProvider';
+} from './servicesContext';
 export type { Services } from '@/core/createServices';
