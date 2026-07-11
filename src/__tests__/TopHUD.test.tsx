@@ -31,12 +31,12 @@ describe('TopHUD', () => {
     expect(screen.getByText('SSE')).toBeInTheDocument();
   });
 
-  it('maps websocket mode to a user-facing label', () => {
-    useSystemStore.setState({ chatTransportMode: 'websocket' });
+  it('maps http mode to a user-facing label', () => {
+    useSystemStore.setState({ chatTransportMode: 'http' });
 
     render(<TopHUD onToggleSettings={vi.fn()} onReconnect={vi.fn()} onNewSession={vi.fn()} />);
 
-    expect(screen.getByText('WebSocket')).toBeInTheDocument();
+    expect(screen.getByText('HTTP')).toBeInTheDocument();
   });
 
   it('shows the active service endpoint and failover count when routing diagnostics are available', () => {

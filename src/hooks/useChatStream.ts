@@ -5,7 +5,7 @@ import { useSystemStore } from '@/store/systemStore';
 import { useTTS, useEngine, useDialogue } from '@/services';
 import { toast } from 'sonner';
 import { loggers } from '@/lib/logger';
-import { createIdleDialogueTurnSnapshot } from '@/core/dialogue/dialogueTurnLifecycle';
+import { createIdleDialogueTurnSnapshot } from '@/core/dialogue/dialogueService';
 import { buildDialogueRequestMeta } from '@/core/dialogue/dialogueRequestMeta';
 import { getCurrentLanguage } from '@/lib/i18n';
 

@@ -4,7 +4,7 @@ import {
   normalizeDialogueError,
   sendDialogueHttpRequest,
   sendDialogueStreamRequest,
-} from '../core/dialogue/dialogueHttpClient';
+} from '../core/dialogue/dialogueService';
 
 const originalFetch = global.fetch;
 

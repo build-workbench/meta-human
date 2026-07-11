@@ -1,14 +1,21 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useSystemStore } from '../store/systemStore';
 import type { ConnectionStatus } from '../store/systemStore';
-import { checkServerHealth } from '../core/dialogue/dialogueService';
-import { resolveChatTransportMode } from '../core/dialogue/chatTransport';
-import { evaluateConnectionRecovery } from '../core/dialogue/connectionRecovery';
+import {
+  checkServerHealth,
+  evaluateConnectionRecovery,
+  getPreferredChatTransportMode,
+} from '../core/dialogue/dialogueService';
 import { toast } from 'sonner';
 
 const DEGRADED_CONNECTION_MESSAGE = '服务器连接不稳定，部分功能可能受限';
 const RECONNECT_FAILURE_MESSAGE = '连接失败，请稍后重试';
 const TRANSPORT_PROBE_FAILURE_MESSAGE = '协议探测失败，已保留当前连接模式';
+
+function resolveTransportMode(): 'http' | 'sse' {
+  const mode = getPreferredChatTransportMode();
+  return mode === 'http' ? 'http' : 'sse';
+}
 
 export function useConnectionHealth() {
   const setConnectionStatus = useSystemStore((s) => s.setConnectionStatus);
@@ -31,8 +38,7 @@ export function useConnectionHealth() {
         },
         {
           checkServerHealth,
-          resolveTransportMode: ({ forceProbe }) =>
-            resolveChatTransportMode(undefined, { forceProbe }),
+          resolveTransportMode: () => Promise.resolve(resolveTransportMode()),
         },
       ),
     [],
@@ -44,14 +50,11 @@ export function useConnectionHealth() {
       checkedAt: number;
       latencyMs: number;
       degradedReason: string | null;
-      transportMode: ReturnType<typeof useSystemStore.getState>['chatTransportMode'] | null;
+      transportMode: 'http' | 'sse' | null;
       transportIssue: string | null;
     }) => {
       recordConnectionHealth({
         status: result.status,
-        checkedAt: result.checkedAt,
-        latencyMs: result.latencyMs,
-        degradedReason: result.degradedReason,
       });
 
       if (result.transportMode) {

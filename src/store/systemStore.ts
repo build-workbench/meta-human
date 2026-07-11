@@ -1,10 +1,20 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { ChatTransportMode } from '../core/dialogue/chatTransport';
-import {
-  createIdleDialogueTurnSnapshot,
-  type DialogueTurnSnapshot,
-} from '../core/dialogue/dialogueTurnLifecycle';
+import type { ChatTransportMode } from '../core/dialogue/dialogueService';
+import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueService';
+
+function createIdleDialogueTurnSnapshot(): DialogueTurnSnapshot {
+  return {
+    status: 'idle',
+    mode: null,
+    turnId: null,
+    userText: null,
+    replyText: '',
+    error: null,
+    startedAt: null,
+    updatedAt: Date.now(),
+  };
+}
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
 
