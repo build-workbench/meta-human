@@ -26,9 +26,6 @@ export function useChatStream(options: UseChatStreamOptions) {
   const addChatMessage = useChatSessionStore((s) => s.addChatMessage);
   const updateChatMessage = useChatSessionStore((s) => s.updateChatMessage);
   const removeChatMessage = useChatSessionStore((s) => s.removeChatMessage);
-  const startChatPerformanceTrace = useSystemStore((s) => s.startChatPerformanceTrace);
-  const markChatFirstToken = useSystemStore((s) => s.markChatFirstToken);
-  const finalizeChatPerformanceTrace = useSystemStore((s) => s.finalizeChatPerformanceTrace);
   const setLoading = useSystemStore((s) => s.setLoading);
   const setDialogueTurn = useSystemStore((s) => s.setDialogueTurn);
   const isLoading = useSystemStore((s) => s.isLoading);
@@ -65,7 +62,6 @@ export function useChatStream(options: UseChatStreamOptions) {
       if (!text) setChatInput('');
 
       let assistantMessageId: number | null = null;
-      let didFinalizePerformanceTrace = false;
       const turnConnection = { status: 'connected' as 'connected' | 'error' };
       const turnSessionId = sessionId;
       const turnToken = Symbol('chat-stream-turn');
@@ -78,15 +74,6 @@ export function useChatStream(options: UseChatStreamOptions) {
         if (ownsCurrentTurn()) {
           activeTurnRef.current = null;
         }
-      };
-
-      const finalizePerformanceTrace = (status: 'completed' | 'failed' = 'completed') => {
-        if (didFinalizePerformanceTrace || !ownsCurrentTurn()) {
-          return;
-        }
-
-        didFinalizePerformanceTrace = true;
-        finalizeChatPerformanceTrace(status);
       };
 
       const finalizeAssistantMessage = (discardEmpty = false) => {
@@ -141,12 +128,10 @@ export function useChatStream(options: UseChatStreamOptions) {
         sessionId: turnSessionId,
         settleForTeardown: () => {
           finalizeAssistantMessage(true);
-          finalizePerformanceTrace('failed');
         },
       };
 
       try {
-        startChatPerformanceTrace();
         const runtimeState = useDigitalHumanStore.getState();
 
         const result = await dialogue.runDialogueTurnStream(content, {
@@ -155,16 +140,12 @@ export function useChatStream(options: UseChatStreamOptions) {
             timestamp: Date.now(),
             language: getCurrentLanguage(),
             speech: runtimeState.speechConfig,
-            vision:
-              runtimeState.visionContext.updatedAt === null ? null : runtimeState.visionContext,
             characterId: runtimeState.activeCharacterId,
           }),
           engine,
           isMuted,
           speakWith: (textToSpeak) => tts.speak(textToSpeak),
           setLoading,
-          // 流式模式下助手消息通过 onStreamToken 逐步更新，
-          // 此处显式设为 undefined 以避免 handleDialogueResponse 再次添加完整消息导致重复
           onAddAssistantMessage: undefined,
           onAddUserMessage: (t) => {
             if (!ownsCurrentTurn()) {
@@ -178,8 +159,6 @@ export function useChatStream(options: UseChatStreamOptions) {
             if (!ownsCurrentTurn()) {
               return;
             }
-
-            markChatFirstToken();
 
             if (assistantMessageId) {
               updateChatMessage(assistantMessageId, { text: accumulatedText, isStreaming: true });
@@ -234,19 +213,16 @@ export function useChatStream(options: UseChatStreamOptions) {
 
         if (!result) {
           finalizeAssistantMessage(true);
-          finalizePerformanceTrace('failed');
           releaseCurrentTurn();
           return;
         }
 
         syncAssistantMessageWithResult(result.replyText);
-        finalizePerformanceTrace(turnConnection.status === 'error' ? 'failed' : 'completed');
         releaseCurrentTurn();
       } catch (err: unknown) {
         logger.error('发送消息失败:', err);
         toast.error(err instanceof Error ? err.message : '发送失败，请重试');
         finalizeAssistantMessage(true);
-        finalizePerformanceTrace('failed');
         releaseCurrentTurn();
       }
     },
@@ -257,9 +233,6 @@ export function useChatStream(options: UseChatStreamOptions) {
       addChatMessage,
       updateChatMessage,
       removeChatMessage,
-      startChatPerformanceTrace,
-      markChatFirstToken,
-      finalizeChatPerformanceTrace,
       setLoading,
       sessionId,
       isMuted,

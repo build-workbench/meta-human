@@ -3,7 +3,6 @@ import { useDigitalHumanStore } from '../store/digitalHumanStore';
 import { useChatSessionStore } from '../store/chatSessionStore';
 import { useSystemStore, type ConnectionStatus } from '../store/systemStore';
 import type { ChatTransportMode } from '../core/dialogue/chatTransport';
-import { getDeviceCapabilities } from '../core/performance';
 
 const TRANSPORT_LABELS: Record<Exclude<ChatTransportMode, 'auto'>, string> = {
   websocket: 'WebSocket',
@@ -22,21 +21,12 @@ interface TopHUDProps {
   onToggleSettings: () => void;
   onReconnect: () => void;
   onNewSession: () => void;
-  onToggleImmersiveAr: () => void;
 }
 
-export default function TopHUD({
-  onToggleSettings,
-  onReconnect,
-  onNewSession,
-  onToggleImmersiveAr,
-}: TopHUDProps) {
-  const deviceCapabilities = getDeviceCapabilities();
+export default function TopHUD({ onToggleSettings, onReconnect, onNewSession }: TopHUDProps) {
   const connectionStatus = useSystemStore((s) => s.connectionStatus);
   const chatTransportMode = useSystemStore((s) => s.chatTransportMode);
-  const chatPerformance = useSystemStore((s) => s.chatPerformance);
   const connectionDiagnostics = useSystemStore((s) => s.connectionDiagnostics);
-  const immersiveMode = useSystemStore((s) => s.immersiveMode);
   const currentBehavior = useDigitalHumanStore((s) => s.currentBehavior);
   const chatHistory = useChatSessionStore((s) => s.chatHistory);
 
@@ -65,11 +55,6 @@ export default function TopHUD({
             <span className="rounded border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
               CORE 1.0
             </span>
-            {deviceCapabilities.supportsTouchInput && deviceCapabilities.supportsWebXR && (
-              <span className="rounded border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-300">
-                AR Ready
-              </span>
-            )}
           </h1>
 
           <div
@@ -118,18 +103,6 @@ export default function TopHUD({
                 </span>
               </>
             )}
-            {chatPerformance.responseCompleteMs !== null && (
-              <>
-                <span>
-                  首字:{' '}
-                  <span className="text-amber-400">{chatPerformance.firstTokenMs ?? '-'}ms</span>
-                </span>
-                <span>
-                  完整:{' '}
-                  <span className="text-emerald-400">{chatPerformance.responseCompleteMs}ms</span>
-                </span>
-              </>
-            )}
           </div>
         </div>
 
@@ -150,20 +123,6 @@ export default function TopHUD({
                 className={`h-5 w-5 text-yellow-400 ${connectionStatus === 'connecting' ? 'animate-spin' : ''}`}
                 aria-hidden="true"
               />
-            </button>
-          )}
-          {deviceCapabilities.supportsTouchInput && deviceCapabilities.supportsWebXR && (
-            <button
-              onClick={onToggleImmersiveAr}
-              className="rounded-full border border-emerald-500/30 bg-emerald-500/20 px-3 py-2 text-xs text-emerald-100 backdrop-blur-md transition-all hover:bg-emerald-500/30 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-sm"
-              aria-label={immersiveMode === 'ar-active' ? '退出 AR 模式' : '进入 AR 模式'}
-              disabled={immersiveMode === 'entering-ar'}
-            >
-              {immersiveMode === 'ar-active'
-                ? '退出 AR'
-                : immersiveMode === 'entering-ar'
-                  ? 'AR 连接中'
-                  : '进入 AR'}
             </button>
           )}
           <button

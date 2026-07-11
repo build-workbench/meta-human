@@ -13,18 +13,16 @@ import {
   ContactShadows,
 } from '@react-three/drei';
 import { usePrefersReducedMotion } from '@/hooks';
-import type { DeviceCapabilities } from '@/core/performance';
 import { CyberAvatar } from './CyberAvatar';
 import { KeyboardControls } from './KeyboardControls';
 
 interface SceneProps {
   autoRotate?: boolean;
   modelScene?: THREE.Group | null;
-  deviceCaps: DeviceCapabilities;
 }
 
-export function Scene({ autoRotate, modelScene, deviceCaps }: SceneProps) {
-  const prefersReducedMotion = usePrefersReducedMotion() || deviceCaps.prefersReducedMotion;
+export function Scene({ autoRotate, modelScene }: SceneProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
     <>
@@ -32,28 +30,22 @@ export function Scene({ autoRotate, modelScene, deviceCaps }: SceneProps) {
 
       {/* 光照 */}
       <ambientLight intensity={0.5} color="#ffffff" />
-      <spotLight
-        position={[10, 10, 10]}
-        angle={0.15}
-        penumbra={1}
-        intensity={2}
-        castShadow={deviceCaps.enableShadows}
-      />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} castShadow />
       <pointLight position={[-10, -10, -10]} intensity={1} color="#3b82f6" />
 
-      {/* 环境反射 - 低端设备跳过 */}
-      {deviceCaps.tier !== 'low' && <Environment preset="city" />}
+      {/* 环境反射 */}
+      <Environment preset="city" />
 
       {/* 数字人 */}
       {modelScene ? (
         <primitive object={modelScene} position={[0, -1.2, 0]} />
       ) : (
-        <CyberAvatar prefersReducedMotion={prefersReducedMotion} deviceCaps={deviceCaps} />
+        <CyberAvatar prefersReducedMotion={prefersReducedMotion} />
       )}
 
-      {/* 粒子 - 根据设备能力调整数量 */}
+      {/* 粒子 */}
       <Sparkles
-        count={prefersReducedMotion ? 0 : deviceCaps.particleCount}
+        count={prefersReducedMotion ? 0 : 50}
         scale={8}
         size={2}
         speed={0.4}
@@ -61,17 +53,15 @@ export function Scene({ autoRotate, modelScene, deviceCaps }: SceneProps) {
         color="#bae6fd"
       />
 
-      {/* 阴影 - 根据设备能力调整质量 */}
-      {deviceCaps.enableShadows && (
-        <ContactShadows
-          resolution={deviceCaps.maxShadowMapSize}
-          scale={10}
-          blur={deviceCaps.tier === 'high' ? 2 : 1}
-          opacity={0.5}
-          far={10}
-          color="#000000"
-        />
-      )}
+      {/* 阴影 */}
+      <ContactShadows
+        resolution={1024}
+        scale={10}
+        blur={2}
+        opacity={0.5}
+        far={10}
+        color="#000000"
+      />
 
       <OrbitControls
         enablePan={false}
@@ -82,7 +72,7 @@ export function Scene({ autoRotate, modelScene, deviceCaps }: SceneProps) {
         maxDistance={10}
         autoRotate={autoRotate}
         autoRotateSpeed={0.5}
-        enableDamping={deviceCaps.tier !== 'low'}
+        enableDamping
         makeDefault
       />
       <KeyboardControls />

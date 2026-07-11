@@ -21,14 +21,11 @@ export default function AdvancedDigitalHumanPage() {
     closeSettings,
     handleBehaviorChange,
     handleAvatarUpload,
-    handleEmotionChange,
     handleExpressionChange,
-    handleHeadMotion,
     handleModelLoad,
     handleNewSession,
     handlePlayPause,
     handleReset,
-    handleToggleImmersiveAr,
     handleToggleRecording,
     handleUseBuiltInAvatar,
     handleVoiceCommand,
@@ -73,7 +70,6 @@ export default function AdvancedDigitalHumanPage() {
         onToggleSettings={toggleSettings}
         onReconnect={reconnect}
         onNewSession={handleNewSession}
-        onToggleImmersiveAr={handleToggleImmersiveAr}
       />
 
       <SettingsDrawer
@@ -95,8 +91,6 @@ export default function AdvancedDigitalHumanPage() {
         avatarFileName={avatarSource.kind === 'custom' ? avatarSource.fileName : null}
         avatarLoadStatus={avatarLoadStatus}
         avatarLoadError={avatarLoadError}
-        onEmotionChange={handleEmotionChange}
-        onHeadMotion={handleHeadMotion}
       />
 
       <ChatDock

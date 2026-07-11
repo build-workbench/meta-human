@@ -11,14 +11,12 @@ import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useIsTabVisibleRef } from '@/hooks';
-import type { DeviceCapabilities } from '@/core/performance';
 
 interface CyberAvatarProps {
   prefersReducedMotion: boolean;
-  deviceCaps: DeviceCapabilities;
 }
 
-export function CyberAvatar({ prefersReducedMotion, deviceCaps }: CyberAvatarProps) {
+export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   const group = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Mesh>(null);
   const leftEyeRef = useRef<THREE.Mesh>(null);
@@ -42,19 +40,9 @@ export function CyberAvatar({ prefersReducedMotion, deviceCaps }: CyberAvatarPro
     return unsubscribe;
   }, []);
 
-  // 低端设备跳帧
-  const frameSkipRef = useRef(0);
-  const frameSkipTarget = deviceCaps.tier === 'low' ? 2 : 1;
-
   useFrame((state) => {
     // 标签页不可见时跳过动画
     if (!isVisibleRef.current) return;
-
-    // 低端设备跳帧
-    if (deviceCaps.tier === 'low') {
-      frameSkipRef.current++;
-      if (frameSkipRef.current % frameSkipTarget !== 0) return;
-    }
 
     const t = state.clock.elapsedTime;
     // 从 ref 读取状态，避免重渲染
@@ -130,22 +118,22 @@ export function CyberAvatar({ prefersReducedMotion, deviceCaps }: CyberAvatarPro
       mouthRef.current.scale.x = THREE.MathUtils.lerp(mouthRef.current.scale.x, targetMouthX, 0.3);
     }
 
-    // 光环动画（低端设备跳过以提升性能）
-    if (!prefersReducedMotion && ringsRef.current?.rotation && deviceCaps.tier !== 'low') {
+    // 光环动画
+    if (!prefersReducedMotion && ringsRef.current?.rotation) {
       const anim = currentAnimation;
       let ringSpeed = 0.2;
       let ringTilt = 0;
       let ringWobble = 0;
 
       if (anim === 'waveHand' || anim === 'wave' || anim === 'greet') {
-        ringSpeed = deviceCaps.tier === 'high' ? 2.0 : 1.5;
-        ringWobble = deviceCaps.tier === 'high' ? 0.5 : 0.3;
+        ringSpeed = 2.0;
+        ringWobble = 0.5;
       } else if (anim === 'raiseHand') {
         ringTilt = Math.PI / 6;
         ringSpeed = 0.5;
       } else if (anim === 'excited' || anim === 'dance') {
-        ringSpeed = deviceCaps.tier === 'high' ? 3.0 : 2.0;
-        ringWobble = deviceCaps.tier === 'high' ? 0.3 : 0.2;
+        ringSpeed = 3.0;
+        ringWobble = 0.3;
       } else if (anim === 'think') {
         ringSpeed = 0.5;
         ringTilt = Math.PI / 12;

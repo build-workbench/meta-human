@@ -203,12 +203,6 @@ describe('useChatStream', () => {
       text: '你好',
       isStreaming: false,
     });
-    expect(useSystemStore.getState().chatPerformance.status).toBe('completed');
-    expect(useSystemStore.getState().chatPerformance.firstTokenMs).not.toBeNull();
-    expect(useSystemStore.getState().chatPerformance.responseCompleteMs).not.toBeNull();
-    expect(useSystemStore.getState().chatPerformance.responseCompleteMs).toBeGreaterThanOrEqual(
-      useSystemStore.getState().chatPerformance.firstTokenMs ?? 0,
-    );
     const firstRequest = streamMock.mock.calls[0]?.[0] as MockStreamRequest | undefined;
     expect(firstRequest).toMatchObject({
       sessionId: 'session_test',
@@ -221,7 +215,6 @@ describe('useChatStream', () => {
           pitch: 1,
           volume: 0.8,
         },
-        vision: null,
       },
     });
     expect(firstRequest?.meta).toEqual(
@@ -253,35 +246,6 @@ describe('useChatStream', () => {
     expect(firstRequest?.meta).toEqual(
       expect.objectContaining({
         language: 'en',
-      }),
-    );
-  });
-
-  it('includes the latest vision context in dialogue request metadata when available', async () => {
-    queueStreamHandler(() => createCompletedStream('vision aware'));
-    useDigitalHumanStore.setState({
-      ...(useDigitalHumanStore.getState() as unknown as Record<string, unknown>),
-      visionContext: {
-        emotion: 'happy',
-        motion: 'waveHand',
-        updatedAt: 1_700_000_000_123,
-      },
-    } as unknown as Partial<ReturnType<typeof useDigitalHumanStore.getState>>);
-
-    const { result } = renderChatStreamHook();
-
-    await act(async () => {
-      await result.current.handleChatSend('look at me');
-    });
-
-    const firstRequest = streamMock.mock.calls[0]?.[0] as MockStreamRequest | undefined;
-    expect(firstRequest?.meta).toEqual(
-      expect.objectContaining({
-        vision: {
-          emotion: 'happy',
-          motion: 'waveHand',
-          updatedAt: 1_700_000_000_123,
-        },
       }),
     );
   });
@@ -330,9 +294,6 @@ describe('useChatStream', () => {
 
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({ role: 'user', text: '测试' });
-    expect(useSystemStore.getState().chatPerformance.status).toBe('failed');
-    expect(useSystemStore.getState().chatPerformance.firstTokenMs).toBeNull();
-    expect(useSystemStore.getState().chatPerformance.responseCompleteMs).not.toBeNull();
   });
 
   it('clears loading immediately after abort so the next send is not blocked', async () => {
@@ -466,7 +427,6 @@ describe('useChatStream', () => {
       expect.objectContaining({ role: 'user', text: 'pending' }),
       expect.objectContaining({ role: 'assistant', text: '', isStreaming: true }),
     ]);
-    expect(useSystemStore.getState().chatPerformance.status).toBe('pending');
 
     unmount();
 
@@ -477,8 +437,6 @@ describe('useChatStream', () => {
     expect(useChatSessionStore.getState().chatHistory).toEqual([
       expect.objectContaining({ role: 'user', text: 'pending' }),
     ]);
-    expect(useSystemStore.getState().chatPerformance.status).toBe('failed');
-    expect(useSystemStore.getState().chatPerformance.responseCompleteMs).not.toBeNull();
     expect(useSystemStore.getState().dialogueTurn).toMatchObject({
       status: 'idle',
       mode: null,

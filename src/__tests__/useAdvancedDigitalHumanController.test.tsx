@@ -12,8 +12,6 @@ const mocks = vi.hoisted(() => ({
   asrStartMock: vi.fn(),
   asrStopMock: vi.fn(),
   dialogueAbortPendingTurnMock: vi.fn(),
-  asrPerformGreetingMock: vi.fn(),
-  asrPerformDanceMock: vi.fn(),
   clearRemoteSessionMock: vi.fn(),
   toastSuccessMock: vi.fn(),
   toastInfoMock: vi.fn(),
@@ -26,7 +24,6 @@ const mocks = vi.hoisted(() => ({
   digitalHumanSetBehaviorMock: vi.fn(),
   createObjectUrlMock: vi.fn(),
   revokeObjectUrlMock: vi.fn(),
-  requestImmersiveArSessionMock: vi.fn(),
 }));
 
 vi.mock('../hooks/useChatStream', () => ({
@@ -45,21 +42,6 @@ vi.mock('../hooks/useConnectionHealth', () => ({
 }));
 
 vi.mock('@/services', () => ({
-  asrService: {
-    start: mocks.asrStartMock,
-    stop: mocks.asrStopMock,
-    performGreeting: mocks.asrPerformGreetingMock,
-    performDance: mocks.asrPerformDanceMock,
-  },
-  digitalHumanEngine: {
-    dispose: mocks.digitalHumanDisposeMock,
-    pause: mocks.digitalHumanPauseMock,
-    play: mocks.digitalHumanPlayMock,
-    reset: mocks.digitalHumanResetMock,
-    setExpression: mocks.digitalHumanSetExpressionMock,
-    setExpressionIntensity: mocks.digitalHumanSetExpressionIntensityMock,
-    setBehavior: mocks.digitalHumanSetBehaviorMock,
-  },
   useEngine: () => ({
     dispose: mocks.digitalHumanDisposeMock,
     pause: mocks.digitalHumanPauseMock,
@@ -74,8 +56,6 @@ vi.mock('@/services', () => ({
   useASR: () => ({
     start: mocks.asrStartMock,
     stop: mocks.asrStopMock,
-    performGreeting: mocks.asrPerformGreetingMock,
-    performDance: mocks.asrPerformDanceMock,
   }),
   useDialogue: () => ({
     abortPendingTurn: mocks.dialogueAbortPendingTurnMock,
@@ -84,34 +64,15 @@ vi.mock('@/services', () => ({
     speak: vi.fn(),
   }),
   useServices: () => ({
-    engine: {
-      dispose: mocks.digitalHumanDisposeMock,
-      pause: mocks.digitalHumanPauseMock,
-      play: mocks.digitalHumanPlayMock,
-      reset: mocks.digitalHumanResetMock,
-      setExpression: mocks.digitalHumanSetExpressionMock,
-      setExpressionIntensity: mocks.digitalHumanSetExpressionIntensityMock,
-      setBehavior: mocks.digitalHumanSetBehaviorMock,
-    },
-    asr: {
-      start: mocks.asrStartMock,
-      stop: mocks.asrStopMock,
-      performGreeting: mocks.asrPerformGreetingMock,
-      performDance: mocks.asrPerformDanceMock,
-    },
-    dialogue: {
-      abortPendingTurn: mocks.dialogueAbortPendingTurnMock,
-    },
+    engine: {},
+    asr: {},
+    dialogue: {},
     tts: {},
   }),
 }));
 
 vi.mock('../core/dialogue/dialogueService', () => ({
   clearRemoteSession: (...args: unknown[]) => mocks.clearRemoteSessionMock(...args),
-}));
-
-vi.mock('../core/performance/arSession', () => ({
-  requestImmersiveArSession: (...args: unknown[]) => mocks.requestImmersiveArSessionMock(...args),
 }));
 
 vi.mock('sonner', () => ({
@@ -130,8 +91,6 @@ describe('useAdvancedDigitalHumanController', () => {
     mocks.asrStartMock.mockReset();
     mocks.asrStopMock.mockReset();
     mocks.dialogueAbortPendingTurnMock.mockReset();
-    mocks.asrPerformGreetingMock.mockReset();
-    mocks.asrPerformDanceMock.mockReset();
     mocks.clearRemoteSessionMock.mockReset();
     mocks.clearRemoteSessionMock.mockResolvedValue(undefined);
     mocks.toastSuccessMock.mockReset();
@@ -145,13 +104,8 @@ describe('useAdvancedDigitalHumanController', () => {
     mocks.digitalHumanSetBehaviorMock.mockReset();
     mocks.createObjectUrlMock.mockReset();
     mocks.revokeObjectUrlMock.mockReset();
-    mocks.requestImmersiveArSessionMock.mockReset();
     mocks.asrStartMock.mockReturnValue(true);
     mocks.createObjectUrlMock.mockReturnValue('blob:new-avatar');
-    mocks.requestImmersiveArSessionMock.mockResolvedValue({
-      addEventListener: vi.fn(),
-      end: vi.fn(),
-    });
     vi.stubGlobal('URL', {
       createObjectURL: mocks.createObjectUrlMock,
       revokeObjectURL: mocks.revokeObjectUrlMock,
@@ -182,9 +136,6 @@ describe('useAdvancedDigitalHumanController', () => {
       error: null,
       lastErrorTime: null,
       chatTransportMode: 'sse',
-      immersiveMode: 'standard',
-      immersiveSession: null,
-      immersiveError: null,
     });
   });
 
@@ -195,7 +146,6 @@ describe('useAdvancedDigitalHumanController', () => {
       result.current.handleNewSession();
     });
 
-    // Note: setChatInput('') is now handled at the page level, not the controller
     expect(mocks.clearRemoteSessionMock).toHaveBeenCalledWith('session_old');
     expect(useChatSessionStore.getState().sessionId).not.toBe('session_old');
     expect(mocks.toastSuccessMock).toHaveBeenCalledWith('已开启新会话');
@@ -208,7 +158,6 @@ describe('useAdvancedDigitalHumanController', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 's' }));
     });
 
-    // Need to rerender to get the updated memoized value
     rerender();
 
     expect(result.current.showSettings).toBe(true);
@@ -260,23 +209,6 @@ describe('useAdvancedDigitalHumanController', () => {
     expect(mocks.asrStopMock).toHaveBeenCalledTimes(1);
     expect(useDigitalHumanStore.getState().isRecording).toBe(false);
     expect(mocks.toastInfoMock).toHaveBeenCalledWith('录音已停止');
-  });
-
-  it('records the latest vision emotion and motion for later dialogue context', () => {
-    const { result } = renderHook(() => useAdvancedDigitalHumanController());
-
-    act(() => {
-      result.current.handleEmotionChange('happy');
-      result.current.handleHeadMotion('nod');
-    });
-
-    expect(useDigitalHumanStore.getState() as unknown as Record<string, unknown>).toMatchObject({
-      visionContext: expect.objectContaining({
-        emotion: 'happy',
-        motion: 'nod',
-        updatedAt: expect.any(Number),
-      }),
-    });
   });
 
   it('uploads a custom avatar and revokes the previous custom model url', () => {
@@ -357,25 +289,5 @@ describe('useAdvancedDigitalHumanController', () => {
     unmount();
 
     expect(mocks.digitalHumanDisposeMock).not.toHaveBeenCalled();
-  });
-
-  it('requests an immersive ar session and records it in system state', async () => {
-    const session = {
-      addEventListener: vi.fn(),
-      end: vi.fn(),
-    };
-    mocks.requestImmersiveArSessionMock.mockResolvedValue(session);
-    const { result } = renderHook(() => useAdvancedDigitalHumanController());
-
-    await act(async () => {
-      await result.current.handleToggleImmersiveAr();
-    });
-
-    expect(mocks.requestImmersiveArSessionMock).toHaveBeenCalledTimes(1);
-    expect(useSystemStore.getState() as unknown as Record<string, unknown>).toMatchObject({
-      immersiveMode: 'ar-active',
-      immersiveSession: session,
-      immersiveError: null,
-    });
   });
 });

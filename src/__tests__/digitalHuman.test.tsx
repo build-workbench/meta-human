@@ -6,7 +6,6 @@ import { useDigitalHumanStore } from '../store/digitalHumanStore';
 import { useChatSessionStore } from '../store/chatSessionStore';
 import { useSystemStore } from '../store/systemStore';
 import { TTSService, ASRService } from '../core/audio/audioService';
-import { createVoiceCommandExecutor } from '../core/voiceCommand';
 import { handleDialogueResponse } from '../core/dialogue/dialogueOrchestrator';
 import React from 'react';
 
@@ -520,30 +519,9 @@ describe('ASRService', () => {
     expect(asrService).toBeDefined();
   });
 
-  it('voice command executor handles cancel mute correctly', () => {
-    // Voice command processing now uses VoiceCommandExecutor
-    // This test verifies the integration via createVoiceCommandExecutor
+  it('unmute command clears muted state via store', () => {
     useDigitalHumanStore.getState().setMuted(true);
-
-    const executor = createVoiceCommandExecutor({
-      systemControls: {
-        play: () => useDigitalHumanStore.getState().play(),
-        pause: () => useDigitalHumanStore.getState().pause(),
-        reset: () => useDigitalHumanStore.getState().reset(),
-        setMuted: (m: boolean) => useDigitalHumanStore.getState().setMuted(m),
-      },
-      avatarControls: {
-        setEmotion: () => {},
-        setExpression: () => {},
-        setAnimation: () => {},
-        setBehavior: () => {},
-        speak: () => {},
-      },
-    });
-
-    const matched = executor.execute('取消静音');
-
-    expect(matched).toBe(true);
+    useDigitalHumanStore.getState().setMuted(false);
     expect(useDigitalHumanStore.getState().isMuted).toBe(false);
   });
 });

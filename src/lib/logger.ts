@@ -55,7 +55,6 @@ function createLogger(context: string): Logger {
 
 // Pre-configured loggers for different modules
 export const loggers = {
-  vision: createLogger('VisionService'),
   audio: createLogger('AudioService'),
   dialogue: createLogger('DialogueService'),
   orchestrator: createLogger('DialogueOrchestrator'),

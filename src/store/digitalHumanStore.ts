@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { UserEmotion } from '@/core/vision/visionMapper';
 import { DEFAULT_CHARACTER_ID } from '@/core/dialogue/characterPresets';
 import type {
   AvatarAction,
@@ -23,16 +22,8 @@ export type {
   EmotionType,
   ExpressionType,
 } from '@/core/avatar/avatarContract';
-export type VisionMotionType = Extract<
-  AvatarAction,
-  'nod' | 'shakeHead' | 'raiseHand' | 'waveHand'
->;
 
-export interface VisionContextSnapshot {
-  emotion: UserEmotion;
-  motion: VisionMotionType | null;
-  updatedAt: number | null;
-}
+export type HeadMotionType = Extract<AvatarAction, 'nod' | 'shakeHead' | 'raiseHand' | 'waveHand'>;
 
 export interface SpeechConfigSnapshot {
   voiceName: string | null;
@@ -63,7 +54,6 @@ interface DigitalHumanState {
   currentExpression: ExpressionType;
   expressionIntensity: number;
   currentBehavior: BehaviorType;
-  visionContext: VisionContextSnapshot;
   speechConfig: SpeechConfigSnapshot;
   avatarSource: AvatarSource;
   avatarLoadStatus: AvatarLoadStatus;
@@ -86,9 +76,6 @@ interface DigitalHumanState {
   setExpression: (expression: ExpressionType) => void;
   setExpressionIntensity: (intensity: number) => void;
   setBehavior: (behavior: BehaviorType) => void;
-  recordVisionEmotion: (emotion: UserEmotion) => void;
-  recordVisionMotion: (motion: VisionMotionType) => void;
-  clearVisionContext: () => void;
   setSpeechConfig: (config: Partial<SpeechConfigSnapshot>) => void;
   setCustomAvatar: (input: { modelUrl: string; fileName: string }) => void;
   useProceduralAvatar: () => void;
@@ -129,11 +116,6 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       currentExpression: 'neutral',
       expressionIntensity: DEFAULT_EXPRESSION_INTENSITY,
       currentBehavior: 'idle',
-      visionContext: {
-        emotion: 'neutral',
-        motion: null,
-        updatedAt: null,
-      },
       speechConfig: {
         voiceName: null,
         rate: 1,
@@ -163,30 +145,6 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       setExpressionIntensity: (intensity) =>
         set({ expressionIntensity: Math.max(0, Math.min(1, intensity || 0)) }),
       setBehavior: (behavior) => set({ currentBehavior: behavior }),
-      recordVisionEmotion: (emotion) =>
-        set((state) => ({
-          visionContext: {
-            ...state.visionContext,
-            emotion,
-            updatedAt: Date.now(),
-          },
-        })),
-      recordVisionMotion: (motion) =>
-        set((state) => ({
-          visionContext: {
-            ...state.visionContext,
-            motion,
-            updatedAt: Date.now(),
-          },
-        })),
-      clearVisionContext: () =>
-        set({
-          visionContext: {
-            emotion: 'neutral',
-            motion: null,
-            updatedAt: null,
-          },
-        }),
       setSpeechConfig: (config) =>
         set((state) => ({
           speechConfig: {
@@ -234,11 +192,6 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
           expressionIntensity: DEFAULT_EXPRESSION_INTENSITY,
           currentBehavior: 'idle',
           mouthOpen: 0,
-          visionContext: {
-            emotion: 'neutral',
-            motion: null,
-            updatedAt: null,
-          },
         });
       },
 
