@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { useChatStream } from '../hooks/useChatStream';
 import { ServicesProvider } from '@/services';
-import type { Services } from '@/core/services';
-import type { ServiceComposition } from '@/core/serviceComposition';
+import type { Services } from '@/core/createServices';
 import { DialogueOrchestrator } from '@/core/dialogue/dialogueOrchestrator';
 import { useDigitalHumanStore } from '../store/digitalHumanStore';
 import { useChatSessionStore } from '../store/chatSessionStore';
@@ -115,9 +114,9 @@ function createFailingStream(
   })();
 }
 
-function createTestComposition(): ServiceComposition {
+function createTestServices(): Services {
   const dialogue = new DialogueOrchestrator();
-  const services: Services = {
+  return {
     dialogue,
     engine: {
       dispose: vi.fn(),
@@ -133,23 +132,18 @@ function createTestComposition(): ServiceComposition {
       dispose: vi.fn(),
     } as unknown as Services['asr'],
   };
-
-  return {
-    services,
-    dispose: vi.fn(),
-  };
 }
 
 function renderChatStreamHook(
   options: {
-    composition?: ServiceComposition;
+    services?: Services;
     sessionId?: string;
   } = {},
 ) {
-  const composition = options.composition ?? createTestComposition();
+  const services = options.services ?? createTestServices();
   const sessionId = options.sessionId ?? 'session_test';
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <ServicesProvider composition={composition}>{children}</ServicesProvider>
+    <ServicesProvider services={services}>{children}</ServicesProvider>
   );
 
   const renderResult = renderHook(
@@ -166,7 +160,7 @@ function renderChatStreamHook(
 
   return {
     ...renderResult,
-    composition,
+    services,
   };
 }
 
@@ -310,7 +304,7 @@ describe('useChatStream', () => {
     queueStreamHandler(createAbortablePendingStream());
     queueStreamHandler(() => createCompletedStream('second reply'));
 
-    const { result, composition } = renderChatStreamHook();
+    const { result, services } = renderChatStreamHook();
 
     let firstTurnPromise!: Promise<void>;
     act(() => {
@@ -321,7 +315,7 @@ describe('useChatStream', () => {
     expect(streamMock).toHaveBeenCalledTimes(1);
 
     act(() => {
-      composition.services.dialogue.abortPendingTurn();
+      services.dialogue.abortPendingTurn();
     });
 
     expect(useSystemStore.getState().isLoading).toBe(false);
@@ -379,9 +373,9 @@ describe('useChatStream', () => {
   it('does not rehydrate a stale completed snapshot when a new session mounts', async () => {
     queueStreamHandler(() => createCompletedStream('done'));
 
-    const composition = createTestComposition();
+    const services = createTestServices();
     const firstMount = renderChatStreamHook({
-      composition,
+      services,
       sessionId: 'session_a',
     });
 
@@ -409,7 +403,7 @@ describe('useChatStream', () => {
     });
 
     renderChatStreamHook({
-      composition,
+      services,
       sessionId: 'session_b',
     });
 
