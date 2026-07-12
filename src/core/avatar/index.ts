@@ -9,7 +9,6 @@ export {
   ACTION_TO_BEHAVIOR,
   normalizeAvatarEmotion,
   normalizeAvatarExpression,
-  normalizeAvatarAction,
   normalizeAvatarBehavior,
   mapEmotionToExpression,
 } from './avatarContract';
@@ -24,10 +23,4 @@ export type {
 } from './avatarContract';
 export type { EngineStateAdapter } from './avatarStateAdapter';
 export { createEngineStateAdapter } from './avatarStateAdapter';
-export {
-  ANIMATION_DURATIONS,
-  VALID_EXPRESSIONS,
-  VALID_EMOTIONS,
-  VALID_BEHAVIORS,
-  ANIMATION_TO_BEHAVIOR,
-} from './constants';
+export { ANIMATION_DURATIONS, ANIMATION_TO_BEHAVIOR } from './constants';

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { DEFAULT_CHARACTER_ID } from '@/core/dialogue/characterPresets';
 import type {
   AvatarAction,
@@ -9,7 +9,6 @@ import type {
 } from '@/core/avatar/avatarContract';
 
 // Named constants
-const RECORDING_TIMEOUT_MS = 30000;
 const DEFAULT_EXPRESSION_INTENSITY = 0.8;
 const ENABLE_DEVTOOLS =
   typeof import.meta !== 'undefined' &&
@@ -87,24 +86,13 @@ interface DigitalHumanState {
   play: () => void;
   pause: () => void;
   reset: () => void;
-  startRecording: () => void;
-  stopRecording: () => void;
   toggleMute: () => void;
   toggleAutoRotate: () => void;
 }
 
-let recordingTimeoutId: ReturnType<typeof setTimeout> | null = null;
-
-const clearRecordingTimeout = (): void => {
-  if (recordingTimeoutId) {
-    clearTimeout(recordingTimeoutId);
-    recordingTimeoutId = null;
-  }
-};
-
 export const useDigitalHumanStore = create<DigitalHumanState>()(
   devtools(
-    (set, get) => ({
+    subscribeWithSelector((set, get) => ({
       // 初始状态
       isPlaying: false,
       autoRotate: false,
@@ -132,12 +120,7 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       setPlaying: (playing) => set({ isPlaying: playing }),
       setAutoRotate: (rotate) => set({ autoRotate: rotate }),
       setAnimation: (animation) => set({ currentAnimation: animation }),
-      setRecording: (recording) => {
-        if (!recording) {
-          clearRecordingTimeout();
-        }
-        set({ isRecording: recording });
-      },
+      setRecording: (recording) => set({ isRecording: recording }),
       setMuted: (muted) => set({ isMuted: muted }),
       setSpeaking: (speaking) => set({ isSpeaking: speaking }),
       setEmotion: (emotion) => set({ currentEmotion: emotion }),
@@ -195,22 +178,6 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
         });
       },
 
-      startRecording: () => {
-        clearRecordingTimeout();
-        set({ isRecording: true });
-        recordingTimeoutId = setTimeout(() => {
-          if (get().isRecording) {
-            get().stopRecording();
-          }
-          recordingTimeoutId = null;
-        }, RECORDING_TIMEOUT_MS);
-      },
-
-      stopRecording: () => {
-        clearRecordingTimeout();
-        set({ isRecording: false });
-      },
-
       toggleMute: () => {
         const { isMuted } = get();
         set({ isMuted: !isMuted });
@@ -220,15 +187,11 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
         const { autoRotate } = get();
         set({ autoRotate: !autoRotate });
       },
-    }),
+    })),
     { name: 'digital-human-store', enabled: ENABLE_DEVTOOLS },
   ),
 );
 
 // Typed selectors for performance-sensitive components
-export const selectIsPlaying = (s: DigitalHumanState) => s.isPlaying;
-export const selectCurrentExpression = (s: DigitalHumanState) => s.currentExpression;
 export const selectCurrentBehavior = (s: DigitalHumanState) => s.currentBehavior;
-export const selectCurrentEmotion = (s: DigitalHumanState) => s.currentEmotion;
-export const selectIsRecording = (s: DigitalHumanState) => s.isRecording;
 export const selectIsSpeaking = (s: DigitalHumanState) => s.isSpeaking;

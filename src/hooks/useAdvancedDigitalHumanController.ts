@@ -114,6 +114,29 @@ export function useAdvancedDigitalHumanController() {
 
   const handleAvatarUpload = useCallback(
     (file: File) => {
+      const MAX_AVATAR_SIZE = 50 * 1024 * 1024; // 50 MB
+      const ACCEPTED_AVATAR_TYPES = [
+        'model/gltf-binary',
+        'model/gltf+json',
+        'application/octet-stream',
+      ];
+      const ACCEPTED_AVATAR_EXTS = ['.glb', '.gltf'];
+
+      const lowerName = file.name.toLowerCase();
+      const hasValidExt = ACCEPTED_AVATAR_EXTS.some((ext) => lowerName.endsWith(ext));
+      const hasValidType =
+        ACCEPTED_AVATAR_TYPES.includes(file.type) || file.type === '' || hasValidExt;
+
+      if (!hasValidType || !hasValidExt) {
+        toast.error('仅支持 GLB/GLTF 格式');
+        return;
+      }
+
+      if (file.size > MAX_AVATAR_SIZE) {
+        toast.error('头像文件不能超过 50MB');
+        return;
+      }
+
       const nextModelUrl = URL.createObjectURL(file);
       revokeCustomAvatarObjectUrl(avatarSource, URL.revokeObjectURL);
       setCustomAvatar({

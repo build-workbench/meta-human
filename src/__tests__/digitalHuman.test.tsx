@@ -324,32 +324,6 @@ describe('DigitalHumanStore', () => {
     }
   });
 
-  it('clears stale recording timers when recording restarts', () => {
-    vi.useFakeTimers();
-
-    try {
-      const { startRecording, stopRecording } = useDigitalHumanStore.getState();
-
-      startRecording();
-      vi.advanceTimersByTime(10000);
-
-      stopRecording();
-      vi.advanceTimersByTime(5000);
-
-      startRecording();
-      vi.advanceTimersByTime(20000);
-
-      expect(useDigitalHumanStore.getState().isRecording).toBe(true);
-
-      vi.advanceTimersByTime(10000);
-
-      expect(useDigitalHumanStore.getState().isRecording).toBe(false);
-    } finally {
-      useDigitalHumanStore.getState().stopRecording();
-      vi.useRealTimers();
-    }
-  });
-
   it('handles mute toggle', () => {
     const { toggleMute, isMuted } = useDigitalHumanStore.getState();
     const initialMute = isMuted;

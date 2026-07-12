@@ -128,54 +128,12 @@ export class TTSService {
         return;
       }
 
-      if (!this.synth || typeof SpeechSynthesisUtterance === 'undefined') {
-        const message = '浏览器不支持语音合成功能';
-        this.callbacks.onError?.(message);
-        reject(new Error(message));
-        return;
-      }
-
-      if (this.synth.speaking) {
-        this.cancelCurrentUtterance();
-        this.synth.cancel();
-      }
-
-      const mergedConfig = { ...this.config, ...config };
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = mergedConfig.lang!;
-      utterance.rate = mergedConfig.rate!;
-      utterance.pitch = mergedConfig.pitch!;
-      utterance.volume = mergedConfig.volume!;
-
-      const preferredVoice = this.voices.find((voice) =>
-        voice.lang.includes(mergedConfig.lang!.split('-')[0]),
-      );
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      utterance.onstart = () => {
-        this.callbacks.onSpeakStart?.();
-        this.startVisemeLoop();
-      };
-
-      utterance.onend = () => {
-        this.currentUtterance = null;
-        this.stopVisemeLoop();
-        this.callbacks.onSpeakEnd?.();
-        resolve();
-      };
-
-      utterance.onerror = (event) => {
-        this.currentUtterance = null;
-        this.stopVisemeLoop();
-        logger.error('语音合成错误:', event);
-        this.callbacks.onError?.(`语音合成失败: ${event.error}`);
-        reject(new Error(event.error));
-      };
-
-      this.currentUtterance = utterance;
-      this.synth.speak(utterance);
+      const utterance = this.prepareUtterance(text, config ?? {}, {
+        onEnd: () => resolve(),
+        onError: (msg) => reject(new Error(msg)),
+        includeErrorDetail: true,
+      });
+      if (utterance) this.synth!.speak(utterance);
     });
   }
 
@@ -189,11 +147,26 @@ export class TTSService {
       voiceName?: string;
     } = {},
   ) {
-    const { lang = 'zh-CN', rate = 1.0, pitch = 1.0, volume = 0.8, voiceName } = options;
+    const utterance = this.prepareUtterance(text, options, { includeErrorDetail: false });
+    if (utterance) this.synth!.speak(utterance);
+  }
 
+  private prepareUtterance(
+    text: string,
+    config: {
+      lang?: string;
+      rate?: number;
+      pitch?: number;
+      volume?: number;
+      voiceName?: string;
+    },
+    hooks: { onEnd?: () => void; onError?: (msg: string) => void; includeErrorDetail: boolean },
+  ): SpeechSynthesisUtterance | null {
     if (!this.synth || typeof SpeechSynthesisUtterance === 'undefined') {
-      this.callbacks.onError?.('浏览器不支持语音合成功能');
-      return;
+      const message = '浏览器不支持语音合成功能';
+      this.callbacks.onError?.(message);
+      hooks.onError?.(message);
+      return null;
     }
 
     if (this.synth.speaking) {
@@ -201,22 +174,21 @@ export class TTSService {
       this.synth.cancel();
     }
 
+    const lang = config.lang ?? this.config.lang ?? 'zh-CN';
+    const rate = config.rate ?? this.config.rate ?? 1.0;
+    const pitch = config.pitch ?? this.config.pitch ?? 1.0;
+    const volume = config.volume ?? this.config.volume ?? 0.8;
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
     utterance.rate = rate;
     utterance.pitch = pitch;
     utterance.volume = volume;
 
-    let selectedVoice: SpeechSynthesisVoice | undefined;
-    if (voiceName) {
-      selectedVoice = this.voices.find((voice) => voice.name === voiceName);
-    }
-    if (!selectedVoice) {
-      selectedVoice = this.voices.find((voice) => voice.lang.includes('zh'));
-    }
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
+    const selectedVoice = config.voiceName
+      ? this.voices.find((v) => v.name === config.voiceName)
+      : this.voices.find((v) => v.lang.includes(lang.split('-')[0]));
+    if (selectedVoice) utterance.voice = selectedVoice;
 
     utterance.onstart = () => {
       this.callbacks.onSpeakStart?.();
@@ -227,17 +199,20 @@ export class TTSService {
       this.currentUtterance = null;
       this.stopVisemeLoop();
       this.callbacks.onSpeakEnd?.();
+      hooks.onEnd?.();
     };
 
     utterance.onerror = (event) => {
       this.currentUtterance = null;
       this.stopVisemeLoop();
       logger.error('语音合成错误:', event);
-      this.callbacks.onError?.('语音合成失败');
+      const msg = hooks.includeErrorDetail ? `语音合成失败: ${event.error}` : '语音合成失败';
+      this.callbacks.onError?.(msg);
+      hooks.onError?.(event.error);
     };
 
     this.currentUtterance = utterance;
-    this.synth.speak(utterance);
+    return utterance;
   }
 
   private cancelCurrentUtterance(): void {

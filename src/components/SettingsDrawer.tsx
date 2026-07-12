@@ -7,7 +7,6 @@ import ControlPanel from './ControlPanel';
 import ExpressionControlPanel from './ExpressionControlPanel';
 import BehaviorControlPanel from './BehaviorControlPanel';
 import VoiceInteractionPanel from './VoiceInteractionPanel';
-import { getAvatarStatusLabel } from '../core/avatar/avatarSourceAdapter';
 import { CHARACTER_PRESETS } from '../core/dialogue/characterPresets';
 import {
   applyRuntimeApiEndpoints,
@@ -190,19 +189,16 @@ export default function SettingsDrawer({
             {activeTab === 'avatar' && (
               <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-white">Avatar Source</h3>
-                  <p className="text-xs text-gray-400">
-                    Upload a GLB/GLTF avatar. If loading fails, the built-in procedural avatar stays
-                    available.
-                  </p>
+                  <h3 className="text-sm font-medium text-white">{t('settings.avatar.title')}</h3>
+                  <p className="text-xs text-gray-400">{t('settings.avatar.desc')}</p>
                 </div>
 
                 <div className="rounded-lg border border-dashed border-white/15 bg-black/20 p-3 text-xs text-gray-300">
-                  当前头像: {avatarFileName ?? '内置程序化头像'}
+                  {t('settings.avatar.current')}: {avatarFileName ?? t('settings.avatar.builtin')}
                 </div>
 
                 <label className="block text-sm font-medium text-gray-300" htmlFor="avatar-upload">
-                  上传自定义头像
+                  {t('settings.avatar.upload')}
                 </label>
                 <input
                   id="avatar-upload"
@@ -221,9 +217,13 @@ export default function SettingsDrawer({
 
                 <div className="flex items-center justify-between gap-3 text-xs">
                   <span className="text-gray-400">
-                    状态:
+                    {t('settings.avatar.status')}:
                     <span className="ml-2 text-white">
-                      {getAvatarStatusLabel(avatarLoadStatus)}
+                      {avatarLoadStatus === 'ready'
+                        ? t('settings.avatar.statusReady')
+                        : avatarLoadStatus === 'error'
+                          ? t('settings.avatar.statusError')
+                          : t('settings.avatar.statusIdle')}
                     </span>
                   </span>
                   <button
@@ -231,7 +231,7 @@ export default function SettingsDrawer({
                     onClick={onUseBuiltInAvatar}
                     className="rounded-lg border border-white/10 px-3 py-1.5 text-gray-200 transition-colors hover:bg-white/10"
                   >
-                    使用内置头像
+                    {t('settings.avatar.useBuiltin')}
                   </button>
                 </div>
 

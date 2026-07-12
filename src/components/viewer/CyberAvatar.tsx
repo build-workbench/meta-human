@@ -9,6 +9,7 @@ import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
+import { shallow } from 'zustand/shallow';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useIsTabVisibleRef } from '@/hooks';
 
@@ -30,13 +31,23 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   const mouthOpenRef = useRef(storeRef.current.mouthOpen ?? 0);
   const isVisibleRef = useIsTabVisibleRef();
 
-  // 订阅 store 变化，更新 ref 而不触发重渲染
+  // 精细订阅：仅在 useFrame 实际读取的字段变化时更新 ref
   useEffect(() => {
-    const unsubscribe = useDigitalHumanStore.subscribe((state) => {
-      storeRef.current = state;
-      intensityRef.current = state.expressionIntensity ?? 0.8;
-      mouthOpenRef.current = state.mouthOpen ?? 0;
-    });
+    const unsubscribe = useDigitalHumanStore.subscribe(
+      (s) => ({
+        currentExpression: s.currentExpression,
+        isSpeaking: s.isSpeaking,
+        currentAnimation: s.currentAnimation,
+        expressionIntensity: s.expressionIntensity,
+        mouthOpen: s.mouthOpen,
+      }),
+      (slice) => {
+        storeRef.current = useDigitalHumanStore.getState();
+        intensityRef.current = slice.expressionIntensity ?? 0.8;
+        mouthOpenRef.current = slice.mouthOpen ?? 0;
+      },
+      { equalityFn: shallow },
+    );
     return unsubscribe;
   }, []);
 

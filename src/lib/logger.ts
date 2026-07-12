@@ -60,10 +60,7 @@ export const loggers = {
   orchestrator: createLogger('DialogueOrchestrator'),
   avatar: createLogger('DigitalHumanEngine'),
   chat: createLogger('ChatStream'),
-  transport: createLogger('ChatTransport'),
-  ws: createLogger('WSClient'),
   app: createLogger('App'),
-  core: createLogger('Core'),
 } as const;
 
 export default createLogger;

@@ -126,23 +126,6 @@ export class DigitalHumanEngine implements AvatarContract {
     }
   }
 
-  performGreeting(): void {
-    this.setEmotion('happy');
-    this.playAnimation('wave');
-  }
-
-  performThinking(): void {
-    this.setEmotion('neutral');
-    this.setBehavior('thinking');
-    this.playAnimation('think');
-  }
-
-  performListening(): void {
-    this.setEmotion('neutral');
-    this.setBehavior('listening');
-    this.playAnimation('nod', false);
-  }
-
   dispose(): void {
     this.clearAnimationTimeout();
     this.listeners.clear();

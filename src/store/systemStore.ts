@@ -1,20 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { ChatTransportMode } from '../core/dialogue/dialogueService';
-import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueService';
-
-function createIdleDialogueTurnSnapshot(): DialogueTurnSnapshot {
-  return {
-    status: 'idle',
-    mode: null,
-    turnId: null,
-    userText: null,
-    replyText: '',
-    error: null,
-    startedAt: null,
-    updatedAt: Date.now(),
-  };
-}
+import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueTurnSnapshot';
+import { createIdleDialogueTurnSnapshot } from '../core/dialogue/dialogueTurnSnapshot';
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
 
@@ -186,9 +174,3 @@ export const useSystemStore = create<SystemState>()(
     { name: 'system-store', enabled: ENABLE_DEVTOOLS },
   ),
 );
-
-export const selectConnectionStatus = (s: SystemState) => s.connectionStatus;
-export const selectConnectionDiagnostics = (s: SystemState) => s.connectionDiagnostics;
-export const selectIsLoading = (s: SystemState) => s.isLoading;
-export const selectError = (s: SystemState) => s.error;
-export const selectDialogueTurn = (s: SystemState) => s.dialogueTurn;

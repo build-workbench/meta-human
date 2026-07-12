@@ -119,7 +119,10 @@ export function useConnectionHealth() {
 
   useEffect(() => {
     void checkConnection();
-    const interval = setInterval(checkConnection, 30000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
+      void checkConnection();
+    }, 30000);
     return () => clearInterval(interval);
   }, [checkConnection]);
 

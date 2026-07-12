@@ -31,7 +31,7 @@ const translations = {
     'lang.en': 'English',
 
     // Hero Section
-    'hero.badge': '开源 3D 数字人引擎 v1.0',
+    'hero.badge': '开源 3D 数字人引擎 v2.2',
     'hero.title': '让 AI 拥有',
     'hero.titleHighlight': '实时交互的数字身体',
     'hero.subtitle': '浏览器原生的 3D 数字人交互引擎，支持语音、对话能力。',
@@ -127,6 +127,18 @@ const translations = {
     'settings.config.reset': '恢复 env 默认',
     'settings.config.saved': '已保存',
     'settings.config.current': '当前覆盖',
+
+    // Settings Drawer — Avatar tab
+    'settings.avatar.title': '头像来源',
+    'settings.avatar.desc': '上传 GLB/GLTF 模型。加载失败时自动回退到内置程序化头像。',
+    'settings.avatar.current': '当前头像',
+    'settings.avatar.builtin': '内置程序化头像',
+    'settings.avatar.upload': '上传自定义头像',
+    'settings.avatar.status': '状态',
+    'settings.avatar.useBuiltin': '使用内置头像',
+    'settings.avatar.statusReady': '已就绪',
+    'settings.avatar.statusError': '加载失败，已回退',
+    'settings.avatar.statusIdle': '等待加载',
   },
   en: {
     // Navbar
@@ -141,7 +153,7 @@ const translations = {
     'lang.en': 'English',
 
     // Hero Section
-    'hero.badge': 'Open Source 3D Digital Human Engine v1.0',
+    'hero.badge': 'Open Source 3D Digital Human Engine v2.2',
     'hero.title': 'Give AI a',
     'hero.titleHighlight': 'Real-time Interactive Digital Body',
     'hero.subtitle': 'Browser-native 3D digital human engine with voice and dialogue capabilities.',
@@ -240,6 +252,19 @@ const translations = {
     'settings.config.reset': 'Reset to env default',
     'settings.config.saved': 'Saved',
     'settings.config.current': 'Current override',
+
+    // Settings Drawer — Avatar tab
+    'settings.avatar.title': 'Avatar Source',
+    'settings.avatar.desc':
+      'Upload a GLB/GLTF avatar. If loading fails, the built-in procedural avatar stays available.',
+    'settings.avatar.current': 'Current avatar',
+    'settings.avatar.builtin': 'Built-in procedural avatar',
+    'settings.avatar.upload': 'Upload custom avatar',
+    'settings.avatar.status': 'Status',
+    'settings.avatar.useBuiltin': 'Use built-in avatar',
+    'settings.avatar.statusReady': 'Ready',
+    'settings.avatar.statusError': 'Load failed, fell back',
+    'settings.avatar.statusIdle': 'Waiting to load',
   },
 };
 
@@ -318,11 +343,6 @@ export function t(key: string, replacements?: Record<string, string>): string {
   }
 
   return text;
-}
-
-// 获取翻译对象（用于批量获取）
-export function getTranslations(lang: Language) {
-  return translations[lang];
 }
 
 // 更新页面元数据

@@ -69,40 +69,25 @@ export class DialogueApiError extends Error {
 // Turn lifecycle (inlined from dialogueTurnLifecycle.ts)
 // ============================================================================
 
-export type DialogueTurnStatus = 'idle' | 'sending' | 'streaming' | 'complete' | 'error';
-export type DialogueTurnMode = 'standard' | 'streaming' | null;
-
-export interface DialogueTurnSnapshot {
-  status: DialogueTurnStatus;
-  mode: DialogueTurnMode;
-  turnId: number | null;
-  userText: string | null;
-  replyText: string;
-  error: string | null;
-  startedAt: number | null;
-  updatedAt: number;
-}
-
-export const createIdleDialogueTurnSnapshot = (): DialogueTurnSnapshot => ({
-  status: 'idle',
-  mode: null,
-  turnId: null,
-  userText: null,
-  replyText: '',
-  error: null,
-  startedAt: null,
-  updatedAt: Date.now(),
-});
+export type {
+  DialogueTurnStatus,
+  DialogueTurnMode,
+  DialogueTurnSnapshot,
+} from './dialogueTurnSnapshot';
+export { createIdleDialogueTurnSnapshot } from './dialogueTurnSnapshot';
 
 // ============================================================================
 // Endpoint parsing (inlined from endpointDiscovery.ts)
 // ============================================================================
 
+const ALLOWED_API_PROTOCOLS = ['http:', 'https:'];
+
 function normalizeApiEndpoint(url: string): string | null {
   const normalized = url.trim().replace(/\/+$/, '');
   if (!normalized) return null;
   try {
-    new URL(normalized);
+    const parsed = new URL(normalized);
+    if (!ALLOWED_API_PROTOCOLS.includes(parsed.protocol)) return null;
     return normalized;
   } catch {
     return null;
@@ -518,6 +503,29 @@ function isRetryableDialogueError(error: Error): boolean {
   return error instanceof DialogueApiError ? error.isRetryable : true;
 }
 
+type FailoverDecision = 'abort' | 'next-candidate' | 'retry' | 'fail';
+
+function classifyAttemptError(
+  error: unknown,
+  signal: AbortSignal | undefined,
+  candidate: string,
+  ci: number,
+  candidateCount: number,
+  attempt: number,
+  maxRetries: number,
+): { decision: FailoverDecision; lastError: Error } {
+  const normalizedError = normalizeDialogueError(error);
+  if (signal?.aborted || shouldAbort(normalizedError, signal)) {
+    return { decision: 'abort', lastError: normalizedError };
+  }
+  const retryable = isRetryableDialogueError(normalizedError);
+  if (retryable) reportEndpointFailure(candidate);
+  if (retryable && ci < candidateCount - 1)
+    return { decision: 'next-candidate', lastError: normalizedError };
+  if (!retryable || attempt >= maxRetries) return { decision: 'fail', lastError: normalizedError };
+  return { decision: 'retry', lastError: normalizedError };
+}
+
 function shouldAbort(error: unknown, signal?: AbortSignal): boolean {
   return (
     signal?.aborted === true ||
@@ -627,14 +635,21 @@ export async function sendUserInput(
         reportEndpointSuccess(candidate);
         return { response, connectionStatus: 'connected', error: null };
       } catch (error: unknown) {
-        lastError = normalizeDialogueError(error);
-        if (signal?.aborted || shouldAbort(lastError, signal)) {
+        const { decision, lastError: err } = classifyAttemptError(
+          error,
+          signal,
+          candidate,
+          ci,
+          candidates.length,
+          attempt,
+          maxRetries,
+        );
+        lastError = err;
+        if (decision === 'abort') {
           return { response: buildEmptyResponse(), connectionStatus: 'error', error: '请求被取消' };
         }
-        const retryable = isRetryableDialogueError(lastError);
-        if (retryable) reportEndpointFailure(candidate);
-        if (retryable && ci < candidates.length - 1) continue;
-        if (!retryable || attempt >= maxRetries) break attemptLoop;
+        if (decision === 'next-candidate') continue;
+        if (decision === 'fail') break attemptLoop;
         await sleep(retryDelay * (attempt + 1));
         continue attemptLoop;
       }
@@ -733,18 +748,25 @@ export async function* streamUserInput(
           error: streamError,
         };
       } catch (error: unknown) {
-        if (signal?.aborted || shouldAbort(error, signal)) {
+        const { decision, lastError: err } = classifyAttemptError(
+          error,
+          signal,
+          candidate,
+          ci,
+          candidates.length,
+          attempt,
+          maxRetries,
+        );
+        lastError = err;
+        if (decision === 'abort') {
           return {
             response: finalResponse ?? buildEmptyResponse(),
             connectionStatus: 'error',
             error: '请求被取消',
           };
         }
-        lastError = normalizeDialogueError(error);
-        const retryable = isRetryableDialogueError(lastError);
-        if (retryable) reportEndpointFailure(candidate);
-        if (retryable && ci < candidates.length - 1) continue;
-        if (!retryable || attempt >= maxRetries) break attemptLoop;
+        if (decision === 'next-candidate') continue;
+        if (decision === 'fail') break attemptLoop;
         await sleep(retryDelay * (attempt + 1));
         continue attemptLoop;
       }
