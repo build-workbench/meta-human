@@ -105,7 +105,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```bash
 feat(avatar): add wave animation trigger
-docs(api): update WebSocket documentation
+docs(api): update streaming transport documentation
 fix(dialogue): resolve memory leak in stream
 ```
 
@@ -248,13 +248,13 @@ src/
 ├── core/                # Runtime services without React imports
 │   ├── avatar/          # 3D avatar engine
 │   ├── audio/           # TTS/ASR services
-│   ├── dialogue/        # Dialogue orchestration and transports
-│   ├── performance/     # Device capability handling
-│   ├── vision/          # Face and pose processing
-│   └── voiceCommand/    # Voice command execution
+│   ├── dialogue/        # Dialogue orchestration and HTTP/SSE transports
+│   ├── adapters.ts      # Cross-module adapters
+│   └── createServices.ts  # Service container
 ├── hooks/               # UI orchestration hooks
 ├── lib/                 # Shared utilities
 ├── pages/               # Route-level pages
+├── services/            # React service provider context
 ├── store/               # Zustand stores
 └── __tests__/           # Tests
 ```

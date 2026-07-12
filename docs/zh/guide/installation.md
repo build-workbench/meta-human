@@ -74,7 +74,7 @@ Create `.env.local`:
 # Backend API URL (optional - uses mock if not set)
 VITE_API_BASE_URL=http://localhost:8000
 
-# Transport mode: http, sse, websocket, auto
+# Transport mode: http, sse, auto
 VITE_CHAT_TRANSPORT=auto
 ```
 

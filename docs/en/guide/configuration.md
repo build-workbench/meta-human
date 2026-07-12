@@ -10,19 +10,18 @@ Create `.env.local` in the project root.
 
 ### API Configuration
 
-| Variable              | Default   | Description                                        |
-| --------------------- | --------- | -------------------------------------------------- |
-| `VITE_API_BASE_URL`   | _(empty)_ | Backend API URL. Leave empty for mock mode.        |
-| `VITE_CHAT_TRANSPORT` | `auto`    | Transport mode: `http`, `sse`, `websocket`, `auto` |
+| Variable              | Default   | Description                                 |
+| --------------------- | --------- | ------------------------------------------- |
+| `VITE_API_BASE_URL`   | _(empty)_ | Backend API URL. Leave empty for mock mode. |
+| `VITE_CHAT_TRANSPORT` | `auto`    | Transport mode: `http`, `sse`, `auto`       |
 
 ### Transport Modes
 
-| Mode        | Description                                     | Use Case                |
-| ----------- | ----------------------------------------------- | ----------------------- |
-| `auto`      | Auto-detect capability (WebSocket → SSE → HTTP) | **Recommended**         |
-| `http`      | Standard HTTP requests                          | Simple setups           |
-| `sse`       | Server-Sent Events for streaming                | One-way streaming       |
-| `websocket` | Full-duplex WebSocket                           | Real-time bidirectional |
+| Mode   | Description                           | Use Case        |
+| ------ | ------------------------------------- | --------------- |
+| `auto` | SSE for streaming, falls back to HTTP | **Recommended** |
+| `http` | Standard HTTP requests                | Simple setups   |
+| `sse`  | Server-Sent Events for streaming      | Streaming       |
 
 ### Example `.env.local`
 
@@ -128,7 +127,7 @@ VITE_CHAT_TRANSPORT=auto
 ```bash
 # .env.staging
 VITE_API_BASE_URL=https://staging-api.example.com
-VITE_CHAT_TRANSPORT=websocket
+VITE_CHAT_TRANSPORT=sse
 ```
 
 **Production:**
@@ -136,7 +135,7 @@ VITE_CHAT_TRANSPORT=websocket
 ```bash
 # .env.production
 VITE_API_BASE_URL=https://api.example.com
-VITE_CHAT_TRANSPORT=websocket
+VITE_CHAT_TRANSPORT=sse
 ```
 
 Use with Vite modes:
@@ -149,16 +148,6 @@ npm run build -- --mode production
 ---
 
 ## Feature-Specific Configuration
-
-### Vision (MediaPipe)
-
-Vision processing runs entirely in the browser — no backend configuration needed.
-
-**Browser requirements:**
-
-- WebGL 2.0 enabled
-- Camera permission granted
-- HTTPS or localhost
 
 ### Speech Recognition
 
@@ -174,13 +163,9 @@ No backend configuration required.
 
 ### Text-to-Speech
 
-**Edge TTS (Default):**
+**Frontend (Default):** Browser-native `SpeechSynthesis` — no configuration needed, works offline, voices depend on the OS/browser.
 
-- No configuration needed
-- Works offline
-- Multiple voices available
-
-**OpenAI TTS:**
+**Backend (optional):** The Python backend example supports `edge-tts` (default) and `openai` TTS providers:
 
 ```bash
 TTS_PROVIDER=openai
@@ -310,7 +295,7 @@ RATE_LIMIT_RPM=60
 ```bash
 # .env.production
 VITE_API_BASE_URL=https://api.mydomain.com
-VITE_CHAT_TRANSPORT=websocket
+VITE_CHAT_TRANSPORT=sse
 
 # examples/backend-python/.env (on server)
 OPENAI_API_KEY=sk-...

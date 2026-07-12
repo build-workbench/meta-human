@@ -34,16 +34,16 @@ const translations = {
     'hero.badge': '开源 3D 数字人引擎 v1.0',
     'hero.title': '让 AI 拥有',
     'hero.titleHighlight': '实时交互的数字身体',
-    'hero.subtitle': '浏览器原生的 3D 数字人交互引擎，支持语音、视觉、对话能力。',
-    'hero.subtitleHighlight': '零配置启动，离线可用，生产级品质。',
+    'hero.subtitle': '浏览器原生的 3D 数字人交互引擎，支持语音、对话能力。',
+    'hero.subtitleHighlight': '零配置启动，离线可用，开源 MIT。',
     'hero.cta.try': '立即体验',
     'hero.cta.docs': '查看文档',
     'hero.highlight.config': '零配置启动',
     'hero.highlight.offline': '离线可用',
-    'hero.highlight.quality': '生产级品质',
+    'hero.highlight.quality': '开源 MIT',
     'hero.scrollHint': '向下滚动了解更多',
-    'hero.stats.fps': '流畅渲染',
-    'hero.stats.landmarks': '面部关键点',
+    'hero.stats.fps': '单元测试',
+    'hero.stats.landmarks': 'gzip 体积',
     'hero.preview.title': 'MetaHuman Engine Preview',
     'hero.preview.placeholder': '输入消息与数字人互动...',
     'hero.preview.connected': '系统已连接',
@@ -60,9 +60,10 @@ const translations = {
     'features.avatar.feature3': '对话触发的骨骼动画',
 
     'features.voice.title': '语音交互',
-    'features.voice.desc': '集成 Edge TTS 语音合成和浏览器原生语音识别，实现自然的语音对话体验。',
-    'features.voice.feature1': '自然流畅的语音合成',
-    'features.voice.feature2': '浏览器原生语音识别',
+    'features.voice.desc':
+      '基于浏览器原生 Web Speech API 实现语音合成（TTS）与语音识别（ASR），无需第三方服务。',
+    'features.voice.feature1': 'SpeechSynthesis 语音合成',
+    'features.voice.feature2': 'SpeechRecognition 语音识别',
     'features.voice.feature3': '用户说话时自动静音',
 
     'features.dialogue.title': '智能对话',
@@ -70,13 +71,6 @@ const translations = {
     'features.dialogue.feature1': '多模态响应（文本+情绪+动作）',
     'features.dialogue.feature2': 'SSE 流式实时响应',
     'features.dialogue.feature3': '自动降级到本地 Mock',
-
-    'features.vision.title': '视觉感知',
-    'features.vision.desc':
-      '基于 MediaPipe 的面部网格和姿态估计，实现 468 个关键点的表情捕捉和手势识别。',
-    'features.vision.feature1': '468 个面部关键点捕捉',
-    'features.vision.feature2': '上半身姿态手势识别',
-    'features.vision.feature3': '浏览器内处理，隐私优先',
 
     // Tech Stack Section
     'tech.title': '技术架构',
@@ -96,9 +90,6 @@ const translations = {
 
     'tech.zustand.title': 'Zustand',
     'tech.zustand.desc': '轻量状态管理，简洁高效',
-
-    'tech.mediapipe.title': 'MediaPipe',
-    'tech.mediapipe.desc': 'Google 视觉计算解决方案',
 
     // CTA Section
     'cta.title': '开始构建你的数字人',
@@ -121,9 +112,9 @@ const translations = {
     // Meta
     'meta.title': 'MetaHuman Engine - 开源 3D 数字人交互引擎',
     'meta.description':
-      'MetaHuman Engine - 浏览器原生的 3D 数字人引擎，集成语音、视觉、对话能力。零配置，离线可用，生产级。',
+      'MetaHuman Engine - 浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。',
     'meta.keywords':
-      'digital human, 3D avatar, AI, voice interaction, computer vision, WebGL, Three.js, React, TypeScript, 数字人, 3D形象, 人工智能, 语音交互, 计算机视觉',
+      'digital human, 3D avatar, AI, voice interaction, WebGL, Three.js, React, TypeScript, 数字人, 3D形象, 人工智能, 语音交互',
 
     // Settings Drawer (new sections)
     'settings.character.title': '角色预设',
@@ -153,17 +144,16 @@ const translations = {
     'hero.badge': 'Open Source 3D Digital Human Engine v1.0',
     'hero.title': 'Give AI a',
     'hero.titleHighlight': 'Real-time Interactive Digital Body',
-    'hero.subtitle':
-      'Browser-native 3D digital human engine with voice, vision, and dialogue capabilities.',
-    'hero.subtitleHighlight': 'Zero-config, offline-ready, production-grade.',
+    'hero.subtitle': 'Browser-native 3D digital human engine with voice and dialogue capabilities.',
+    'hero.subtitleHighlight': 'Zero-config, offline-ready, open-source MIT.',
     'hero.cta.try': 'Try Now',
     'hero.cta.docs': 'Documentation',
     'hero.highlight.config': 'Zero Config',
     'hero.highlight.offline': 'Offline Ready',
-    'hero.highlight.quality': 'Production Grade',
+    'hero.highlight.quality': 'Open Source MIT',
     'hero.scrollHint': 'Scroll down for more',
-    'hero.stats.fps': 'Smooth Rendering',
-    'hero.stats.landmarks': 'Facial Landmarks',
+    'hero.stats.fps': 'Unit Tests',
+    'hero.stats.landmarks': 'gzip Bundle',
     'hero.preview.title': 'MetaHuman Engine Preview',
     'hero.preview.placeholder': 'Type to interact with the digital human...',
     'hero.preview.connected': 'System Connected',
@@ -181,9 +171,9 @@ const translations = {
 
     'features.voice.title': 'Voice Interaction',
     'features.voice.desc':
-      'Integrated Edge TTS speech synthesis and browser-native speech recognition for natural voice conversations.',
-    'features.voice.feature1': 'Natural fluent speech synthesis',
-    'features.voice.feature2': 'Browser-native speech recognition',
+      'Browser-native Web Speech API for both speech synthesis (TTS) and speech recognition (ASR), no third-party service required.',
+    'features.voice.feature1': 'SpeechSynthesis voice output',
+    'features.voice.feature2': 'SpeechRecognition voice input',
     'features.voice.feature3': 'Auto-mute when user speaks',
 
     'features.dialogue.title': 'Intelligent Dialogue',
@@ -192,13 +182,6 @@ const translations = {
     'features.dialogue.feature1': 'Multi-modal responses (text+emotion+action)',
     'features.dialogue.feature2': 'SSE streaming real-time responses',
     'features.dialogue.feature3': 'Automatic fallback to local mock',
-
-    'features.vision.title': 'Visual Perception',
-    'features.vision.desc':
-      'MediaPipe-based face mesh and pose estimation with 468 landmark expression capture and gesture recognition.',
-    'features.vision.feature1': '468 facial landmark capture',
-    'features.vision.feature2': 'Upper body pose & gesture recognition',
-    'features.vision.feature3': 'Browser-side processing, privacy first',
 
     // Tech Stack Section
     'tech.title': 'Tech Stack',
@@ -218,9 +201,6 @@ const translations = {
 
     'tech.zustand.title': 'Zustand',
     'tech.zustand.desc': 'Lightweight state management',
-
-    'tech.mediapipe.title': 'MediaPipe',
-    'tech.mediapipe.desc': "Google's vision computing solution",
 
     // CTA Section
     'cta.title': 'Start Building Your Digital Human',
@@ -243,9 +223,9 @@ const translations = {
     // Meta
     'meta.title': 'MetaHuman Engine - Open Source 3D Digital Human Engine',
     'meta.description':
-      'MetaHuman Engine - Browser-native 3D digital human engine with voice, vision, and dialogue capabilities. Zero-config, offline-ready, production-grade.',
+      'MetaHuman Engine - Browser-native 3D digital human engine with voice and dialogue capabilities. Zero-config, offline-ready, open-source MIT.',
     'meta.keywords':
-      'digital human, 3D avatar, AI, voice interaction, computer vision, WebGL, Three.js, React, TypeScript',
+      'digital human, 3D avatar, AI, voice interaction, WebGL, Three.js, React, TypeScript',
 
     // Settings Drawer (new sections)
     'settings.character.title': 'Character Presets',

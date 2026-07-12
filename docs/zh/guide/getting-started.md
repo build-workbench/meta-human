@@ -53,7 +53,6 @@ meta-human/
 │   │   ├── avatar/        # 3D rendering
 │   │   ├── audio/         # TTS & ASR
 │   │   ├── dialogue/      # Chat service
-│   │   └── vision/        # Face tracking
 │   ├── store/             # Zustand stores
 │   └── hooks/             # Custom hooks
 ├── examples/              # Optional backend examples
@@ -84,16 +83,6 @@ meta-human/
 3. Release to send
 4. The avatar responds automatically
 
-### Vision Mode
-
-1. Click **Enable Camera**
-2. Allow camera access
-3. Show expressions to the camera:
-   - 😊 Smile → Avatar smiles
-   - 😮 Surprise → Avatar surprised
-   - 😢 Sad → Avatar concerned
-   - 😠 Angry → Avatar sympathetic
-
 ---
 
 ## Configuration
@@ -106,7 +95,7 @@ Create `.env.local` in the project root:
 # Backend API URL
 VITE_API_BASE_URL=http://localhost:8000
 
-# Chat transport: http | sse | websocket | auto
+# Chat transport: http | sse | auto
 VITE_CHAT_TRANSPORT=auto
 ```
 
@@ -212,12 +201,6 @@ npm install
 1. Check if backend is running: `curl http://localhost:8000/health`
 2. Verify `VITE_API_BASE_URL` in `.env.local`
 3. Check CORS settings in backend
-
-### Camera Not Working
-
-- Ensure HTTPS or localhost (browsers block camera on HTTP)
-- Check browser permissions
-- Try a different browser (Chrome/Edge recommended)
 
 ---
 

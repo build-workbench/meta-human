@@ -23,8 +23,8 @@ System design and data flow for MetaHuman Engine.
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Core Engine Layer                           │
-│   Avatar · Dialogue · Vision · Audio · Performance              │
-│   Three.js · Web Speech API · MediaPipe                         │
+│   Avatar · Dialogue · Audio                                     │
+│   Three.js · Web Speech API                                     │
 │   (No React imports - pure runtime logic)                       │
 └─────────────────────────────────────────────────────────────────┘
                                │
@@ -52,13 +52,13 @@ System design and data flow for MetaHuman Engine.
 
 **Key Components:**
 
-| Component            | File                                | Purpose                          |
-| -------------------- | ----------------------------------- | -------------------------------- |
-| `DigitalHumanViewer` | `components/DigitalHumanViewer.tsx` | 3D viewport and avatar rendering |
-| `ChatDock`           | `components/ChatDock.tsx`           | Chat interface with streaming    |
-| `TopHUD`             | `components/TopHUD.tsx`             | Status bar and metrics           |
-| `ControlPanel`       | `components/ControlPanel.tsx`       | Quick actions panel              |
-| `SettingsDrawer`     | `components/SettingsDrawer.tsx`     | Configuration panel              |
+| Component            | File                                       | Purpose                          |
+| -------------------- | ------------------------------------------ | -------------------------------- |
+| `DigitalHumanViewer` | `components/viewer/DigitalHumanViewer.tsx` | 3D viewport and avatar rendering |
+| `ChatDock`           | `components/ChatDock.tsx`                  | Chat interface with streaming    |
+| `TopHUD`             | `components/TopHUD.tsx`                    | Status bar and metrics           |
+| `ControlPanel`       | `components/ControlPanel.tsx`              | Quick actions panel              |
+| `SettingsDrawer`     | `components/SettingsDrawer.tsx`            | Configuration panel              |
 
 ### Core Engine Layer
 
@@ -66,16 +66,14 @@ System design and data flow for MetaHuman Engine.
 
 **Modules:**
 
-| Module             | Entry Point                               | Purpose                             |
-| ------------------ | ----------------------------------------- | ----------------------------------- |
-| Avatar             | `core/avatar/DigitalHumanEngine.ts`       | 3D rendering and animation          |
-| AvatarContract     | `core/avatar/avatarContract.ts`           | Canonical emotion/action vocabulary |
-| Dialogue           | `core/dialogue/dialogueService.ts`        | Chat transport and orchestration    |
-| DialogueRouter     | `core/dialogue/dialogueEndpointRouter.ts` | Endpoint failover management        |
-| DialogueHttpClient | `core/dialogue/dialogueHttpClient.ts`     | HTTP/SSE request execution          |
-| Vision             | `core/vision/visionService.ts`            | Face and pose detection             |
-| Audio              | `core/audio/audioService.ts`              | Speech synthesis and recognition    |
-| Performance        | `core/performance/deviceCapability.ts`    | Hardware optimization               |
+| Module               | Entry Point                             | Purpose                              |
+| -------------------- | --------------------------------------- | ------------------------------------ |
+| Avatar               | `core/avatar/DigitalHumanEngine.ts`     | 3D rendering and animation           |
+| AvatarContract       | `core/avatar/avatarContract.ts`         | Canonical emotion/action vocabulary  |
+| Dialogue             | `core/dialogue/dialogueService.ts`      | HTTP/SSE transport and API client    |
+| DialogueOrchestrator | `core/dialogue/dialogueOrchestrator.ts` | Turn ownership and request lifecycle |
+| Audio                | `core/audio/audioService.ts`            | Speech synthesis and recognition     |
+| Services             | `core/createServices.ts`                | Service container                    |
 
 ### Service Container Layer
 
@@ -101,19 +99,19 @@ System design and data flow for MetaHuman Engine.
 | Store               | File                         | Responsibility                     |
 | ------------------- | ---------------------------- | ---------------------------------- |
 | `chatSessionStore`  | `store/chatSessionStore.ts`  | Message history, session lifecycle |
-| `systemStore`       | `store/systemStore.ts`       | Connection, errors, performance    |
+| `systemStore`       | `store/systemStore.ts`       | Connection, errors                 |
 | `digitalHumanStore` | `store/digitalHumanStore.ts` | Avatar runtime state               |
 
 ### External Services
 
 **Responsibility:** Backend APIs and third-party integrations
 
-| Service  | Protocol           | Purpose            |
-| -------- | ------------------ | ------------------ |
-| Chat API | HTTP/SSE/WebSocket | AI dialogue        |
-| TTS      | HTTP               | Speech synthesis   |
-| ASR      | HTTP               | Speech recognition |
-| Health   | HTTP               | Service status     |
+| Service  | Protocol | Purpose            |
+| -------- | -------- | ------------------ |
+| Chat API | HTTP/SSE | AI dialogue        |
+| TTS      | Browser  | Speech synthesis   |
+| ASR      | Browser  | Speech recognition |
+| Health   | HTTP     | Service status     |
 
 ---
 
@@ -137,7 +135,7 @@ runDialogueTurnStream()
        ├──► chatSessionStore.addMessage('assistant', '', streaming)
        │
        ▼
-chatTransport.stream()
+sseChatTransport.stream()
        │
        ├──► onStreamToken → updateMessage(id, text)
        └──► onDone → apply response.emotion, response.action
@@ -165,27 +163,6 @@ onResult(text)
        │
        ▼
 handleChatSend(text) → [same as text flow]
-```
-
-### Vision Flow
-
-```
-User enables camera
-       │
-       ▼
-visionService.start()
-       │
-       ▼
-MediaPipe inference (each frame)
-       │
-       ▼
-visionMapper.mapFaceToEmotion(landmarks)
-       │
-       ▼
-{ emotion, motion }
-       │
-       ├──► digitalHumanEngine.setEmotion(emotion)
-       └──► digitalHumanEngine.playAnimation(motion)
 ```
 
 ---
@@ -277,87 +254,28 @@ interface ChatTransport {
 ```
 ChatTransport (Interface)
     │
-    ├── HTTPTransport
+    ├── httpChatTransport
     │   └── POST /v1/chat
     │
-    ├── SSETransport
-    │   └── POST /v1/chat/stream
-    │   └── EventSource
-    │
-    └── WebSocketTransport
-        └── WebSocket /ws
+    └── sseChatTransport
+        └── POST /v1/chat/stream
+        └── EventSource
 ```
 
 ### Auto-Selection Priority
 
 ```typescript
-async function selectTransport(): Promise<ChatTransport> {
-  // 1. Try WebSocket (lowest latency)
-  if (await wsTransport.probe()) {
-    return wsTransport;
-  }
-
-  // 2. Try SSE (streaming support)
-  if (await sseTransport.probe()) {
-    return sseTransport;
-  }
-
-  // 3. Fall back to HTTP (universal)
-  return httpTransport;
+function getChatTransport(
+  mode: ChatTransportMode = getPreferredChatTransportMode(),
+): ChatTransport {
+  if (mode === 'http') return httpChatTransport;
+  return sseChatTransport;
 }
 ```
 
 ---
 
-## Performance Optimizations
-
-### Adaptive Rendering
-
-Device tier detection and quality adjustment:
-
-```typescript
-// core/performance/deviceCapability.ts
-export const deviceTiers = {
-  high: {
-    shadows: 2048,
-    particles: 100,
-    dpr: [1, 2],
-    postProcessing: true,
-  },
-  medium: {
-    shadows: 1024,
-    particles: 50,
-    dpr: [1, 1.5],
-    postProcessing: false,
-  },
-  low: {
-    shadows: false,
-    particles: 20,
-    dpr: [1, 1.2],
-    postProcessing: false,
-  },
-};
-```
-
-### Animation Throttling
-
-```typescript
-// Pause when tab not visible
-useIsTabVisibleRef((isVisible) => {
-  if (!isVisible) {
-    digitalHumanEngine.pause();
-  } else {
-    digitalHumanEngine.resume();
-  }
-});
-
-// Frame skipping for low-end devices
-if (deviceTier === 'low' && frameCount % 2 !== 0) {
-  return; // Skip every other frame
-}
-```
-
-### State Optimization
+## State Optimization
 
 ```typescript
 // ✅ Good: Subscribes only to needed value
@@ -392,7 +310,6 @@ const store = useDigitalHumanStore();
 | ASR       | Browser SpeechRecognition | Disabled                | —             |
 | Dialogue  | Configured backend        | Local frontend response | Error message |
 | Avatar    | Custom GLB/GLTF           | Procedural avatar       | Placeholder   |
-| Vision    | MediaPipe models          | Panel disabled          | —             |
 
 ---
 
@@ -408,8 +325,7 @@ const store = useDigitalHumanStore();
 
 ### Adding New Transport
 
-1. Implement `ChatTransport` interface in `core/dialogue/chatTransport.ts`
-2. Add to transport registry
-3. Update auto-selection logic
+1. Implement `ChatTransport` interface (see `httpChatTransport`/`sseChatTransport` in `core/dialogue/dialogueService.ts`)
+2. Register via `setChatTransportOverride()` or extend `getChatTransport()`
 
 ---

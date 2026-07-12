@@ -9,16 +9,16 @@
 </p>
 
 <p align="center">
-  Browser-native 3D digital human engine with voice, vision, and dialogue capabilities.
+  Browser-native 3D digital human engine with voice and dialogue capabilities.
   <br />
-  <strong>Zero-config</strong> · <strong>Offline-ready</strong> · <strong>Production-grade</strong>
+  <strong>Zero-config</strong> · <strong>Offline-ready</strong> · <strong>Open-source MIT</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/LessUp/meta-human/actions"><img src="https://img.shields.io/github/actions/workflow/status/LessUp/meta-human/ci.yml?branch=master&label=CI&style=flat-square" alt="CI Status" /></a>
   <a href="https://lessup.github.io/meta-human/"><img src="https://img.shields.io/badge/Demo-Live-green?style=flat-square&logo=githubpages" alt="Live Demo" /></a>
   <a href="https://github.com/LessUp/meta-human/releases"><img src="https://img.shields.io/github/v/release/LessUp/meta-human?style=flat-square&label=Version" alt="Version" /></a>
-  <img src="https://img.shields.io/badge/Bundle-~240KB(gzip)-blue?style=flat-square&label=size" alt="Bundle Size" />
+  <img src="https://img.shields.io/badge/Bundle-~160KB(gzip,landing)-blue?style=flat-square&label=size" alt="Bundle Size" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
   <img src="https://img.shields.io/badge/Three.js-0.177-000000?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -94,12 +94,11 @@ Open **http://localhost:5173** — your 3D avatar is ready!
 <tr>
 <td width="50%">
 
-| Feature              | Description                                           |
-| -------------------- | ----------------------------------------------------- |
-| GLB/GLTF Support     | Load custom models or use built-in procedural avatar  |
-| Emotion-Driven       | Happy, surprised, sad, angry moods map to expressions |
-| Skeletal Animation   | Wave, greet, nod, dance triggered by dialogue         |
-| Adaptive Performance | 60fps rendering with device-based quality scaling     |
+| Feature            | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| GLB/GLTF Support   | Load custom models or use built-in procedural avatar  |
+| Emotion-Driven     | Happy, surprised, sad, angry moods map to expressions |
+| Skeletal Animation | Wave, greet, nod, dance triggered by dialogue         |
 
 </td>
 <td>
@@ -122,12 +121,12 @@ digitalHumanEngine.perform({
 
 ### 🗣️ Voice Interaction
 
-| Feature         | Description                          |
-| --------------- | ------------------------------------ |
-| TTS             | Edge TTS for natural voice synthesis |
-| ASR             | Browser-native speech recognition    |
-| Smart Muting    | Auto-pause TTS when user speaks      |
-| Voice Detection | Visual feedback during recording     |
+| Feature         | Description                                  |
+| --------------- | -------------------------------------------- |
+| TTS             | Browser-native SpeechSynthesis voice output  |
+| ASR             | Browser-native SpeechRecognition voice input |
+| Smart Muting    | Auto-pause TTS when user speaks              |
+| Voice Detection | Visual feedback during recording             |
 
 ```typescript
 import { ttsService, asrService } from './core/audio';
@@ -158,29 +157,20 @@ const response = await dialogueService.send({
 // → { replyText: '...', emotion: 'happy', action: 'laugh' }
 ```
 
-### 👁️ Visual Perception
-
-| Feature         | Description                                      |
-| --------------- | ------------------------------------------------ |
-| Face Mesh       | 468 landmarks for micro-expression detection     |
-| Pose Estimation | Upper body gesture recognition                   |
-| Emotion Mapping | Real-time emotion inference                      |
-| Privacy First   | All processing in browser, no data leaves client |
-
 ---
 
 ## ⚡ Performance
 
-Benchmarks measured on typical devices:
+Verifiable metrics from `npm run build` and `npm run test:run`:
 
-| Metric           | Desktop          | Mobile (Mid-range) | Mobile (Low-end) |
-| ---------------- | ---------------- | ------------------ | ---------------- |
-| **Rendering**    | 60 FPS           | 60 FPS             | 30 FPS           |
-| **TTS Latency**  | < 200ms          | < 300ms            | < 500ms          |
-| **Bundle Size**  | 180 KB (gzipped) | 180 KB             | 180 KB           |
-| **Memory Usage** | ~120 MB          | ~80 MB             | ~60 MB           |
+| Metric             | Value                               |
+| ------------------ | ----------------------------------- |
+| **Landing bundle** | ~160 KB gzipped (lazy 3D excluded)  |
+| **Full bundle**    | ~430 KB gzipped (includes Three.js) |
+| **Unit tests**     | 189 passing (Vitest)                |
+| **Type check**     | `tsc --noEmit` strict mode          |
 
-> Performance automatically scales based on device capabilities. See the [architecture overview](docs/en/architecture/overview.md) for details.
+> Runtime FPS and memory depend on the user's device and GPU; no synthetic benchmarks are shipped.
 
 ---
 
@@ -194,7 +184,7 @@ Benchmarks measured on typical devices:
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
 │                       Core Engine Layer                          │
-│   Avatar · Dialogue · Vision · Audio · Performance              │
+│   Avatar · Dialogue · Audio                                     │
 └─────────────────────────────────────────────────────────────────┘
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
@@ -204,7 +194,7 @@ Benchmarks measured on typical devices:
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
 │                      External Services                           │
-│   Three.js · Web Speech API · MediaPipe · OpenAI API            │
+│   Three.js · Web Speech API · OpenAI API                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -215,7 +205,7 @@ Three focused domains minimize re-renders:
 | Store               | Responsibility                                      |
 | ------------------- | --------------------------------------------------- |
 | `chatSessionStore`  | Message history, session lifecycle                  |
-| `systemStore`       | Connection status, errors, performance metrics      |
+| `systemStore`       | Connection status, errors                           |
 | `digitalHumanStore` | Avatar runtime state (expression, animation, audio) |
 
 **[📖 Architecture Docs →](docs/en/architecture/overview.md)**
@@ -232,20 +222,17 @@ src/
 │   │   └── constants.ts           # Expressions, animations
 │   ├── audio/                     # TTS & ASR services
 │   ├── dialogue/                  # Chat transport & orchestration
-│   │   ├── dialogueService.ts     # API client
+│   │   ├── dialogueService.ts     # API client + HTTP/SSE transport
 │   │   ├── dialogueOrchestrator.ts
-│   │   └── chatTransport.ts       # HTTP/SSE/WebSocket
-│   ├── vision/                    # MediaPipe pipeline
-│   │   ├── visionService.ts
-│   │   └── visionMapper.ts
-│   └── performance/               # Device capability detection
+│   │   ├── dialogueRequestMeta.ts
+│   │   └── characterPresets.ts
+│   └── createServices.ts          # Service container
 ├── components/                    # React components
-│   ├── DigitalHumanViewer.tsx     # 3D viewport
+│   ├── viewer/                    # 3D viewport (DigitalHumanViewer.tsx)
 │   ├── ChatDock.tsx               # Chat interface
 │   ├── TopHUD.tsx                 # Status bar
 │   ├── ControlPanel.tsx           # Quick controls
 │   ├── VoiceInteractionPanel.tsx
-│   ├── VisionMirrorPanel.tsx
 │   └── ui/                        # Shared primitives
 ├── store/                         # Zustand stores
 │   ├── chatSessionStore.ts
@@ -327,11 +314,8 @@ npm run test:ui          # Vitest UI mode
 | Core Engine              | 90+ ✅ | 90+ ✅ | 90+ ✅           | 15+ ✅           |
 | TTS (Speech Synthesis)   | 90+ ✅ | 90+ ✅ | 90+ ✅           | 15+ ✅           |
 | ASR (Speech Recognition) | 90+ ✅ | 90+ ✅ | ❌ Not supported | ❌ Not supported |
-| MediaPipe Vision         | 90+ ✅ | 90+ ✅ | 90+ ✅           | 15+ ⚠️           |
 
 > **ASR Limitations:** Speech recognition requires Chrome or Edge due to Web Speech API limitations. Firefox and Safari users can use text input instead.
-
-> **Safari Note:** MediaPipe vision features may require enabling experimental features.
 
 ---
 
@@ -352,11 +336,8 @@ See [CHANGELOG.md](CHANGELOG.md) for released features and [GitHub Projects](htt
 
 - [x] Core 3D avatar rendering
 - [x] Voice interaction (TTS/ASR)
-- [x] Visual perception (MediaPipe)
 - [x] Streaming dialogue
 - [x] Service discovery and endpoint failover
-- [x] Mobile AR readiness detection
-- [x] Mobile AR support
 - [x] Custom avatar upload
 - [x] Multi-language TTS
 

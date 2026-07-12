@@ -1,6 +1,8 @@
 # WebSocket API
 
-Real-time bidirectional communication for MetaHuman Engine.
+Real-time bidirectional communication for MetaHuman Engine backend.
+
+> **Note:** The WebSocket endpoint is a backend skeleton in `examples/backend-python/app/api/ws.py`. The frontend currently uses HTTP/SSE transports only (`httpChatTransport` / `sseChatTransport`); WebSocket is not yet wired into the frontend client.
 
 ---
 

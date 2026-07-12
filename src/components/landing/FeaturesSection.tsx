@@ -1,10 +1,12 @@
-import { Box, Mic, Eye, Brain, Monitor, Cpu, ArrowRight } from 'lucide-react';
+import { Box, Mic, Brain, Cpu, ArrowRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 export default function FeaturesSection() {
   const { t, lang } = useI18n();
 
   // Define features based on current language
+  // Note: vision (MediaPipe) and adaptive-performance modules were removed in commit 8ae076e;
+  // only capabilities the codebase actually ships are listed here.
   const features = [
     {
       icon: Box,
@@ -31,25 +33,6 @@ export default function FeaturesSection() {
       borderColor: 'border-emerald-500/20',
     },
     {
-      icon: Eye,
-      title: t('features.vision.title'),
-      description: t('features.vision.desc'),
-      color: 'from-amber-500 to-orange-500',
-      bgColor: 'bg-amber-500/10',
-      borderColor: 'border-amber-500/20',
-    },
-    {
-      icon: Monitor,
-      title: lang === 'zh-CN' ? '自适应性能' : 'Adaptive Performance',
-      description:
-        lang === 'zh-CN'
-          ? '基于设备能力自动调整渲染质量，确保在各种设备上流畅运行 60fps。减少动画偏好检测，为低性能设备提供降级体验。'
-          : 'Automatically adjusts rendering quality based on device capabilities for smooth 60fps performance. Reduced animation preferences, degraded experience for low-end devices.',
-      color: 'from-rose-500 to-red-500',
-      bgColor: 'bg-rose-500/10',
-      borderColor: 'border-rose-500/20',
-    },
-    {
       icon: Cpu,
       title: lang === 'zh-CN' ? '零配置部署' : 'Zero Config Deployment',
       description:
@@ -62,18 +45,20 @@ export default function FeaturesSection() {
     },
   ];
 
+  // All values are verifiable from the repo: test count via `npm run test:run`,
+  // bundle size via `npm run build`, transport modes from ChatTransportMode in dialogueService.ts.
   const stats =
     lang === 'zh-CN'
       ? [
-          { value: '60+', label: 'FPS 流畅渲染' },
-          { value: '468', label: '面部关键点' },
-          { value: '<100ms', label: '首字响应延迟' },
+          { value: '189', label: '单元测试用例' },
+          { value: '~240KB', label: 'gzip 打包体积' },
+          { value: '2', label: '传输协议 (HTTP/SSE)' },
           { value: '0 配置', label: '开箱即用' },
         ]
       : [
-          { value: '60+', label: 'FPS Smooth' },
-          { value: '468', label: 'Facial Landmarks' },
-          { value: '<100ms', label: 'First Token Latency' },
+          { value: '189', label: 'Unit Tests' },
+          { value: '~240KB', label: 'gzip Bundle' },
+          { value: '2', label: 'Transports (HTTP/SSE)' },
           { value: '0 Config', label: 'Out-of-the-box' },
         ];
 
@@ -113,7 +98,7 @@ export default function FeaturesSection() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {features.map((feature, index) => (
             <div
               key={feature.title}
