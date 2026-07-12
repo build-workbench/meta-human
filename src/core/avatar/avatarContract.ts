@@ -83,9 +83,6 @@ export const normalizeAvatarEmotion = (value: string): EmotionType =>
 export const normalizeAvatarExpression = (value: string): ExpressionType =>
   normalizeFromList(value, AVATAR_EXPRESSIONS, 'neutral');
 
-export const normalizeAvatarAction = (value: string): AvatarAction =>
-  normalizeFromList(value, AVATAR_ACTIONS, 'idle');
-
 export const normalizeAvatarBehavior = (value: string): BehaviorType =>
   normalizeFromList(value, AVATAR_BEHAVIORS, 'idle');
 

@@ -250,27 +250,6 @@ describe('DigitalHumanEngine', () => {
     expect(goodHandler).toHaveBeenCalled();
   });
 
-  // --- Convenience methods ---
-
-  it('performGreeting sets happy emotion and wave animation', () => {
-    engine.performGreeting();
-    expect(state.setEmotion).toHaveBeenCalledWith('happy');
-    expect(state.setAnimation).toHaveBeenCalledWith('wave');
-  });
-
-  it('performThinking sets neutral emotion and thinking behavior', () => {
-    engine.performThinking();
-    expect(state.setEmotion).toHaveBeenCalledWith('neutral');
-    expect(state.setBehavior).toHaveBeenCalledWith('thinking');
-    expect(state.setAnimation).toHaveBeenCalledWith('think');
-  });
-
-  it('performListening sets neutral emotion and listening behavior', () => {
-    engine.performListening();
-    expect(state.setEmotion).toHaveBeenCalledWith('neutral');
-    expect(state.setBehavior).toHaveBeenCalledWith('listening');
-  });
-
   // --- Dispose ---
 
   it('dispose clears animation timeout and listeners', () => {

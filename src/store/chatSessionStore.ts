@@ -26,7 +26,10 @@ interface ChatSessionState {
 }
 
 type ChatSessionSetFn = {
-  (partial: Partial<ChatSessionState> | ((state: ChatSessionState) => Partial<ChatSessionState>), replace?: false): void;
+  (
+    partial: Partial<ChatSessionState> | ((state: ChatSessionState) => Partial<ChatSessionState>),
+    replace?: false,
+  ): void;
 };
 
 const ENABLE_DEVTOOLS = import.meta.env.DEV && import.meta.env.MODE !== 'test';
@@ -55,7 +58,9 @@ const getSafeLocalStorage = (): Storage | null => {
 };
 
 const isTransientStreamingPlaceholder = (message: ChatMessage): boolean => {
-  return message.role === 'assistant' && message.isStreaming === true && message.text.trim().length === 0;
+  return (
+    message.role === 'assistant' && message.isStreaming === true && message.text.trim().length === 0
+  );
 };
 
 const applyChatHistoryLimit = (chatHistory: ChatMessage[]): ChatMessage[] => {
@@ -82,7 +87,9 @@ const applyChatHistoryLimit = (chatHistory: ChatMessage[]): ChatMessage[] => {
 };
 
 const getPersistableChatHistory = (chatHistory: ChatMessage[]): ChatMessage[] => {
-  return applyChatHistoryLimit(chatHistory.filter((message) => !isTransientStreamingPlaceholder(message)));
+  return applyChatHistoryLimit(
+    chatHistory.filter((message) => !isTransientStreamingPlaceholder(message)),
+  );
 };
 
 const persistSessionId = (sessionId: string): void => {
@@ -251,6 +258,3 @@ export const useChatSessionStore = create<ChatSessionState>()(
     { name: 'chat-session-store', enabled: ENABLE_DEVTOOLS },
   ),
 );
-
-export const selectSessionId = (s: ChatSessionState) => s.sessionId;
-export const selectChatHistory = (s: ChatSessionState) => s.chatHistory;

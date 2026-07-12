@@ -5,6 +5,7 @@
  */
 import { ChatResponsePayload, type StreamCallbacks } from './dialogueService';
 import { getDefaultChatTransport, type ChatTransport } from './dialogueService';
+import type { DialogueServiceResult } from './dialogueService';
 import type { DigitalHumanEngine } from '../avatar/DigitalHumanEngine';
 import { loggers } from '../../lib/logger';
 import {
@@ -107,107 +108,40 @@ export class DialogueOrchestrator {
     userText: string,
     options: DialogueTurnOptions = {},
   ): Promise<ChatResponsePayload | undefined> {
-    const {
-      sessionId,
-      meta,
-      engine,
-      isMuted = false,
-      speakWith,
-      setLoading,
-      onConnectionChange,
-      onClearError,
-      onError,
-      onResetBehavior,
-      onAddUserMessage,
-    } = options;
+    const { sessionId, meta, engine, isMuted = false, speakWith } = options;
 
-    const preparation = this.prepareDialogueTurn(
-      userText,
-      engine,
-      onAddUserMessage,
-      setLoading,
-      'standard',
-    );
-    if (!preparation) {
-      return undefined;
-    }
+    const registered = this.prepareAndRegisterTurn(userText, options, 'standard');
+    if (!registered) return undefined;
 
-    const { content, turnId, abortCtrl } = preparation;
-    const finalizePendingTurn = this.createPendingTurnFinalizer(
-      turnId,
-      setLoading,
-      onResetBehavior,
-    );
-    const pendingTurn: PendingDialogueTurn = {
-      id: turnId,
-      promise: Promise.resolve(undefined),
-      abortController: abortCtrl,
-      finalize: finalizePendingTurn,
-    };
-    this.pendingTurn = pendingTurn;
+    const { content, turnId, abortCtrl } = registered;
+    const pendingTurn = this.pendingTurn!;
 
     const execute = async (): Promise<ChatResponsePayload | undefined> => {
       const chatTransport = this.getChatTransport();
 
       try {
         const result = await chatTransport.send(
-          {
-            sessionId,
-            userText: content,
-            meta,
-          },
+          { sessionId, userText: content, meta },
           {},
           abortCtrl.signal,
         );
 
-        if (abortCtrl.signal.aborted) {
-          return undefined;
-        }
+        if (abortCtrl.signal.aborted) return undefined;
 
-        this.publishTurnSnapshot({
-          status: result.connectionStatus === 'error' ? 'error' : 'complete',
-          mode: 'standard',
-          turnId,
-          userText: content,
-          replyText: result.response.replyText,
-          error: result.error,
-          startedAt: this.turnSnapshot.startedAt,
-          updatedAt: Date.now(),
-        });
-
-        if (result.connectionStatus === 'connected') {
-          onConnectionChange?.('connected');
-          onClearError?.();
-        } else if (result.connectionStatus === 'error') {
-          onConnectionChange?.('error');
-          if (result.error) {
-            onError?.(result.error);
-          }
-        }
-
-        options.onTurnResponse?.(result.response);
+        this.publishTurnResult(result, 'standard', turnId, content, options);
 
         await handleDialogueResponse(result.response, {
           engine,
           isMuted,
           speakWith,
           onAddAssistantMessage: options.onAddAssistantMessage,
-          onError,
+          onError: options.onError,
         });
 
         return result.response;
       } catch (error) {
         if (!abortCtrl.signal.aborted) {
-          this.publishTurnSnapshot({
-            status: 'error',
-            mode: 'standard',
-            turnId,
-            userText: content,
-            replyText: '',
-            error: error instanceof Error ? error.message : '对话失败',
-            startedAt: this.turnSnapshot.startedAt,
-            updatedAt: Date.now(),
-          });
+          this.publishTurnError('standard', turnId, content, '', error, '对话失败');
           throw error;
         }
         return undefined;
@@ -235,52 +169,22 @@ export class DialogueOrchestrator {
       engine,
       isMuted = false,
       speakWith,
-      setLoading,
-      onConnectionChange,
-      onClearError,
-      onError,
-      onResetBehavior,
-      onAddUserMessage,
       onStreamToken,
       onStreamEnd,
     } = options;
 
-    const preparation = this.prepareDialogueTurn(
-      userText,
-      engine,
-      onAddUserMessage,
-      setLoading,
-      'streaming',
-    );
-    if (!preparation) {
-      return undefined;
-    }
+    const registered = this.prepareAndRegisterTurn(userText, options, 'streaming');
+    if (!registered) return undefined;
 
-    const { content, turnId, abortCtrl } = preparation;
-    const finalizePendingTurn = this.createPendingTurnFinalizer(
-      turnId,
-      setLoading,
-      onResetBehavior,
-    );
+    const { content, turnId, abortCtrl } = registered;
+    const pendingTurn = this.pendingTurn!;
 
     let didFinishStream = false;
-
     const finishStream = () => {
-      if (didFinishStream) {
-        return;
-      }
-
+      if (didFinishStream) return;
       didFinishStream = true;
       onStreamEnd?.();
     };
-
-    const pendingTurn: PendingDialogueTurn = {
-      id: turnId,
-      promise: Promise.resolve(undefined),
-      abortController: abortCtrl,
-      finalize: finalizePendingTurn,
-    };
-    this.pendingTurn = pendingTurn;
 
     const execute = async (): Promise<ChatResponsePayload | undefined> => {
       const chatTransport = this.getChatTransport();
@@ -330,13 +234,8 @@ export class DialogueOrchestrator {
         }
 
         const streamResult = step.value;
-
         const result = streamResult ?? {
-          response: {
-            replyText: accumulatedText,
-            emotion: 'neutral',
-            action: 'idle',
-          },
+          response: { replyText: accumulatedText, emotion: 'neutral' as const, action: 'idle' },
           connectionStatus: 'connected' as const,
           error: null,
         };
@@ -346,35 +245,14 @@ export class DialogueOrchestrator {
           return undefined;
         }
 
-        this.publishTurnSnapshot({
-          status: result.connectionStatus === 'error' ? 'error' : 'complete',
-          mode: 'streaming',
-          turnId,
-          userText: content,
-          replyText: result.response.replyText,
-          error: result.error,
-          startedAt: this.turnSnapshot.startedAt,
-          updatedAt: Date.now(),
-        });
-
-        if (result.connectionStatus === 'connected') {
-          onConnectionChange?.('connected');
-          onClearError?.();
-        } else {
-          onConnectionChange?.('error');
-          if (result.error) {
-            onError?.(result.error);
-          }
-        }
-
-        options.onTurnResponse?.(result.response);
+        this.publishTurnResult(result, 'streaming', turnId, content, options);
 
         await handleDialogueResponse(result.response, {
           engine,
           isMuted,
           speakWith,
           onAddAssistantMessage: options.onAddAssistantMessage,
-          onError,
+          onError: options.onError,
         });
 
         finishStream();
@@ -382,17 +260,15 @@ export class DialogueOrchestrator {
       } catch (error) {
         if (!abortCtrl.signal.aborted) {
           logger.error('流式对话失败:', error);
-          this.publishTurnSnapshot({
-            status: 'error',
-            mode: 'streaming',
+          this.publishTurnError(
+            'streaming',
             turnId,
-            userText: content,
-            replyText: accumulatedText,
-            error: error instanceof Error ? error.message : '流式对话失败',
-            startedAt: this.turnSnapshot.startedAt,
-            updatedAt: Date.now(),
-          });
-          onError?.(error instanceof Error ? error.message : '流式对话失败');
+            content,
+            accumulatedText,
+            error,
+            '流式对话失败',
+          );
+          options.onError?.(error instanceof Error ? error.message : '流式对话失败');
         }
         return undefined;
       } finally {
@@ -404,6 +280,88 @@ export class DialogueOrchestrator {
     const promise = execute();
     pendingTurn.promise = promise;
     return promise;
+  }
+
+  /**
+   * 预轮次验证、设置和 pendingTurn 注册。
+   */
+  private prepareAndRegisterTurn(
+    userText: string,
+    options: DialogueTurnOptions,
+    mode: DialogueTurnMode,
+  ): { content: string; turnId: number; abortCtrl: AbortController } | null {
+    const { engine, onAddUserMessage, setLoading, onResetBehavior } = options;
+    const preparation = this.prepareDialogueTurn(
+      userText,
+      engine,
+      onAddUserMessage,
+      setLoading,
+      mode,
+    );
+    if (!preparation) return null;
+
+    const { content, turnId, abortCtrl } = preparation;
+    const finalizePendingTurn = this.createPendingTurnFinalizer(
+      turnId,
+      setLoading,
+      onResetBehavior,
+    );
+    this.pendingTurn = {
+      id: turnId,
+      promise: Promise.resolve(undefined),
+      abortController: abortCtrl,
+      finalize: finalizePendingTurn,
+    };
+    return { content, turnId, abortCtrl };
+  }
+
+  private publishTurnResult(
+    result: DialogueServiceResult,
+    mode: DialogueTurnMode,
+    turnId: number,
+    content: string,
+    options: DialogueTurnOptions,
+  ): void {
+    this.publishTurnSnapshot({
+      status: result.connectionStatus === 'error' ? 'error' : 'complete',
+      mode,
+      turnId,
+      userText: content,
+      replyText: result.response.replyText,
+      error: result.error,
+      startedAt: this.turnSnapshot.startedAt,
+      updatedAt: Date.now(),
+    });
+
+    if (result.connectionStatus === 'connected') {
+      options.onConnectionChange?.('connected');
+      options.onClearError?.();
+    } else {
+      options.onConnectionChange?.('error');
+      if (result.error) options.onError?.(result.error);
+    }
+
+    options.onTurnResponse?.(result.response);
+  }
+
+  private publishTurnError(
+    mode: DialogueTurnMode,
+    turnId: number,
+    content: string,
+    replyText: string,
+    error: unknown,
+    defaultErrorMessage: string,
+  ): void {
+    this.publishTurnSnapshot({
+      status: 'error',
+      mode,
+      turnId,
+      userText: content,
+      replyText,
+      error: error instanceof Error ? error.message : defaultErrorMessage,
+      startedAt: this.turnSnapshot.startedAt,
+      updatedAt: Date.now(),
+    });
   }
 
   /**

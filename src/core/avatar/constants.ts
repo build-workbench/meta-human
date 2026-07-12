@@ -1,15 +1,4 @@
-import {
-  ACTION_TO_BEHAVIOR,
-  AVATAR_BEHAVIORS,
-  AVATAR_EMOTIONS,
-  AVATAR_EXPRESSIONS,
-  EMOTION_TO_EXPRESSION,
-  type BehaviorType,
-  type EmotionType,
-  type ExpressionType,
-} from './avatarContract';
-
-export { EMOTION_TO_EXPRESSION };
+import { ACTION_TO_BEHAVIOR, type BehaviorType } from './avatarContract';
 
 export const ANIMATION_DURATIONS: Record<string, number> = {
   wave: 3000,
@@ -21,12 +10,6 @@ export const ANIMATION_DURATIONS: Record<string, number> = {
   speak: 0,
   idle: 0,
 };
-
-export const VALID_EXPRESSIONS: ExpressionType[] = [...AVATAR_EXPRESSIONS];
-
-export const VALID_EMOTIONS: EmotionType[] = [...AVATAR_EMOTIONS];
-
-export const VALID_BEHAVIORS: BehaviorType[] = [...AVATAR_BEHAVIORS];
 
 export const ANIMATION_TO_BEHAVIOR: Record<string, BehaviorType> = {
   wave: ACTION_TO_BEHAVIOR.wave ?? 'greeting',

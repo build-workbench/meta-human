@@ -37,10 +37,17 @@ export function useChatStream(options: UseChatStreamOptions) {
     settleForTeardown: () => void;
   } | null>(null);
 
+  // Ref to read chatInput without adding it to handleChatSend dependencies
+  const chatInputRef = useRef(chatInput);
+  chatInputRef.current = chatInput;
+
   useEffect(() => {
     setDialogueTurn(dialogue.getTurnSnapshot());
 
     const unsubscribe = dialogue.subscribeTurnSnapshot((snapshot) => {
+      // Skip per-token 'streaming' snapshots to avoid store churn;
+      // streaming text is handled via onStreamToken directly.
+      if (snapshot.status === 'streaming') return;
       setDialogueTurn(snapshot);
     });
 
@@ -55,20 +62,25 @@ export function useChatStream(options: UseChatStreamOptions) {
 
   const handleChatSend = useCallback(
     async (text?: string) => {
-      const content = (text ?? chatInput).trim();
+      const content = (text ?? chatInputRef.current).trim();
       if (!content) return;
       if (useSystemStore.getState().isLoading) return;
 
       if (!text) setChatInput('');
 
       let assistantMessageId: number | null = null;
-      const turnConnection = { status: 'connected' as 'connected' | 'error' };
       const turnSessionId = sessionId;
       const turnToken = Symbol('chat-stream-turn');
 
       const ownsCurrentTurn = () =>
         activeTurnRef.current?.token === turnToken &&
         activeTurnRef.current?.sessionId === turnSessionId;
+
+      const guardTurn = <T extends (...args: never[]) => void>(fn: T): T =>
+        ((...args: never[]) => {
+          if (!ownsCurrentTurn()) return;
+          fn(...args);
+        }) as T;
 
       const releaseCurrentTurn = () => {
         if (ownsCurrentTurn()) {
@@ -77,17 +89,13 @@ export function useChatStream(options: UseChatStreamOptions) {
       };
 
       const finalizeAssistantMessage = (discardEmpty = false) => {
-        if (!ownsCurrentTurn() || !assistantMessageId) {
-          return;
-        }
+        if (!ownsCurrentTurn() || !assistantMessageId) return;
 
         const currentMessage = useChatSessionStore
           .getState()
           .chatHistory.find((msg) => msg.id === assistantMessageId);
 
-        if (!currentMessage) {
-          return;
-        }
+        if (!currentMessage) return;
 
         if (currentMessage.text.trim() || !discardEmpty) {
           updateChatMessage(assistantMessageId, { isStreaming: false });
@@ -97,26 +105,19 @@ export function useChatStream(options: UseChatStreamOptions) {
       };
 
       const syncAssistantMessageWithResult = (replyText: string) => {
-        if (!ownsCurrentTurn() || !assistantMessageId) {
-          return;
-        }
+        if (!ownsCurrentTurn() || !assistantMessageId) return;
 
         const currentMessage = useChatSessionStore
           .getState()
           .chatHistory.find((msg) => msg.id === assistantMessageId);
 
         if (!replyText.trim()) {
-          if (currentMessage) {
-            removeChatMessage(assistantMessageId);
-          }
+          if (currentMessage) removeChatMessage(assistantMessageId);
           return;
         }
 
         if (currentMessage) {
-          updateChatMessage(assistantMessageId, {
-            text: replyText,
-            isStreaming: false,
-          });
+          updateChatMessage(assistantMessageId, { text: replyText, isStreaming: false });
           return;
         }
 
@@ -126,9 +127,7 @@ export function useChatStream(options: UseChatStreamOptions) {
       activeTurnRef.current = {
         token: turnToken,
         sessionId: turnSessionId,
-        settleForTeardown: () => {
-          finalizeAssistantMessage(true);
-        },
+        settleForTeardown: () => finalizeAssistantMessage(true),
       };
 
       try {
@@ -147,68 +146,29 @@ export function useChatStream(options: UseChatStreamOptions) {
           speakWith: (textToSpeak) => tts.speak(textToSpeak),
           setLoading,
           onAddAssistantMessage: undefined,
-          onAddUserMessage: (t) => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
+          onAddUserMessage: guardTurn((t: string) => {
             addChatMessage('user', t);
             assistantMessageId = addChatMessage('assistant', '', true);
-          },
-          onStreamToken: (accumulatedText) => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
+          }),
+          onStreamToken: guardTurn((accumulatedText: string) => {
             if (assistantMessageId) {
               updateChatMessage(assistantMessageId, { text: accumulatedText, isStreaming: true });
             }
-          },
-          onTurnResponse: (response) => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
+          }),
+          onTurnResponse: guardTurn((response: { replyText: string }) => {
             syncAssistantMessageWithResult(response.replyText);
-          },
-          onStreamEnd: () => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
-            finalizeAssistantMessage();
-          },
-          onConnectionChange: (status) => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
-            turnConnection.status = status;
+          }),
+          onStreamEnd: guardTurn(() => finalizeAssistantMessage()),
+          onConnectionChange: guardTurn((status: 'connected' | 'error') => {
             onConnectionChange(status);
-          },
-          onClearError: () => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
-            onClearError();
-          },
-          onError: (msg) => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
-            onError(msg);
-          },
-          onResetBehavior: () => {
-            if (!ownsCurrentTurn()) {
-              return;
-            }
-
+          }),
+          onClearError: guardTurn(() => onClearError()),
+          onError: guardTurn((msg: string) => onError(msg)),
+          onResetBehavior: guardTurn(() => {
             if (useDigitalHumanStore.getState().currentBehavior === 'thinking') {
               engine.setBehavior('idle');
             }
-          },
+          }),
         });
 
         if (!result) {
@@ -227,7 +187,6 @@ export function useChatStream(options: UseChatStreamOptions) {
       }
     },
     [
-      chatInput,
       tts,
       engine,
       addChatMessage,
