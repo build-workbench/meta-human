@@ -214,11 +214,11 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Floating Stats Cards */}
+            {/* Floating Stats Cards — values verifiable via npm run test:run / npm run build */}
             <div className="absolute left-0 top-1/4 hidden xl:block">
               <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
                 <div className="text-2xl font-bold text-white">
-                  60<span className="text-blue-400">fps</span>
+                  189<span className="text-blue-400"> tests</span>
                 </div>
                 <div className="text-xs text-gray-400">{t('hero.stats.fps')}</div>
               </div>
@@ -226,7 +226,7 @@ export default function HeroSection() {
 
             <div className="absolute right-0 bottom-1/3 hidden xl:block">
               <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
-                <div className="text-2xl font-bold text-white">468</div>
+                <div className="text-2xl font-bold text-white">~240KB</div>
                 <div className="text-xs text-gray-400">{t('hero.stats.landmarks')}</div>
               </div>
             </div>

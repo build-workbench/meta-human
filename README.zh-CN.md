@@ -9,16 +9,16 @@
 </p>
 
 <p align="center">
-  基于浏览器的 3D 数字人引擎，集成语音、视觉、对话能力
+  基于浏览器的 3D 数字人引擎，集成语音、对话能力
   <br />
-  <strong>零配置</strong> · <strong>离线可用</strong> · <strong>生产级</strong>
+  <strong>零配置</strong> · <strong>离线可用</strong> · <strong>开源 MIT</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/LessUp/meta-human/actions"><img src="https://img.shields.io/github/actions/workflow/status/LessUp/meta-human/ci.yml?branch=master&label=CI&style=flat-square" alt="CI 状态" /></a>
   <a href="https://lessup.github.io/meta-human/"><img src="https://img.shields.io/badge/Demo-在线-green?style=flat-square&logo=githubpages" alt="在线演示" /></a>
   <a href="https://github.com/LessUp/meta-human/releases"><img src="https://img.shields.io/github/v/release/LessUp/meta-human?style=flat-square&label=版本" alt="版本" /></a>
-  <img src="https://img.shields.io/badge/Bundle-~240KB(gzip)-blue?style=flat-square&label=size" alt="包体积" />
+  <img src="https://img.shields.io/badge/Bundle-~160KB(gzip,landing)-blue?style=flat-square&label=size" alt="包体积" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
   <img src="https://img.shields.io/badge/Three.js-0.177-000000?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -99,7 +99,6 @@ npm run dev
 | GLB/GLTF 支持 | 加载自定义模型或使用内置程序化形象 |
 | 情绪驱动      | 高兴、惊讶、悲伤、愤怒自动映射表情 |
 | 骨骼动画      | 挥手、问候、点头、跳舞，由对话触发 |
-| 自适应性能    | 60fps 渲染，根据设备能力调节画质   |
 
 </td>
 <td>
@@ -122,12 +121,12 @@ digitalHumanEngine.perform({
 
 ### 🗣️ 语音交互
 
-| 功能         | 说明                        |
-| ------------ | --------------------------- |
-| TTS 语音合成 | Edge TTS 提供自然流畅的语音 |
-| ASR 语音识别 | 浏览器原生语音转文字        |
-| 智能静音     | 用户说话时自动暂停播报      |
-| 语音检测     | 录音时提供视觉反馈          |
+| 功能         | 说明                                  |
+| ------------ | ------------------------------------- |
+| TTS 语音合成 | 浏览器原生 SpeechSynthesis 语音输出   |
+| ASR 语音识别 | 浏览器原生 SpeechRecognition 语音输入 |
+| 智能静音     | 用户说话时自动暂停播报                |
+| 语音检测     | 录音时提供视觉反馈                    |
 
 ```typescript
 import { ttsService, asrService } from './core/audio';
@@ -158,29 +157,20 @@ const response = await dialogueService.send({
 // → { replyText: '...', emotion: 'happy', action: 'laugh' }
 ```
 
-### 👁️ 视觉感知
-
-| 功能     | 说明                         |
-| -------- | ---------------------------- |
-| 人脸网格 | 468 个关键点捕捉微表情       |
-| 姿态估计 | 上半身手势识别               |
-| 情绪映射 | 实时情绪推断                 |
-| 隐私优先 | 全部在浏览器处理，数据不上传 |
-
 ---
 
 ## ⚡ Performance
 
-典型设备上的性能基准：
+`npm run build` 和 `npm run test:run` 实测可验证的指标：
 
-| 指标         | 桌面端           | 移动端（中端） | 移动端（低端） |
-| ------------ | ---------------- | -------------- | -------------- |
-| **渲染性能** | 60 FPS           | 60 FPS         | 30 FPS         |
-| **TTS 延迟** | < 200ms          | < 300ms        | < 500ms        |
-| **包体积**   | 180 KB (gzipped) | 180 KB         | 180 KB         |
-| **内存占用** | ~120 MB          | ~80 MB         | ~60 MB         |
+| 指标           | 数值                           |
+| -------------- | ------------------------------ |
+| **首屏包体积** | ~160 KB gzip（懒加载 3D 不含） |
+| **完整包体积** | ~430 KB gzip（含 Three.js）    |
+| **单元测试**   | 189 通过（Vitest）             |
+| **类型检查**   | `tsc --noEmit` strict 模式     |
 
-> 性能根据设备能力自动调节。详见[架构概览](docs/zh/architecture/overview.md)。
+> 运行时 FPS 与内存取决于用户设备和 GPU；本项目不附带合成基准测试。
 
 ---
 
@@ -194,7 +184,7 @@ const response = await dialogueService.send({
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
 │                        核心引擎层                                │
-│   Avatar · Dialogue · Vision · Audio · Performance              │
+│   Avatar · Dialogue · Audio                                     │
 └─────────────────────────────────────────────────────────────────┘
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
@@ -204,7 +194,7 @@ const response = await dialogueService.send({
                                 │
 ┌─────────────────────────────────────────────────────────────────┐
 │                        外部服务                                  │
-│   Three.js · Web Speech API · MediaPipe · OpenAI API            │
+│   Three.js · Web Speech API · OpenAI API                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -215,7 +205,7 @@ const response = await dialogueService.send({
 | Store               | 职责                                 |
 | ------------------- | ------------------------------------ |
 | `chatSessionStore`  | 消息历史、会话生命周期               |
-| `systemStore`       | 连接状态、错误、性能指标             |
+| `systemStore`       | 连接状态、错误                       |
 | `digitalHumanStore` | 数字人运行时状态（表情、动画、音频） |
 
 **[📖 架构文档 →](docs/zh/architecture/overview.md)**
@@ -232,20 +222,17 @@ src/
 │   │   └── constants.ts           # 表情、动作常量
 │   ├── audio/                     # TTS & ASR 服务
 │   ├── dialogue/                  # 对话传输与编排
-│   │   ├── dialogueService.ts     # API 客户端
+│   │   ├── dialogueService.ts     # API 客户端 + HTTP/SSE 传输
 │   │   ├── dialogueOrchestrator.ts
-│   │   └── chatTransport.ts       # HTTP/SSE/WebSocket
-│   ├── vision/                    # MediaPipe 管道
-│   │   ├── visionService.ts
-│   │   └── visionMapper.ts
-│   └── performance/               # 设备能力检测
+│   │   ├── dialogueRequestMeta.ts
+│   │   └── characterPresets.ts
+│   └── createServices.ts          # 服务容器
 ├── components/                    # React 组件
-│   ├── DigitalHumanViewer.tsx     # 3D 视口
+│   ├── viewer/                    # 3D 视口（DigitalHumanViewer.tsx）
 │   ├── ChatDock.tsx               # 聊天界面
 │   ├── TopHUD.tsx                 # 状态栏
 │   ├── ControlPanel.tsx           # 快捷控制
 │   ├── VoiceInteractionPanel.tsx
-│   ├── VisionMirrorPanel.tsx
 │   └── ui/                        # 共享原语
 ├── store/                         # Zustand 状态
 │   ├── chatSessionStore.ts
@@ -327,11 +314,8 @@ npm run test:ui          # Vitest UI 模式
 | 核心引擎        | 90+ ✅ | 90+ ✅ | 90+ ✅    | 15+ ✅    |
 | TTS（语音合成） | 90+ ✅ | 90+ ✅ | 90+ ✅    | 15+ ✅    |
 | ASR（语音识别） | 90+ ✅ | 90+ ✅ | ❌ 不支持 | ❌ 不支持 |
-| MediaPipe 视觉  | 90+ ✅ | 90+ ✅ | 90+ ✅    | 15+ ⚠️    |
 
 > **ASR 限制：** 语音识别功能需要 Chrome 或 Edge 浏览器。Firefox 和 Safari 用户可使用文字输入。
-
-> **Safari 提示：** MediaPipe 视觉功能可能需要开启实验性功能。
 
 ---
 
@@ -352,11 +336,8 @@ npm run test:ui          # Vitest UI 模式
 
 - [x] 核心 3D 数字人渲染
 - [x] 语音交互（TTS/ASR）
-- [x] 视觉感知（MediaPipe）
 - [x] 流式对话
 - [x] 服务发现与端点故障切换
-- [x] 移动端 AR readiness 检测
-- [x] 移动端 AR 支持
 - [x] 自定义形象上传
 - [x] 多语言 TTS
 

@@ -40,15 +40,14 @@ src/
 
 ## Key runtime files
 
-| File                                           | Responsibility                             |
-| ---------------------------------------------- | ------------------------------------------ |
-| `src/core/avatar/DigitalHumanEngine.ts`        | Avatar control facade                      |
-| `src/core/dialogue/dialogueService.ts`         | HTTP dialogue client with fallback         |
-| `src/core/dialogue/chatTransport.ts`           | HTTP / SSE / WebSocket transport selection |
-| `src/core/dialogue/dialogueOrchestrator.ts`    | Turn ownership and request lifecycle       |
-| `src/core/audio/audioService.ts`               | TTS / ASR services                         |
-| `src/store/digitalHumanStore.ts`               | Avatar runtime state                       |
-| `src/components/viewer/DigitalHumanViewer.tsx` | Main 3D viewport                           |
+| File                                           | Responsibility                            |
+| ---------------------------------------------- | ----------------------------------------- |
+| `src/core/avatar/DigitalHumanEngine.ts`        | Avatar control facade                     |
+| `src/core/dialogue/dialogueService.ts`         | HTTP dialogue client + HTTP/SSE transport |
+| `src/core/dialogue/dialogueOrchestrator.ts`    | Turn ownership and request lifecycle      |
+| `src/core/audio/audioService.ts`               | TTS / ASR services                        |
+| `src/store/digitalHumanStore.ts`               | Avatar runtime state                      |
+| `src/components/viewer/DigitalHumanViewer.tsx` | Main 3D viewport                          |
 
 ## Commands
 

@@ -1,3 +1,4 @@
+import { TestTube, GitBranch, ShieldCheck, CheckSquare } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 import {
   ReactLogo,
@@ -16,8 +17,8 @@ export default function TechStackSection() {
       title: lang === 'zh-CN' ? 'UI 层' : 'UI Layer',
       description:
         lang === 'zh-CN'
-          ? 'React 18 + TypeScript 构建现代化界面'
-          : 'React 18 + TypeScript for modern interfaces',
+          ? 'React 19 + TypeScript 构建现代化界面'
+          : 'React 19 + TypeScript for modern interfaces',
       items: [
         { name: 'React', icon: ReactLogo, color: '#61DAFB' },
         { name: 'TypeScript', icon: TypeScriptIcon, color: '#3178C6' },
@@ -47,24 +48,70 @@ export default function TechStackSection() {
     {
       title: lang === 'zh-CN' ? '构建工具' : 'Build Tools',
       description:
-        lang === 'zh-CN' ? 'Vite 5 极速开发体验' : 'Vite 5 for fast development experience',
+        lang === 'zh-CN' ? 'Vite 6 极速开发体验' : 'Vite 6 for fast development experience',
       items: [{ name: 'Vite', icon: ViteIcon, color: '#646CFF' }],
     },
   ];
 
+  // Browser APIs the codebase actually calls. MediaPipe and WebSocket were removed in commit 8ae076e.
   const browserApis =
     lang === 'zh-CN'
       ? [
           { name: 'WebGL 2.0', desc: '硬件加速 3D 渲染' },
           { name: 'Web Speech API', desc: '语音识别与合成' },
-          { name: 'MediaPipe', desc: '本地视觉处理' },
-          { name: 'WebSocket', desc: '实时双向通信' },
         ]
       : [
           { name: 'WebGL 2.0', desc: 'Hardware-accelerated 3D' },
           { name: 'Web Speech API', desc: 'Speech recognition/synthesis' },
-          { name: 'MediaPipe', desc: 'Local vision processing' },
-          { name: 'WebSocket', desc: 'Real-time bidirectional comms' },
+        ];
+
+  // Engineering practices verifiable from the repo: vitest config, .github/workflows/ci.yml,
+  // tsconfig.json strict mode, and .husky/pre-commit + .lintstagedrc.
+  const engineeringPractices =
+    lang === 'zh-CN'
+      ? [
+          {
+            icon: TestTube,
+            title: 'TDD · Vitest',
+            desc: '189 个单元测试，覆盖核心服务与 UI 编排',
+          },
+          {
+            icon: GitBranch,
+            title: 'CI · GitHub Actions',
+            desc: 'push/PR 触发 typecheck + lint + test + build',
+          },
+          {
+            icon: ShieldCheck,
+            title: '类型安全 · TypeScript',
+            desc: 'strict 模式，tsc --noEmit 守护每次提交',
+          },
+          {
+            icon: CheckSquare,
+            title: 'pre-commit · Husky + lint-staged',
+            desc: '提交前自动 eslint --fix + prettier --write',
+          },
+        ]
+      : [
+          {
+            icon: TestTube,
+            title: 'TDD · Vitest',
+            desc: '189 unit tests covering core services and UI orchestration',
+          },
+          {
+            icon: GitBranch,
+            title: 'CI · GitHub Actions',
+            desc: 'push/PR triggers typecheck + lint + test + build',
+          },
+          {
+            icon: ShieldCheck,
+            title: 'Type Safety · TypeScript',
+            desc: 'strict mode, tsc --noEmit gates every commit',
+          },
+          {
+            icon: CheckSquare,
+            title: 'pre-commit · Husky + lint-staged',
+            desc: 'auto eslint --fix + prettier --write before each commit',
+          },
         ];
 
   return (
@@ -179,6 +226,32 @@ digitalHumanEngine.perform({
 });`}</code>
               </pre>
             </div>
+          </div>
+        </div>
+
+        {/* Engineering Practices */}
+        <div className="landing-center max-w-5xl mt-20">
+          <div className="text-center mb-12">
+            <h3 className="text-xl font-semibold text-white mb-2">
+              {lang === 'zh-CN' ? '工程化实践' : 'Engineering Practices'}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {lang === 'zh-CN'
+                ? '从提交到部署的全链路质量守护，每一项均可在仓库中验证'
+                : 'Quality gates from commit to deploy, each verifiable in the repo'}
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {engineeringPractices.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10"
+              >
+                <item.icon className="w-7 h-7 text-blue-400 mb-3" />
+                <h4 className="text-white font-semibold text-sm mb-1.5">{item.title}</h4>
+                <p className="text-xs leading-relaxed text-gray-500">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
