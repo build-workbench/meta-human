@@ -30,7 +30,11 @@ export default function Navbar() {
     { label: t('nav.features'), href: '#features' },
     { label: t('nav.tech'), href: '#tech-stack' },
     { label: t('nav.quickstart'), href: '#quickstart' },
-    { label: t('nav.docs'), href: `./docs/${lang === 'zh-CN' ? 'zh' : 'en'}/`, external: true },
+    {
+      label: 'GitHub',
+      href: 'https://github.com/LessUp/meta-human',
+      external: true,
+    },
   ];
 
   return (

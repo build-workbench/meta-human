@@ -66,7 +66,7 @@ export class DialogueApiError extends Error {
 }
 
 // ============================================================================
-// Turn lifecycle (inlined from dialogueTurnLifecycle.ts)
+// Turn lifecycle
 // ============================================================================
 
 export type {
@@ -77,7 +77,7 @@ export type {
 export { createIdleDialogueTurnSnapshot } from './dialogueTurnSnapshot';
 
 // ============================================================================
-// Endpoint parsing (inlined from endpointDiscovery.ts)
+// Endpoint parsing
 // ============================================================================
 
 const ALLOWED_API_PROTOCOLS = ['http:', 'https:'];
@@ -103,7 +103,7 @@ export function parseApiEndpoints(primaryUrl: string, fallbackUrls = ''): string
 }
 
 // ============================================================================
-// Endpoint router (inlined from dialogueEndpointRouter.ts)
+// Endpoint router
 // ============================================================================
 
 class EndpointRouter {
@@ -156,7 +156,7 @@ class EndpointRouter {
 }
 
 // ============================================================================
-// Payload normalization (inlined from dialoguePayload.ts)
+// Payload normalization
 // ============================================================================
 
 function getLatestUserMessage(messages?: DialogueMessage[]): string {
@@ -186,7 +186,7 @@ export function normalizeDialogueRequestPayload(payload: ChatRequestPayload): Ch
 }
 
 // ============================================================================
-// HTTP client (inlined from dialogueHttpClient.ts)
+// HTTP client
 // ============================================================================
 
 export async function fetchWithTimeout(
@@ -313,7 +313,7 @@ export async function sendDialogueStreamRequest(
 }
 
 // ============================================================================
-// Chat transport (slimmed from chatTransport.ts — HTTP + SSE only, no WebSocket)
+// Chat transport (HTTP + SSE)
 // ============================================================================
 
 export interface ChatTransport {
@@ -382,7 +382,7 @@ export function getDefaultChatTransport(): ChatTransport {
 }
 
 // ============================================================================
-// Connection recovery (inlined from connectionRecovery.ts)
+// Connection recovery
 // ============================================================================
 
 export interface ConnectionRecoveryResult {

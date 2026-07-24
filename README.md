@@ -1,373 +1,108 @@
-# MetaHuman Engine
+# MetaHuman 数字人引擎
+
+浏览器原生 3D 数字人引擎，集成语音、对话能力。**零配置** · **离线可用** · **MIT 开源**
+
+[![CI](https://img.shields.io/github/actions/workflow/status/LessUp/meta-human/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/LessUp/meta-human/actions)
+[![Demo](https://img.shields.io/badge/Demo-在线-green?style=flat-square&logo=githubpages)](https://lessup.github.io/meta-human/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+**[在线体验 →](https://lessup.github.io/meta-human/)**
 
 <p align="center">
-  <img src="public/favicon.svg" width="120" alt="MetaHuman Engine" />
+  <img src="public/preview.svg" width="720" alt="MetaHuman Engine 预览" />
 </p>
 
-<p align="center">
-  <strong>Give AI a real-time interactive digital body</strong>
-</p>
-
-<p align="center">
-  Browser-native 3D digital human engine with voice and dialogue capabilities.
-  <br />
-  <strong>Zero-config</strong> · <strong>Offline-ready</strong> · <strong>Open-source MIT</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/LessUp/meta-human/actions"><img src="https://img.shields.io/github/actions/workflow/status/LessUp/meta-human/ci.yml?branch=master&label=CI&style=flat-square" alt="CI Status" /></a>
-  <a href="https://lessup.github.io/meta-human/"><img src="https://img.shields.io/badge/Demo-Live-green?style=flat-square&logo=githubpages" alt="Live Demo" /></a>
-  <a href="https://github.com/LessUp/meta-human/releases"><img src="https://img.shields.io/github/v/release/LessUp/meta-human?style=flat-square&label=Version" alt="Version" /></a>
-  <img src="https://img.shields.io/badge/Bundle-~160KB(gzip,landing)-blue?style=flat-square&label=size" alt="Bundle Size" />
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
-  <img src="https://img.shields.io/badge/Three.js-0.177-000000?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Vite-6-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" /></a>
-</p>
-
-<p align="center">
-  <a href="#quick-start"><strong>Quick Start</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#performance"><strong>Performance</strong></a> ·
-  <a href="#architecture"><strong>Architecture</strong></a> ·
-  <a href="docs/en/index.md"><strong>Documentation</strong></a> ·
-  <a href="CHANGELOG.md"><strong>Changelog</strong></a> ·
-  <a href="README.zh-CN.md"><strong>中文</strong></a>
-</p>
-
----
-
-## ✨ Demo
-
-🚀 **[Try it live →](https://lessup.github.io/meta-human/)**
-
-> Experience a fully interactive 3D digital human right in your browser.
-> No installation or API keys required!
-
----
-
-## 📸 Preview
-
-<p align="center">
-  <img src="docs/assets/preview.svg" width="800" alt="MetaHuman Engine Preview - 3D Avatar with emotion-driven expressions and real-time dialogue" />
-</p>
-
-<p align="center">
-  <em>3D Avatar with emotion-driven expressions and real-time dialogue</em>
-</p>
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js ≥ 22
-- npm ≥ 10
-
-### Installation
+## 快速开始
 
 ```bash
-# Clone and install
 git clone https://github.com/LessUp/meta-human.git
 cd meta-human
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Open **http://localhost:5173** — your 3D avatar is ready!
+打开 **http://localhost:5173**。无需 API Key，引擎自动降级到本地模拟模式。
 
-> 💡 **No API key required.** The engine automatically falls back to local mock mode for out-of-the-box demos.
+> 可选后端：`examples/backend-python/` 提供 FastAPI 参考实现。
 
-> 🐍 **Optional Backend:** A FastAPI backend example is available in `examples/backend-python/` for custom integrations.
+## 功能
 
----
-
-## 🎯 Features
-
-### 🎭 3D Avatar Engine
-
-<table>
-<tr>
-<td width="50%">
-
-| Feature            | Description                                           |
-| ------------------ | ----------------------------------------------------- |
-| GLB/GLTF Support   | Load custom models or use built-in procedural avatar  |
-| Emotion-Driven     | Happy, surprised, sad, angry moods map to expressions |
-| Skeletal Animation | Wave, greet, nod, dance triggered by dialogue         |
-
-</td>
-<td>
+- **3D 数字人** — GLB/GLTF 自定义模型或内置程序化形象；情绪驱动表情（happy / surprised / sad / angry）；骨骼动画（挥手、点头、跳舞等）
+- **语音交互** — 浏览器原生 TTS（SpeechSynthesis）和 ASR（SpeechRecognition，仅 Chrome/Edge）；智能静音、嘴型同步
+- **对话系统** — HTTP/SSE 双传输；流式逐字响应；端点故障切换；离线降级
+- **角色预设** — 4 种内置角色，后端控制系统提示词
+- **自定义形象** — 上传 GLB 模型替换默认形象
 
 ```typescript
-import { digitalHumanEngine } from './core/avatar';
+import { useEngine, useDialogue } from '@/services';
 
-digitalHumanEngine.perform({
-  emotion: 'happy',
-  expression: 'smile',
-  animation: 'wave',
-});
+const engine = useEngine();
+const dialogue = useDialogue();
+
+const response = await dialogue.runDialogueTurn('讲个笑话');
+engine.setEmotion(response.emotion);
+engine.playAnimation(response.action);
 ```
 
-**Note:** The project uses Vite path aliases. See [Path Aliases](#path-aliases) for configuration.
-
-</td>
-</tr>
-</table>
-
-### 🗣️ Voice Interaction
-
-| Feature         | Description                                  |
-| --------------- | -------------------------------------------- |
-| TTS             | Browser-native SpeechSynthesis voice output  |
-| ASR             | Browser-native SpeechRecognition voice input |
-| Smart Muting    | Auto-pause TTS when user speaks              |
-| Voice Detection | Visual feedback during recording             |
-
-```typescript
-import { ttsService, asrService } from './core/audio';
-
-await ttsService.speak('Hello! How can I help?');
-
-asrService.start({
-  onResult: (text) => dialogueService.send(text),
-});
-```
-
-### 🧠 Intelligent Dialogue
-
-| Feature              | Description                                   |
-| -------------------- | --------------------------------------------- |
-| Multi-Modal Response | Returns `{ replyText, emotion, action }`      |
-| Streaming            | Real-time token-by-token via SSE              |
-| Graceful Degradation | Falls back to local mock when API unavailable |
-| Session Management   | Persistent conversation context               |
-
-```typescript
-import { dialogueService } from './core/dialogue';
-
-const response = await dialogueService.send({
-  text: 'Tell me a joke',
-  sessionId: 'user-123',
-});
-// → { replyText: '...', emotion: 'happy', action: 'laugh' }
-```
-
----
-
-## ⚡ Performance
-
-Verifiable metrics from `npm run build` and `npm run test:run`:
-
-| Metric             | Value                               |
-| ------------------ | ----------------------------------- |
-| **Landing bundle** | ~160 KB gzipped (lazy 3D excluded)  |
-| **Full bundle**    | ~430 KB gzipped (includes Three.js) |
-| **Unit tests**     | 189 passing (Vitest)                |
-| **Type check**     | `tsc --noEmit` strict mode          |
-
-> Runtime FPS and memory depend on the user's device and GPU; no synthetic benchmarks are shipped.
-
----
-
-## 🏗️ Architecture
+## 架构
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                          UI Layer                                │
-│   ChatDock · TopHUD · ControlPanel · SettingsDrawer             │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                       Core Engine Layer                          │
-│   Avatar · Dialogue · Audio                                     │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                       State Layer                                │
-│   chatSessionStore · systemStore · digitalHumanStore            │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                      External Services                           │
-│   Three.js · Web Speech API · OpenAI API                        │
-└─────────────────────────────────────────────────────────────────┘
+UI 层          ChatDock · TopHUD · ControlPanel · SettingsDrawer
+                    │
+服务容器层      ServicesProvider · useEngine · useDialogue · useTTS · useASR
+                    │
+核心引擎层      Avatar · Dialogue · Audio（纯运行时，不引入 React）
+                    │
+状态层          chatSessionStore · systemStore · digitalHumanStore（Zustand 5）
+                    │
+外部服务        Three.js · Web Speech API · 可选 FastAPI 后端
 ```
 
-### State Management
-
-Three focused domains minimize re-renders:
-
-| Store               | Responsibility                                      |
-| ------------------- | --------------------------------------------------- |
-| `chatSessionStore`  | Message history, session lifecycle                  |
-| `systemStore`       | Connection status, errors                           |
-| `digitalHumanStore` | Avatar runtime state (expression, animation, audio) |
-
-**[📖 Architecture Docs →](docs/en/architecture/overview.md)**
-
----
-
-## 📁 Project Structure
+## 项目结构
 
 ```
 src/
-├── core/                          # Engine modules
-│   ├── avatar/                    # 3D rendering & animation
-│   │   ├── DigitalHumanEngine.ts  # Unified driver
-│   │   └── constants.ts           # Expressions, animations
-│   ├── audio/                     # TTS & ASR services
-│   ├── dialogue/                  # Chat transport & orchestration
-│   │   ├── dialogueService.ts     # API client + HTTP/SSE transport
-│   │   ├── dialogueOrchestrator.ts
-│   │   ├── dialogueRequestMeta.ts
-│   │   └── characterPresets.ts
-│   └── createServices.ts          # Service container
-├── components/                    # React components
-│   ├── viewer/                    # 3D viewport (DigitalHumanViewer.tsx)
-│   ├── ChatDock.tsx               # Chat interface
-│   ├── TopHUD.tsx                 # Status bar
-│   ├── ControlPanel.tsx           # Quick controls
-│   ├── VoiceInteractionPanel.tsx
-│   └── ui/                        # Shared primitives
-├── store/                         # Zustand stores
-│   ├── chatSessionStore.ts
-│   ├── systemStore.ts
-│   └── digitalHumanStore.ts
-├── hooks/                         # Custom hooks
-├── pages/                         # Route pages
-└── lib/                           # Utilities
+├── core/                          # 引擎模块（不引入 React）
+│   ├── avatar/                    # 3D 渲染与动画
+│   ├── audio/                     # TTS & ASR 服务
+│   ├── dialogue/                  # 对话传输与编排
+│   └── createServices.ts          # 服务容器工厂
+├── services/                      # React 服务容器（ServicesProvider、useServices）
+├── components/                    # React 组件
+│   ├── viewer/                    # 3D 视口
+│   └── landing/                   # 落地页
+├── store/                         # Zustand 状态
+├── hooks/                         # 自定义 Hooks
+├── pages/                         # 路由页面
+├── __tests__/                     # 单元测试（Vitest）
+└── lib/                           # 工具函数
 ```
 
-### Path Aliases
+路径别名：`@/*` → `src/*`（配置在 `vite.config.ts` 和 `tsconfig.json`）。
 
-This project uses Vite path aliases configured in `vite.config.ts` and `tsconfig.json`:
-
-| Alias | Maps to |
-| ----- | ------- |
-| `@/*` | `src/*` |
-
----
-
-## 🌐 Deployment
-
-### GitHub Pages (Frontend)
+## 脚本
 
 ```bash
-npm run build:pages
+npm run dev              # 开发服务器
+npm run build            # 生产构建
+npm run build:pages      # GitHub Pages 构建
+npm run typecheck        # TypeScript 检查
+npm run lint             # ESLint 检查
+npm run test:run         # 运行测试
+npm run test:coverage    # 覆盖率报告
 ```
 
-1. Set `VITE_API_BASE_URL` in GitHub Repository Variables
-2. Push to `master` — CI auto-deploys
-3. Live at: `https://lessup.github.io/meta-human/`
+## 浏览器支持
 
-**[📖 Deployment Guide →](docs/en/guide/installation.md)**
+| 功能           | Chrome / Edge | Firefox | Safari |
+| -------------- | ------------- | ------- | ------ |
+| 核心引擎 + TTS | 90+ ✅        | 90+ ✅  | 15+ ✅ |
+| ASR 语音识别   | 90+ ✅        | ❌      | ❌     |
 
----
+## 贡献
 
-## 🛠️ Scripts
+遵循 [Conventional Commits](https://www.conventionalcommits.org/lang/zh-CN/) 规范，保持 `master` 分支。详见 [AGENTS.md](AGENTS.md)。
 
-### Development
-
-```bash
-npm run dev              # Start dev server (port 5173)
-npm run preview          # Preview production build
-```
-
-### Build
-
-```bash
-npm run build            # Production build
-npm run build:pages      # GitHub Pages build
-npm run build:analyze    # Build with bundle analyzer
-```
-
-### Quality
-
-```bash
-npm run lint             # ESLint check
-npm run lint:fix         # Auto-fix ESLint issues
-npm run format           # Prettier formatting
-npm run format:check     # Check formatting without writing
-npm run typecheck        # TypeScript check
-```
-
-### Testing
-
-```bash
-npm run test             # Vitest watch mode
-npm run test:run         # Run tests once
-npm run test:coverage    # Coverage report
-npm run test:ui          # Vitest UI mode
-```
-
----
-
-## 🧰 Browser Support
-
-| Feature                  | Chrome | Edge   | Firefox          | Safari           |
-| ------------------------ | ------ | ------ | ---------------- | ---------------- |
-| Core Engine              | 90+ ✅ | 90+ ✅ | 90+ ✅           | 15+ ✅           |
-| TTS (Speech Synthesis)   | 90+ ✅ | 90+ ✅ | 90+ ✅           | 15+ ✅           |
-| ASR (Speech Recognition) | 90+ ✅ | 90+ ✅ | ❌ Not supported | ❌ Not supported |
-
-> **ASR Limitations:** Speech recognition requires Chrome or Edge due to Web Speech API limitations. Firefox and Safari users can use text input instead.
-
----
-
-## 📚 Documentation
-
-- **[Quick Start](docs/en/guide/getting-started.md)** — Get running in 5 minutes
-- **[API Reference](docs/en/api/overview.md)** — Backend API documentation
-- **[Architecture](docs/en/architecture/overview.md)** — System design
-- **[Configuration](docs/en/guide/configuration.md)** — Environment variables and settings
-- **[Contributing](docs/contributing/)** — Contribution guidelines
-- **[Changelog](CHANGELOG.md)** — Version history
-
----
-
-## 🛣️ Roadmap
-
-See [CHANGELOG.md](CHANGELOG.md) for released features and [GitHub Projects](https://github.com/LessUp/meta-human/projects) for upcoming work.
-
-- [x] Core 3D avatar rendering
-- [x] Voice interaction (TTS/ASR)
-- [x] Streaming dialogue
-- [x] Service discovery and endpoint failover
-- [x] Custom avatar upload
-- [x] Multi-language TTS
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](docs/contributing/) for details.
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feat/amazing-feature`
-3. Commit changes: `git commit -m 'feat: add amazing feature'`
-4. Push: `git push origin feat/amazing-feature`
-5. Open a Pull Request
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/).
-
----
-
-## 📄 License
+## 许可证
 
 [MIT](LICENSE) © LessUp
-
----
-
-<p align="center">
-  <strong>Built with ❤️ to make digital humans accessible to everyone</strong>
-</p>
-
-<p align="center">
-  <a href="https://github.com/LessUp/meta-human/stargazers">⭐ Star us on GitHub</a> ·
-  <a href="https://x.com/LessUpHQ">🐦 Follow on X</a>
-</p>

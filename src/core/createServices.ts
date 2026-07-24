@@ -1,10 +1,9 @@
 /**
  * 服务容器工厂与类型。
- *
- * 创建服务实例，使用集中式 adapters 与 Zustand store 交互。
  */
 
-import { createASRStateAdapter, createEngineStateAdapter, createTTSCallbacks } from './adapters';
+import { createASRStateAdapter, createTTSCallbacks } from './audio/audioAdapters';
+import { createEngineStateAdapter } from './avatar/avatarStateAdapter';
 import { TTSService, ASRService } from './audio/audioService';
 import { DigitalHumanEngine } from './avatar/DigitalHumanEngine';
 import { DialogueOrchestrator } from './dialogue/dialogueOrchestrator';
@@ -35,7 +34,3 @@ export function disposeServices(services: Services): void {
   services.engine.dispose();
   services.dialogue.reset();
 }
-
-export type { TTSCallbacks, ASRStateAdapter } from './audio/audioAdapters';
-export type { EngineStateAdapter } from './avatar/avatarStateAdapter';
-export type { StateAdapter } from './avatar/DigitalHumanEngine';

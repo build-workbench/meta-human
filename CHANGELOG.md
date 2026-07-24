@@ -1,281 +1,154 @@
-# Changelog
+# 更新日志
 
-All notable changes to MetaHuman Engine are documented in this file.
+记录 MetaHuman Engine 的所有重要变更。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
 ---
 
 ## [Unreleased]
 
-### 🎭 Streaming & Lipsync
+### 🎭 流式对话与嘴型同步
 
-- **True streaming dialogue** — Replaced fake streaming in the Python backend with real token-by-token streaming. The LLM now outputs plain reply text first, followed by a `===META===` marker line carrying the emotion/action JSON, so users see tokens appear as the LLM generates them instead of after the full response completes.
-- **Lipsync mouth animation** — Added a `mouthOpen` state channel driven by a time-based viseme loop in `TTSService` (≈16Hz sinusoidal + noise simulation). The procedural `CyberAvatar` now renders a mouth mesh that opens and closes in sync with TTS playback, and `onSpeakEnd` cleanly resets the mouth to closed.
+- **真流式对话** — Python 后端从假流式改为真逐字流式。LLM 先输出纯文本回复，随后以 `===META===` 标记行携带 emotion/action JSON，用户在 LLM 生成过程中即可看到逐字输出。
+- **嘴型同步** — 新增 `mouthOpen` 状态通道，由 `TTSService` 中基于时间的 viseme 循环驱动（≈16Hz 正弦 + 噪声模拟）。程序化 `CyberAvatar` 渲染嘴部网格，随 TTS 播放张合，`onSpeakEnd` 重置为闭嘴。
 
-### 🧑‍🎤 Character Presets
+### 🧑‍🎤 角色预设
 
-- **Built-in character presets** — Shipped 4 character personas (`lively-assistant`, `serious-advisor`, `cute-companion`, `pro-service`) with backend-side system prompt mapping. The frontend only sends a `characterId`; the backend controls the prompt to avoid injection. A preset selector is now available in the settings drawer's basic tab.
-- **`characterId` in dialogue metadata** — `buildDialogueRequestMeta` now carries an optional `characterId` field, and `useChatStream` forwards the active preset from `digitalHumanStore` on every streaming turn.
+- **内置角色预设** — 提供 4 种角色人设（`lively-assistant`、`serious-advisor`、`cute-companion`、`pro-service`），后端控制系统提示词映射。前端仅发送 `characterId`，避免注入。设置面板基础标签页新增预设选择器。
+- **对话元数据携带 `characterId`** — `buildDialogueRequestMeta` 新增可选 `characterId` 字段，`useChatStream` 在每次流式轮次中转发当前预设。
 
-### ⚙️ Runtime Configuration
+### ⚙️ 运行时配置
 
-- **Runtime API endpoint override** — Added a `config` tab in the settings drawer for overriding the dialogue backend base URL and fallback endpoints at runtime. The override is persisted in `localStorage` and reapplied on app startup via `ServicesProvider`, taking precedence over `VITE_API_BASE_URL` env config. A reset button restores the env defaults.
+- **运行时 API 端点覆盖** — 设置面板新增 `config` 标签页，可在运行时覆盖对话后端 base URL 和备用端点。覆盖值持久化到 `localStorage`，启动时由 `ServicesProvider` 重新应用，优先于 `VITE_API_BASE_URL` 环境配置。重置按钮恢复环境默认值。
 
-### 🧪 Tests
+### 🧪 测试
 
-- Added `lipsync.test.ts` (7 tests) covering `mouthOpen` clamping, TTS callback wiring, and the viseme loop start/stop lifecycle.
-- Added `characterPresets.test.ts` (6 tests) covering preset uniqueness, default fallback, and validation.
-- Added `runtimeApiConfig.test.ts` (5 tests) covering `localStorage` persistence and `applyRuntimeApiEndpoints` / `resetRuntimeApiEndpoints` routing.
-- Extended `dialogueRequestMeta.test.ts` with `characterId` inclusion/omission cases.
-- Extended backend `test_dialogue_service.py` with a `CharacterPresetTest` class (3 tests) verifying character prompt selection, unknown-id fallback, and default behavior.
+- 新增嘴型同步（`mouthOpen` 钳位、TTS 回调接线、viseme 循环生命周期）、角色预设（唯一性、默认回退、校验）、运行时 API 配置（`localStorage` 持久化、端点路由）测试。
+- 扩展 `dialogueRequestMeta` 和后端对话服务的 `characterId` 处理测试。
 
-### ✨ Runtime Capabilities
+### ✨ 运行时能力
 
-- Added structured dialogue request metadata so language preference, speech configuration, and recent vision context travel together with each chat turn
-- Persisted speech preferences and recent vision context in `digitalHumanStore`, and localized the voice interaction panel for multi-language TTS flows
-- Added custom avatar upload, replacement, fallback-to-built-in handling, and avatar management controls in the settings drawer
-- Added endpoint discovery with primary/backup failover for health checks, standard chat requests, and streaming chat requests
-- Added touch/WebXR readiness detection and surfaced an `AR Ready` platform indicator in the HUD
-- Added immersive WebXR AR session entry/exit flow, persisted immersive session state, and a viewer bridge that forwards the active XR session to the Three.js renderer
-- Added operator-facing endpoint routing diagnostics so the HUD now surfaces the active service endpoint and failover count
-- Added a shared avatar source adapter so page composition, settings UI, and controller fallback logic reuse the same source/status/object-URL decisions
+- 新增结构化对话请求元数据，语言偏好、语音配置和近期视觉上下文随每个对话轮次一起发送
+- 在 `digitalHumanStore` 中持久化语音偏好和近期视觉上下文，语音交互面板支持多语言 TTS
+- 新增自定义形象上传、替换、回退到内置形象处理，设置面板新增形象管理控件
+- 新增端点发现与主/备故障切换，覆盖健康检查、标准对话请求和流式对话请求
+- 新增触摸/WebXR 就绪检测，HUD 显示 `AR Ready` 平台指示器
+- 新增沉浸式 WebXR AR 会话进入/退出流程，持久化沉浸式会话状态，查看器桥接将活跃 XR 会话转发给 Three.js 渲染器
+- 新增运维端点路由诊断，HUD 显示当前服务端点和故障切换次数
+- 新增共享形象源适配器，页面组合、设置 UI 和控制器回退逻辑复用相同的源/状态/对象 URL 决策
 
-### 🧹 Repository Simplification
+### 🧹 仓库精简
 
-- Removed repository-scoped AI workflow frameworks and generated automation from `.trellis/`, `.claude/`, and `.opencode/`
-- Simplified contributor guidance to a minimal `AGENTS.md` / `CLAUDE.md` surface
-- Removed residual AI workflow docs from `docs/agents/` and deleted the repository Copilot instruction file
-- Dropped the duplicate root `docs/api/`, `docs/architecture/`, and `docs/guide/` trees in favor of the canonical localized docs
-- Removed the legacy `/advanced` and `/digital-human` app aliases so the product runtime has a single `/app` entry
-- Removed deprecated module-level dialogue orchestrator wrappers and kept orchestration instance-scoped
-- Stopped exposing changelog navigation in the landing page and docs site
-- Corrected stale docs and Pages copy that still claimed Docker, Render, CLI scaffolds, templates, and old backend paths
-- Consolidated historical notes from the removed `changelog/` directory into this file
+- 移除 `.trellis/`、`.claude/`、`.opencode/` 中的 AI 工作流框架和生成自动化
+- 贡献指南精简为最小化 `AGENTS.md` / `CLAUDE.md`
+- 移除 `docs/agents/` 残留 AI 工作流文档，删除仓库 Copilot 指令文件
+- 删除重复的根目录 `docs/api/`、`docs/architecture/`、`docs/guide/`，保留规范化本地化文档
+- 移除遗留 `/advanced` 和 `/digital-human` 应用别名，产品运行时统一为 `/app` 入口
+- 移除已废弃的模块级对话编排器封装，编排保持实例作用域
+- 落地页和文档站不再暴露更新日志导航
+- 修正仍声称 Docker、Render、CLI 脚手架、模板和旧后端路径的过时文档
+- 将已删除 `changelog/` 目录的历史笔记合并到本文件
+- 删除 `docs/` 目录和 VitePress 文档站，文档精简为根目录中文文件
+- 删除英文 README，仅保留中文 `README.md`
+- 删除未使用的 barrel index 和死代码（`core/adapters.ts` 等）
+- 修正 README 和落地页中编造的 API 示例（`perform()`、`dialogueService.send()` 等）
 
-### 🗂️ Historical Notes Consolidated From `changelog/`
+### 🗂️ 历史笔记
 
-- **2026-05-22** — Scoped dialogue runtime to the service container, normalized `DigitalHumanEngine` invalid inputs, and tightened broad UI subscriptions
-- **2026-05-21** — Removed the dead `DigitalHumanViewer` pass-through export, centralized service adapters, and moved dialogue orchestration away from module-level state
-- **2026-05-15** — Removed the deprecated voice command processor and clarified the four-file service container structure
-- **2026-05-12** — Consolidated voice command handling into `src/core/voiceCommand/`
-- **2026-05-12** — Added automatic language detection and persisted language preference for GitHub Pages
+- **2026-05** — 对话运行时限定到服务容器，移除死导出和已废弃语音命令处理器，集中化服务适配器，新增 GitHub Pages 语言检测。
 
 ---
 
 ## [2.2.0] - 2026-04-29
 
-### 🏗️ Architecture
+### 🏗️ 架构
 
-- **Python Backend** — Moved `server/` to `examples/backend-python/` as optional reference implementation
-- **Project Structure** — Clarified backend is optional, frontend is zero-config by default
+- **Python 后端** — `server/` 移至 `examples/backend-python/` 作为可选参考实现
+- **项目结构** — 明确后端可选，前端默认零配置
 
-### 📚 Documentation
+### 📚 文档
 
-- **README** — Added backend optional note, unified Node.js ≥22 requirement
-- **docs/guide/** — Removed Python prerequisite, updated project structure
-- **docs/index.md** — Fixed version number (v1.0.0 → v2.1.0)
-- **changelog/** — Removed duplicate CHANGELOG.zh-CN.md
+- README 新增后端可选说明，统一 Node.js ≥22 要求
+- 移除 Python 前置要求，更新项目结构
+- 修复版本号（v1.0.0 → v2.1.0），删除重复 CHANGELOG.zh-CN.md
 
-### 🛠️ Engineering
+### 🛠️ 工程
 
-- **build-pages.sh** — Added sitemap generation, build timestamp, size output
-- **.gitignore** — Added `*.tsbuildinfo`, updated Python comments
-- **.vscode/** — Added settings.json and mcp.json
+- `build-pages.sh` 新增站点地图生成、构建时间戳、体积输出
+- `.gitignore` 新增 `*.tsbuildinfo`
+- `.vscode/` 新增 settings.json 和 mcp.json
 
 ---
 
 ## [2.1.0] - 2026-04-29
 
-### 🏗️ Architecture Overhaul
+### 🏗️ 架构大改
 
-#### Observability & Turn Ownership (from p0-foundation-observability)
+- **对话编排器** — 引入 `turnId` 所有权隔离，`finalizeDialogueTurn` 仅在当前 turnId 匹配时执行清理，防止跨轮次状态污染
+- **会话存储** — 新增本地持久化（sessionId + 聊天记录）、消息上限（100 条）、流式占位符过滤、类型守卫反序列化
+- **系统存储** — 新增 `ConnectionDiagnostics`（健康检查延迟、降级状态跟踪）
+- **音频服务** — 修复 ASR 配置可选属性赋值
+- **清理 20+ 死文件**：`.omc/`、`Dockerfile`、`docker/`、`docker-compose.yml`、`render.yaml` 等
+- **清理 3 个 worktree、4 个过时分支**，仅保留 `master`
+- **重写 `.gitignore`**：分类结构，去重
+- **CI** — 发布说明改用 `generate_release_notes: true`
 
-- **Dialogue Orchestrator** — Introduced `turnId`-based ownership isolation; `finalizeDialogueTurn` only executes cleanup when the current turnId matches, preventing cross-turn state corruption
-- **Chat Session Store** — Added local persistence (sessionId + chat history), message limit enforcement (100 max), transient streaming placeholder filtering, and robust deserialization with type guards
-- **System Store** — Added `ConnectionDiagnostics` (health check latency, degraded state tracking), `recordConnectionHealth()` action, and factory functions for initial metric state
-- **Audio Service** — Fixed optional property assignments for ASR config (non-null assertions for constructor-initialized defaults)
-- **Chat Transport** — Fixed TypeScript union type narrowing for `WSServerEvent` after while-loop guard; added `as const` assertions for literal types
-- **WS Client** — Removed unused `resolveConnect` field
+### 🐛 修复
 
-#### Project Cleanup
-
-- **Removed 20+ dead files**: `.omc/`, `Dockerfile`, `docker/`, `docker-compose.yml`, `render.yaml`, `lighthouserc.json`, `docs/superpowers/`, `docs/portal.html`, `RELEASE_NOTES.md`, `CHANGELOG.zh-CN.md`, `CLAUDE.local.md`, and more
-- **Removed 3 worktrees**: `final-terminal-state`, `p0-foundation-observability`, `fix/ci-tests`
-- **Removed 4 stale branches**: Only `master` remains
-- **Rewrote `.gitignore`**: Clean categorized structure, removed duplicates
-
-#### Documentation
-
-- **AGENTS.md** — Deep rewrite with file change impact matrix, debug decision tree, and prohibited actions checklist
-- **CLAUDE.md** — Streamlined for Claude Code-specific workflow; added Zustand 5 and TW4 gotchas
-- **copilot-instructions.md** — Reduced to essential quick-reference index
-- **README.md / README.zh-CN.md** — Fixed CI badges (main→master), updated version badges (React 19, Vite 6, Three.js 0.177), removed Render deployment section, corrected path alias table (`@/*` → `src/*`)
-- **CHANGELOG.md** — Fixed broken migration guide link
-
-#### CI/CD
-
-- **ci.yml** — Replaced hardcoded release body with `generate_release_notes: true`
-- **build-pages.sh** — Removed portal.html copy; React LandingPage is now the Pages entry point
-- **OpenSpec** — Updated config.yaml tech stack versions; archived p0 change proposal
-
-### 🐛 Fixed
-
-- Fixed 2 test failures caused by `speakWith` becoming fire-and-forget (microtask flush needed before assertion)
-- Fixed ESLint errors from unused catch variables in audioService.ts
+- 修复 `speakWith` 变为 fire-and-forget 导致的 2 个测试失败
+- 修复 audioService.ts 中未使用 catch 变量的 ESLint 错误
 
 ---
 
 ## [1.1.0] - 2026-04-27
 
-### 🔧 Changed
-
-#### Code Quality
-
-- **TypeScript Strict Mode** — Enabled `strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`
-- Fixed 31 type errors across the codebase
-- Removed unused React imports from component files
-- Fixed type safety issues in `chatTransport.ts` and `wsClient.ts`
-
-#### Code Deduplication
-
-- Unified `buildEmptyResponse` function between `dialogueService.ts` and `chatTransport.ts`
-- Exported `buildEmptyResponse` from `dialogueService.ts` for reuse
-
-### 📚 Documentation
-
-- Unified Node.js version requirement to ≥ 20 across all documentation
-- Updated Bundle Size badge to reflect actual gzipped size (~240KB)
-- Added `.nvmrc` file for Node.js version management
-- Created `server/requirements.lock` for Python dependency pinning
-- Enhanced `AGENTS.md` with testing guidelines and refactoring standards
+- 启用 TypeScript strict 模式（`strict`、`noUnusedLocals`、`noUnusedParameters`、`noFallthroughCasesInSwitch`），修复 31 个类型错误
+- 统一 `buildEmptyResponse` 函数，消除 `dialogueService.ts` 和 `chatTransport.ts` 间的重复
+- 统一 Node.js 版本要求为 ≥20，新增 `.nvmrc`
 
 ---
 
 ## [1.0.0] - 2025-04-22
 
-### 🎉 First Stable Release
+首个稳定版本。
 
-MetaHuman Engine reaches its first stable release with a complete feature set and comprehensive documentation.
-
-### ✨ Added
-
-#### Core Features
-
-- **3D Avatar Engine** — Real-time Three.js rendering with emotion-driven expressions and skeletal animations
-- **Voice Interaction** — TTS synthesis and ASR recognition via Web Speech API
-- **Visual Perception** — MediaPipe face mesh and pose estimation for emotion/gesture detection
-- **Dialogue System** — OpenAI-compatible chat with streaming (SSE) and WebSocket support
-
-#### Architecture
-
-- **State Management** — Three focused Zustand stores:
-  - `chatSessionStore` for message history
-  - `systemStore` for connection/performance metrics
-  - `digitalHumanStore` for avatar runtime state
-- **Transport Abstraction** — Unified interface for HTTP/SSE/WebSocket with auto-selection
-- **Device Capability Detection** — Adaptive rendering based on hardware tier
-
-#### Performance
-
-- Frame skipping for low-end devices
-- Visibility-based animation pausing
-- Adaptive DPR, shadows, and particle counts
-- Render performance tracking (FPS metrics)
-
-### 🔧 Changed
-
-#### Code Quality
-
-- Consolidated duplicate visibility handlers into `useIsTabVisibleRef` hook
-- Extracted `rotateCameraHorizontal` helper for camera controls
-- Created typed constants `TRANSPORT_LABELS` and `CONNECTION_STATUS_TEXT`
-- Replaced `console.*` calls with structured logger
-- Added `useCallback` optimization for keyboard handlers
-
-#### Dialogue System
-
-- Added abort controller support for request cancellation
-- Improved streaming with proper cleanup on abort
-- Enhanced error handling with graceful degradation
-- Unified dialogue turn preparation logic
-
-#### Audio Service
-
-- Enhanced `dispose()` cleanup to prevent memory leaks
-- Added preset timer clearing in ASR service
-- Improved generation tracking for callbacks
-
-### 🐛 Fixed
-
-- Memory leaks from event listeners without cleanup
-- Unnecessary re-renders from broad store subscriptions
-- Race conditions in dialogue orchestration
-- TTS false error reporting
-- Voice command misfiring
-- WebSocket exception handling
-- Animation state residue after unmount
-- useEffect infinite reload issues
+- **3D 数字人引擎** — Three.js 实时渲染，情绪驱动表情，骨骼动画
+- **语音交互** — Web Speech API TTS 合成与 ASR 识别
+- **对话系统** — OpenAI 兼容对话，SSE 流式支持
+- **状态管理** — 三个独立 Zustand store（chatSession / system / digitalHuman）
+- **传输抽象** — HTTP/SSE 统一接口，自动选择
+- **性能优化** — 低端设备跳帧、可见性暂停、自适应 DPR/阴影/粒子数
 
 ---
 
 ## [0.9.0] - 2025-03-18
 
-### Added
-
-- Architecture refactor with state domain separation
-- Abstracted `ChatTransport` interface
-- HTTP, SSE, and WebSocket transport implementations
-- `useAdvancedDigitalHumanController` hook
-
----
+- 架构重构，状态域分离
+- 抽象 `ChatTransport` 接口，HTTP/SSE 传输实现
 
 ## [0.8.0] - 2025-02-25
 
-### Added
-
-- SSE streaming dialogue integration
-- Progressive message display
-- `firstTokenMs` and `responseCompleteMs` performance tracking
-
----
+- SSE 流式对话集成，渐进式消息展示
 
 ## [0.7.0] - 2025-01-24
 
-### Added
-
-- Web Speech API integration for TTS
-- Queue management and interruption support
-- Browser-native speech recognition (ASR)
-- Command mode vs dictation mode
-
----
+- Web Speech API TTS 集成，浏览器原生 ASR，命令/听写模式
 
 ## [0.6.0] - 2025-01-23
 
-### Added
-
-- Component structure: `DigitalHumanViewer`, `ChatDock`, `TopHUD`, `ControlPanel`
-- Tailwind CSS integration
-- Dark mode support
-- Responsive layout
+- 组件结构：`DigitalHumanViewer`、`ChatDock`、`TopHUD`、`ControlPanel`
+- Tailwind CSS 集成，暗色模式，响应式布局
 
 ---
 
-## Versioning
+## 版本规则
 
-This project follows [Semantic Versioning](https://semver.org/):
+遵循[语义化版本](https://semver.org/lang/zh-CN/)：
 
-- **MAJOR** — Incompatible API changes
-- **MINOR** — New features, backward compatible
-- **PATCH** — Bug fixes, backward compatible
-
----
-
-## Migration Guide
-
-See release notes in each version's GitHub Release page.
+- **MAJOR** — 不兼容的 API 变更
+- **MINOR** — 向后兼容的新功能
+- **PATCH** — 向后兼容的缺陷修复
 
 ---
 
