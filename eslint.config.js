@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'dist-*', 'coverage', '**/node_modules/**', '*.mjs', 'docs/.vitepress/dist'],
+    ignores: ['dist', 'dist-*', 'coverage', '**/node_modules/**', '*.mjs'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -39,13 +39,6 @@ export default tseslint.config(
     files: ['src/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
-  // VitePress 主题文件使用 Vue composables，不是 React Hooks
-  {
-    files: ['docs/.vitepress/theme/**/*.ts'],
-    rules: {
-      'react-hooks/rules-of-hooks': 'off',
     },
   },
 );
