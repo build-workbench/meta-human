@@ -1,14 +1,14 @@
 {
   "name": "MetaHuman Engine",
   "short_name": "MetaHuman",
-  "description": "Browser-native 3D digital human engine with voice, vision, and dialogue capabilities",
+  "description": "浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。",
   "start_url": "/meta-human/#/app",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#6366f1",
   "orientation": "any",
   "scope": "/meta-human/",
-  "lang": "en",
+  "lang": "zh-CN",
   "dir": "ltr",
   "categories": ["entertainment", "productivity", "utilities"],
   "icons": [

@@ -13,8 +13,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
-
-declare const __MOBILE__: boolean;
-declare const __DESKTOP__: boolean;
-declare const __AR__: boolean;
-declare const __APP_VERSION__: string;

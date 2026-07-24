@@ -3,16 +3,6 @@
 
 User-agent: *
 Allow: /
-Allow: /docs/
-Allow: /demo/
-
-# 禁止爬虫访问的路径
-Disallow: /api/
-Disallow: /server/
-Disallow: /private/
-Disallow: /admin/
-Disallow: /*.json$
-Disallow: /*.config$
 
 # 站点地图
 Sitemap: https://lessup.github.io/meta-human/sitemap.xml
