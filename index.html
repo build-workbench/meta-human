@@ -14,12 +14,10 @@
     <meta
       name="description"
       content="MetaHuman Engine - 开源 3D 数字人交互引擎，支持语音和对话能力。零配置，离线可用，开源 MIT。"
-      data-i18n-meta="description"
     />
     <meta
       name="keywords"
       content="digital human, 3D avatar, AI, voice interaction, WebGL, Three.js, React, TypeScript, 数字人, 3D形象, 人工智能, 语音交互"
-      data-i18n-meta="keywords"
     />
     <meta name="author" content="LessUp" />
     <meta name="robots" content="index, follow" />
@@ -30,35 +28,28 @@
     <meta
       property="og:title"
       content="MetaHuman Engine - 3D数字人交互引擎"
-      data-i18n-meta="og:title"
     />
     <meta
       property="og:description"
       content="浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。"
-      data-i18n-meta="og:description"
     />
     <meta property="og:url" content="${BASE_URL}" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale" content="zh_CN" />
 
     <!-- Twitter 卡片 -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@LessUpHQ" />
     <meta name="twitter:creator" content="@LessUpHQ" />
-    <meta name="twitter:title" content="MetaHuman Engine - 3D Digital Human Platform" />
+    <meta name="twitter:title" content="MetaHuman Engine - 3D 数字人交互引擎" />
     <meta
       name="twitter:description"
-      content="Browser-native 3D digital human engine with voice, vision, and dialogue capabilities"
+      content="浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。"
     />
 
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MetaHuman" data-i18n-meta="apple:title" />
-
-    <!-- Windows -->
-    <meta name="msapplication-TileColor" content="#6366f1" />
-    <meta name="msapplication-config" content="./browserconfig.xml" />
+    <meta name="apple-mobile-web-app-title" content="MetaHuman" />
 
     <!-- 移动端优化 -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -99,21 +90,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     /></noscript>
 
-    <!-- OpenSearch -->
-    <link
-      rel="search"
-      type="application/opensearchdescription+xml"
-      title="MetaHuman"
-      href="./opensearch.xml"
-    />
-
     <!-- Canonical -->
     <link rel="canonical" href="${BASE_URL}" />
-
-    <!-- 替代语言 -->
-    <link rel="alternate" hreflang="en" href="${BASE_URL}" />
-    <link rel="alternate" hreflang="zh-CN" href="${BASE_URL}?lang=zh" />
-    <link rel="alternate" hreflang="x-default" href="${BASE_URL}" />
 
     <!-- 安全性 -->
     <meta
@@ -121,39 +99,8 @@
       content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
     />
 
-    <!-- 语言检测 - 必须在其他脚本之前执行 -->
+    <!-- WebGL 支持检测（供加载屏幕 no-webgl 提示使用） -->
     <script>
-      (function () {
-        // 简化的语言初始化，优先级与 src/lib/i18n.ts getCurrentLanguage() 一致
-        // URL 参数 > localStorage > 浏览器语言
-        const params = new URLSearchParams(window.location.search);
-        const urlLang = params.get('lang');
-        const storedLang = localStorage.getItem('preferred-lang');
-        const browserLang = navigator.language || '';
-
-        let lang = 'zh-CN';
-        if (urlLang === 'en') {
-          lang = 'en';
-        } else if (urlLang === 'zh') {
-          lang = 'zh-CN';
-        } else if (storedLang === 'en' || storedLang === 'zh-CN') {
-          lang = storedLang;
-        } else if (/^en/i.test(browserLang)) {
-          lang = 'en';
-        }
-
-        // 设置 HTML lang 属性
-        document.documentElement.lang = lang;
-        document.documentElement.setAttribute('data-lang', lang);
-
-        // 存储到 window 供 React 应用读取（首次渲染优化）
-        window.__INITIAL_LANG__ = lang;
-      })();
-    </script>
-
-    <!-- 性能优化脚本 -->
-    <script>
-      // 检测 WebGL 支持
       (function () {
         try {
           var canvas = document.createElement('canvas');
@@ -163,15 +110,6 @@
           window.__WEBGL_SUPPORTED__ = false;
         }
       })();
-
-      // 检测触摸设备
-      window.__TOUCH_DEVICE__ = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-      // 检测偏好减少动画
-      window.__REDUCE_MOTION__ = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // 检测深色模式
-      window.__DARK_MODE__ = window.matchMedia('(prefers-color-scheme: dark)').matches;
     </script>
 
     <!-- 关键 CSS 内联 -->
@@ -269,7 +207,7 @@
       }
     </style>
 
-    <title data-i18n-meta="title">MetaHuman Engine - 开源 3D 数字人交互引擎</title>
+    <title>MetaHuman Engine - 开源 3D 数字人交互引擎</title>
   </head>
   <body>
     <!-- 加载屏幕 -->
