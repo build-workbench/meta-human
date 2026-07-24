@@ -56,6 +56,8 @@
 - 删除英文 README，仅保留中文 `README.md`
 - 删除未使用的 barrel index 和死代码（`core/adapters.ts` 等）
 - 修正 README 和落地页中编造的 API 示例（`perform()`、`dialogueService.send()` 等）
+- 删除 i18n 抽象层（`lib/i18n.ts`、`hooks/useI18n.ts`），45 处 `t()` 调用内联为直接中文字符串；合并空壳页 `AdvancedDigitalHumanAppPage` 到 `App.tsx`，`/app` 路由内联 `ServicesProvider`
+- 精简 `examples/backend-python/`：删除前端未使用的 WebSocket 端点、Redis 会话存储、本地 faster-whisper ASR、`DialogueService._parse_llm_response` 死代码与名不副实的 `requirements.lock`；`ChatRequest` 三通道元数据（`meta`/`metadata`/`context`）收敛为单一 `meta`；默认模型统一为 `gpt-4o-mini`；新增 README 说明定位、端点、契约与环境变量
 
 ### 🗂️ 历史笔记
 
