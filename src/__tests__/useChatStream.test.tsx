@@ -236,8 +236,7 @@ describe('useChatStream', () => {
     });
   });
 
-  it('uses the preferred UI language in dialogue request metadata', async () => {
-    localStorage.setItem('preferred-lang', 'en');
+  it('uses zh-CN language in dialogue request metadata', async () => {
     queueStreamHandler(() => createCompletedStream('hello back'));
 
     const { result } = renderChatStreamHook();
@@ -249,7 +248,7 @@ describe('useChatStream', () => {
     const firstRequest = streamMock.mock.calls[0]?.[0] as MockStreamRequest | undefined;
     expect(firstRequest?.meta).toEqual(
       expect.objectContaining({
-        language: 'en',
+        language: 'zh-CN',
       }),
     );
   });

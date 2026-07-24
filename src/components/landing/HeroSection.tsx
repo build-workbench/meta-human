@@ -27,7 +27,7 @@ const PARTICLES = [
 ];
 
 export default function HeroSection() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
 
   const highlights = [
     { icon: Sparkles, label: t('hero.highlight.config') },
@@ -83,23 +83,11 @@ export default function HeroSection() {
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              {lang === 'zh-CN' ? (
-                <>
-                  让 AI 拥有
-                  <br />
-                  <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                    {t('hero.titleHighlight')}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Give AI a
-                  <br />
-                  <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                    {t('hero.titleHighlight')}
-                  </span>
-                </>
-              )}
+              让 AI 拥有
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                {t('hero.titleHighlight')}
+              </span>
             </h1>
 
             {/* Subtitle */}

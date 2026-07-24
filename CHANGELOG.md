@@ -40,6 +40,11 @@
 
 ### 🧹 仓库精简
 
+- README 重写：砍掉与 AGENTS.md 重复的架构图、项目结构、脚本命令，从 ~120 行压到 ~50 行
+- CLAUDE.md 缩为一行，指向 AGENTS.md 作为唯一规范来源
+- i18n 只保留中文：删除 `en` 语言包（~140 行）、语言切换逻辑和落地页英文翻译
+- `package.json` description 和 GitHub About 改为中文
+- `components/ui/` 合并到 `components/`，`viewer/utils/` 上移到 `viewer/`，减少薄目录层
 - 移除 `.trellis/`、`.claude/`、`.opencode/` 中的 AI 工作流框架和生成自动化
 - 贡献指南精简为最小化 `AGENTS.md` / `CLAUDE.md`
 - 移除 `docs/agents/` 残留 AI 工作流文档，删除仓库 Copilot 指令文件

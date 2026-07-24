@@ -2,11 +2,8 @@ import { Box, Mic, Brain, Cpu, ArrowRight } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 export default function FeaturesSection() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
 
-  // Define features based on current language
-  // Note: vision (MediaPipe) and adaptive-performance modules were removed in commit 8ae076e;
-  // only capabilities the codebase actually ships are listed here.
   const features = [
     {
       icon: Box,
@@ -34,33 +31,21 @@ export default function FeaturesSection() {
     },
     {
       icon: Cpu,
-      title: lang === 'zh-CN' ? '零配置部署' : 'Zero Config Deployment',
+      title: '零配置部署',
       description:
-        lang === 'zh-CN'
-          ? '开箱即用的开发体验，默认回退到本地 Mock 模式无需 API Key。前端可直接部署到 GitHub Pages；如需后端，可按需接入 `examples/backend-python/` 参考实现。'
-          : 'Out-of-the-box development with automatic local mock fallback and no required API key. The frontend deploys directly to GitHub Pages, and `examples/backend-python/` remains the optional backend reference.',
+        '开箱即用的开发体验，默认回退到本地 Mock 模式无需 API Key。前端可直接部署到 GitHub Pages；如需后端，可按需接入 `examples/backend-python/` 参考实现。',
       color: 'from-indigo-500 to-violet-500',
       bgColor: 'bg-indigo-500/10',
       borderColor: 'border-indigo-500/20',
     },
   ];
 
-  // All values are verifiable from the repo: test count via `npm run test:run`,
-  // bundle size via `npm run build`, transport modes from ChatTransportMode in dialogueService.ts.
-  const stats =
-    lang === 'zh-CN'
-      ? [
-          { value: '189', label: '单元测试用例' },
-          { value: '~240KB', label: 'gzip 打包体积' },
-          { value: '2', label: '传输协议 (HTTP/SSE)' },
-          { value: '0 配置', label: '开箱即用' },
-        ]
-      : [
-          { value: '189', label: 'Unit Tests' },
-          { value: '~240KB', label: 'gzip Bundle' },
-          { value: '2', label: 'Transports (HTTP/SSE)' },
-          { value: '0 Config', label: 'Out-of-the-box' },
-        ];
+  const stats = [
+    { value: '189', label: '单元测试用例' },
+    { value: '~240KB', label: 'gzip 打包体积' },
+    { value: '2', label: '传输协议 (HTTP/SSE)' },
+    { value: '0 配置', label: '开箱即用' },
+  ];
 
   return (
     <section id="features" className="relative overflow-hidden py-24 bg-black">
@@ -81,19 +66,9 @@ export default function FeaturesSection() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('features.title')}</h2>
           <p className="text-lg text-gray-400">
-            {lang === 'zh-CN' ? (
-              <>
-                从 3D 渲染到智能对话，从语音交互到视觉感知，
-                <br className="hidden sm:block" />
-                一站式构建你的数字人应用
-              </>
-            ) : (
-              <>
-                From 3D rendering to intelligent dialogue, voice interaction to visual perception,
-                <br className="hidden sm:block" />
-                build your digital human application all-in-one.
-              </>
-            )}
+            从 3D 渲染到智能对话，从语音交互到视觉感知，
+            <br className="hidden sm:block" />
+            一站式构建你的数字人应用
           </p>
         </div>
 
@@ -120,7 +95,7 @@ export default function FeaturesSection() {
 
               {/* Learn More Link */}
               <div className="mt-4 flex items-center gap-1 text-sm text-gray-500 group-hover:text-white transition-colors">
-                <span>{lang === 'zh-CN' ? '了解更多' : 'Learn more'}</span>
+                <span>了解更多</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
 

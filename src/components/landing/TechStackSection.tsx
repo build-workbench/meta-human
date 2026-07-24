@@ -10,15 +10,12 @@ import {
 } from './icons';
 
 export default function TechStackSection() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
 
   const techLayers = [
     {
-      title: lang === 'zh-CN' ? 'UI 层' : 'UI Layer',
-      description:
-        lang === 'zh-CN'
-          ? 'React 19 + TypeScript 构建现代化界面'
-          : 'React 19 + TypeScript for modern interfaces',
+      title: 'UI 层',
+      description: 'React 19 + TypeScript 构建现代化界面',
       items: [
         { name: 'React', icon: ReactLogo, color: '#61DAFB' },
         { name: 'TypeScript', icon: TypeScriptIcon, color: '#3178C6' },
@@ -26,11 +23,8 @@ export default function TechStackSection() {
       ],
     },
     {
-      title: lang === 'zh-CN' ? '3D 渲染层' : '3D Rendering',
-      description:
-        lang === 'zh-CN'
-          ? 'Three.js + React Three Fiber 实现实时 3D'
-          : 'Three.js + React Three Fiber for real-time 3D',
+      title: '3D 渲染层',
+      description: 'Three.js + React Three Fiber 实现实时 3D',
       items: [
         { name: 'Three.js', icon: ThreeJsIcon, color: '#ffffff' },
         { name: 'React Three Fiber', icon: ReactLogo, color: '#61DAFB' },
@@ -38,81 +32,44 @@ export default function TechStackSection() {
       ],
     },
     {
-      title: lang === 'zh-CN' ? '状态管理' : 'State Management',
-      description:
-        lang === 'zh-CN'
-          ? 'Zustand 轻量状态管理，高性能更新'
-          : 'Zustand lightweight state management',
+      title: '状态管理',
+      description: 'Zustand 轻量状态管理，高性能更新',
       items: [{ name: 'Zustand', icon: ZustandIcon, color: '#FFAA00' }],
     },
     {
-      title: lang === 'zh-CN' ? '构建工具' : 'Build Tools',
-      description:
-        lang === 'zh-CN' ? 'Vite 6 极速开发体验' : 'Vite 6 for fast development experience',
+      title: '构建工具',
+      description: 'Vite 6 极速开发体验',
       items: [{ name: 'Vite', icon: ViteIcon, color: '#646CFF' }],
     },
   ];
 
-  // Browser APIs the codebase actually calls. MediaPipe and WebSocket were removed in commit 8ae076e.
-  const browserApis =
-    lang === 'zh-CN'
-      ? [
-          { name: 'WebGL 2.0', desc: '硬件加速 3D 渲染' },
-          { name: 'Web Speech API', desc: '语音识别与合成' },
-        ]
-      : [
-          { name: 'WebGL 2.0', desc: 'Hardware-accelerated 3D' },
-          { name: 'Web Speech API', desc: 'Speech recognition/synthesis' },
-        ];
+  const browserApis = [
+    { name: 'WebGL 2.0', desc: '硬件加速 3D 渲染' },
+    { name: 'Web Speech API', desc: '语音识别与合成' },
+  ];
 
-  // Engineering practices verifiable from the repo: vitest config, .github/workflows/ci.yml,
-  // tsconfig.json strict mode, and .husky/pre-commit + .lintstagedrc.
-  const engineeringPractices =
-    lang === 'zh-CN'
-      ? [
-          {
-            icon: TestTube,
-            title: 'TDD · Vitest',
-            desc: '189 个单元测试，覆盖核心服务与 UI 编排',
-          },
-          {
-            icon: GitBranch,
-            title: 'CI · GitHub Actions',
-            desc: 'push/PR 触发 typecheck + lint + test + build',
-          },
-          {
-            icon: ShieldCheck,
-            title: '类型安全 · TypeScript',
-            desc: 'strict 模式，tsc --noEmit 守护每次提交',
-          },
-          {
-            icon: CheckSquare,
-            title: 'pre-commit · Husky + lint-staged',
-            desc: '提交前自动 eslint --fix + prettier --write',
-          },
-        ]
-      : [
-          {
-            icon: TestTube,
-            title: 'TDD · Vitest',
-            desc: '189 unit tests covering core services and UI orchestration',
-          },
-          {
-            icon: GitBranch,
-            title: 'CI · GitHub Actions',
-            desc: 'push/PR triggers typecheck + lint + test + build',
-          },
-          {
-            icon: ShieldCheck,
-            title: 'Type Safety · TypeScript',
-            desc: 'strict mode, tsc --noEmit gates every commit',
-          },
-          {
-            icon: CheckSquare,
-            title: 'pre-commit · Husky + lint-staged',
-            desc: 'auto eslint --fix + prettier --write before each commit',
-          },
-        ];
+  const engineeringPractices = [
+    {
+      icon: TestTube,
+      title: 'TDD · Vitest',
+      desc: '189 个单元测试，覆盖核心服务与 UI 编排',
+    },
+    {
+      icon: GitBranch,
+      title: 'CI · GitHub Actions',
+      desc: 'push/PR 触发 typecheck + lint + test + build',
+    },
+    {
+      icon: ShieldCheck,
+      title: '类型安全 · TypeScript',
+      desc: 'strict 模式，tsc --noEmit 守护每次提交',
+    },
+    {
+      icon: CheckSquare,
+      title: 'pre-commit · Husky + lint-staged',
+      desc: '提交前自动 eslint --fix + prettier --write',
+    },
+  ];
 
   return (
     <section id="tech-stack" className="relative overflow-hidden py-24 bg-[#050508]">
@@ -126,9 +83,7 @@ export default function TechStackSection() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('tech.title')}</h2>
           <p className="text-lg text-gray-400">
-            {lang === 'zh-CN'
-              ? '基于业界领先的开源技术构建，确保性能、可维护性和扩展性'
-              : 'Built on industry-leading open-source technologies for performance, maintainability and scalability.'}
+            基于业界领先的开源技术构建，确保性能、可维护性和扩展性
           </p>
         </div>
 
@@ -180,9 +135,7 @@ export default function TechStackSection() {
         {/* Browser APIs */}
         <div className="landing-center max-w-5xl grid gap-8 lg:grid-cols-2 lg:items-start [&>*]:min-w-0">
           <div>
-            <h3 className="text-xl font-semibold text-white mb-6">
-              {lang === 'zh-CN' ? '浏览器原生 API' : 'Browser Native APIs'}
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-6">浏览器原生 API</h3>
             <div className="space-y-3">
               {browserApis.map((api) => (
                 <div
@@ -198,9 +151,7 @@ export default function TechStackSection() {
 
           {/* Code Example */}
           <div>
-            <h3 className="text-xl font-semibold text-white mb-6">
-              {lang === 'zh-CN' ? '极简 API 设计' : 'Minimal API Design'}
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-6">极简 API 设计</h3>
             <div className="rounded-xl overflow-hidden bg-[#0d1117] border border-white/10 max-w-full">
               <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-white/5">
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -214,12 +165,12 @@ export default function TechStackSection() {
 const engine = useEngine();
 const dialogue = useDialogue();
 
-// ${lang === 'zh-CN' ? '发送消息并驱动数字人响应' : 'Send message and drive avatar response'}
+// 发送消息并驱动数字人响应
 const response = await dialogue.runDialogueTurn(
-  '${lang === 'zh-CN' ? '你好，请介绍一下自己' : 'Hello, please introduce yourself'}'
+  '你好，请介绍一下自己'
 );
 
-// ${lang === 'zh-CN' ? '数字人自动执行对应的情绪和动作' : 'Avatar automatically executes emotion and action'}
+// 数字人自动执行对应的情绪和动作
 engine.setEmotion(response.emotion);
 engine.playAnimation(response.action);`}</code>
               </pre>
@@ -230,13 +181,9 @@ engine.playAnimation(response.action);`}</code>
         {/* Engineering Practices */}
         <div className="landing-center max-w-5xl mt-20">
           <div className="text-center mb-12">
-            <h3 className="text-xl font-semibold text-white mb-2">
-              {lang === 'zh-CN' ? '工程化实践' : 'Engineering Practices'}
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-2">工程化实践</h3>
             <p className="text-sm text-gray-500">
-              {lang === 'zh-CN'
-                ? '从提交到部署的全链路质量守护，每一项均可在仓库中验证'
-                : 'Quality gates from commit to deploy, each verifiable in the repo'}
+              从提交到部署的全链路质量守护，每一项均可在仓库中验证
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

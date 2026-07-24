@@ -1,5 +1,3 @@
-import type { Language } from '@/lib/i18n';
-
 export type DialogueSpeechContext = {
   voiceName: string | null;
   rate: number;
@@ -9,7 +7,7 @@ export type DialogueSpeechContext = {
 
 export type DialogueRequestMetaInput = {
   timestamp: number;
-  language: Language;
+  language: string;
   speech: DialogueSpeechContext;
   characterId?: string;
 };

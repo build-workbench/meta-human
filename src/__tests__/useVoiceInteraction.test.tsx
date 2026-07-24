@@ -41,8 +41,7 @@ describe('useVoiceInteraction', () => {
     localStorage.clear();
   });
 
-  it('prefers voices matching the current UI language and speaks with that language', () => {
-    localStorage.setItem('preferred-lang', 'en');
+  it('prefers Chinese voices and speaks with zh-CN', () => {
     const services = createTestServices([
       createVoice('Chinese Voice', 'zh-CN'),
       createVoice('English Voice', 'en-US'),
@@ -53,23 +52,22 @@ describe('useVoiceInteraction', () => {
 
     const { result } = renderHook(() => useVoiceInteraction(), { wrapper });
 
-    expect(result.current.voice?.name).toBe('English Voice');
+    expect(result.current.voice?.name).toBe('Chinese Voice');
 
     act(() => {
-      result.current.speak('Hello there');
+      result.current.speak('你好');
     });
 
     expect(services.tts.speakWithOptions).toHaveBeenCalledWith(
-      'Hello there',
+      '你好',
       expect.objectContaining({
-        lang: 'en',
-        voiceName: 'English Voice',
+        lang: 'zh-CN',
+        voiceName: 'Chinese Voice',
       }),
     );
   });
 
   it('persists speech preferences across remounts', () => {
-    localStorage.setItem('preferred-lang', 'en');
     const chineseVoice = createVoice('Chinese Voice', 'zh-CN');
     const englishVoice = createVoice('English Voice', 'en-US');
     const services = createTestServices([chineseVoice, englishVoice]);
@@ -80,7 +78,7 @@ describe('useVoiceInteraction', () => {
     const firstMount = renderHook(() => useVoiceInteraction(), { wrapper });
 
     act(() => {
-      firstMount.result.current.setVoice(chineseVoice);
+      firstMount.result.current.setVoice(englishVoice);
       firstMount.result.current.setRate(1.4);
       firstMount.result.current.setPitch(0.8);
       firstMount.result.current.setVolume(0.6);
@@ -90,7 +88,7 @@ describe('useVoiceInteraction', () => {
 
     const secondMount = renderHook(() => useVoiceInteraction(), { wrapper });
 
-    expect(secondMount.result.current.voice?.name).toBe('Chinese Voice');
+    expect(secondMount.result.current.voice?.name).toBe('English Voice');
     expect(secondMount.result.current.rate).toBe(1.4);
     expect(secondMount.result.current.pitch).toBe(0.8);
     expect(secondMount.result.current.volume).toBe(0.6);

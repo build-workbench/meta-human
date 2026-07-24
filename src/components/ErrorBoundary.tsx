@@ -1,6 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { loggers } from '../../lib/logger';
+import { loggers } from '@/lib/logger';
 
 const logger = loggers.app;
 

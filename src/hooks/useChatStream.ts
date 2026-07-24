@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { loggers } from '@/lib/logger';
 import { createIdleDialogueTurnSnapshot } from '@/core/dialogue/dialogueService';
 import { buildDialogueRequestMeta } from '@/core/dialogue/dialogueRequestMeta';
-import { getCurrentLanguage } from '@/lib/i18n';
 
 const logger = loggers.chat;
 
@@ -137,7 +136,7 @@ export function useChatStream(options: UseChatStreamOptions) {
           sessionId,
           meta: buildDialogueRequestMeta({
             timestamp: Date.now(),
-            language: getCurrentLanguage(),
+            language: 'zh-CN',
             speech: runtimeState.speechConfig,
             characterId: runtimeState.activeCharacterId,
           }),
