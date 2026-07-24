@@ -10,7 +10,7 @@ from functools import lru_cache
 class Settings:
     # LLM
     openai_api_key: str = ""
-    openai_model: str = "gpt-3.5-turbo"
+    openai_model: str = "gpt-4o-mini"
     openai_base_url: str = "https://api.openai.com/v1"
     llm_provider: str = "openai"
     llm_timeout: float = 20.0
@@ -22,7 +22,7 @@ class Settings:
     tts_rate: str = "+0%"
 
     # ASR
-    asr_provider: str = "whisper"  # whisper | local
+    asr_provider: str = "whisper"  # whisper（本地 faster-whisper 已移除）
     asr_model: str = "whisper-1"
     asr_language: str = "zh"
 
@@ -38,9 +38,6 @@ class Settings:
     # Auth
     auth_enabled: bool = False
     api_keys: str = ""
-
-    # Redis
-    redis_url: str = ""
 
     # CORS
     cors_allow_origins: str = ""
@@ -66,7 +63,7 @@ def get_settings() -> Settings:
 
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
-        openai_model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+        openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         openai_base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         llm_provider=os.getenv("LLM_PROVIDER", "openai").lower(),
         llm_timeout=_float("LLM_TIMEOUT", 20.0),
@@ -84,7 +81,6 @@ def get_settings() -> Settings:
         rate_limit_rpm=_int("RATE_LIMIT_RPM", 60),
         auth_enabled=os.getenv("AUTH_ENABLED", "false").lower() in ("true", "1", "yes"),
         api_keys=os.getenv("API_KEYS", ""),
-        redis_url=os.getenv("REDIS_URL", ""),
         cors_allow_origins=os.getenv("CORS_ALLOW_ORIGINS", ""),
     )
 

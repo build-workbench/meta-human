@@ -7,7 +7,6 @@ from app.config import get_settings, setup_logging
 from app.api.chat import router as chat_router
 from app.api.session import router as session_router
 from app.api.speech import router as speech_router
-from app.api.ws import router as ws_router
 from app.middleware import AuthMiddleware, ErrorHandlerMiddleware, RateLimitMiddleware, RequestLoggingMiddleware
 
 # 初始化日志
@@ -96,4 +95,3 @@ async def root() -> dict:
 app.include_router(chat_router, prefix="/v1", tags=["对话"])
 app.include_router(session_router, prefix="/v1", tags=["会话管理"])
 app.include_router(speech_router, prefix="/v1", tags=["语音"])
-app.include_router(ws_router, tags=["WebSocket"])

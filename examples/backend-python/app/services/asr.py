@@ -1,13 +1,9 @@
 """ASR 语音识别服务
 
-支持两种 provider：
-- whisper: 使用 OpenAI Whisper API（需要 OPENAI_API_KEY）
-- local: 使用本地 faster-whisper（需安装 faster-whisper）
+仅支持 whisper provider（OpenAI Whisper API，需要 OPENAI_API_KEY）。
 """
 
 import logging
-import tempfile
-from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -46,9 +42,8 @@ class ASRService:
 
     @property
     def available(self) -> bool:
-        if self.provider == "whisper":
-            return self._settings.has_openai_key
-        return True  # local 不需要 key
+        # 仅支持 whisper；本地 faster-whisper 路径已移除
+        return self._settings.has_openai_key if self.provider == "whisper" else False
 
     async def transcribe(
         self,
@@ -72,10 +67,7 @@ class ASRService:
 
         if provider == "whisper":
             return await self._transcribe_whisper_api(audio_data, filename, language)
-        elif provider == "local":
-            return await self._transcribe_local(audio_data, filename, language)
-        else:
-            raise ASRError(f"不支持的 ASR provider: {provider}")
+        raise ASRError(f"不支持的 ASR provider: {provider}")
 
     async def _transcribe_whisper_api(
         self,
@@ -134,60 +126,6 @@ class ASRService:
         except Exception as exc:
             logger.exception("Whisper API 调用异常: %s", exc)
             raise ASRError(f"语音识别失败: {exc}")
-
-    async def _transcribe_local(
-        self,
-        audio_data: bytes,
-        filename: str,
-        language: str,
-    ) -> dict:
-        """使用本地 faster-whisper 进行语音识别"""
-        try:
-            from faster_whisper import WhisperModel
-        except ImportError:
-            raise ASRError(
-                "faster-whisper 未安装，请执行 pip install faster-whisper",
-                detail={"provider": "local", "fix": "pip install faster-whisper"},
-            )
-
-        try:
-            # 写入临时文件
-            suffix = Path(filename).suffix or ".wav"
-            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-                tmp.write(audio_data)
-                tmp_path = tmp.name
-
-            model = WhisperModel("base", device="cpu", compute_type="int8")
-            segments, info = model.transcribe(tmp_path, language=language)
-
-            text_parts = []
-            for segment in segments:
-                text_parts.append(segment.text.strip())
-
-            text = " ".join(text_parts)
-            duration = info.duration if hasattr(info, "duration") else 0.0
-
-            logger.info(
-                "Local ASR 识别成功: text=%s, lang=%s, duration=%.1f",
-                text[:50],
-                info.language,
-                duration,
-            )
-            return {
-                "text": text,
-                "language": info.language,
-                "duration": duration,
-            }
-        except ASRError:
-            raise
-        except Exception as exc:
-            logger.exception("Local ASR 识别失败: %s", exc)
-            raise ASRError(f"语音识别失败: {exc}")
-        finally:
-            try:
-                Path(tmp_path).unlink(missing_ok=True)
-            except Exception:
-                pass
 
 
 asr_service = ASRService()
