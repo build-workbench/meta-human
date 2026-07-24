@@ -1,7 +1,7 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 // 懒加载页面组件
 const LandingPage = lazy(() => import('@/pages/LandingPage'));

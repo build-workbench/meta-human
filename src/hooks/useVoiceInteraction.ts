@@ -8,7 +8,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTTS, useASR } from '@/services';
 import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useI18n } from './useI18n';
 
 export interface UseVoiceInteractionOptions {
   /** Called when a transcript is received from ASR */
@@ -67,7 +66,6 @@ export function useVoiceInteraction(
   const { onTranscript, onSpeak } = options;
   const tts = useTTS();
   const asr = useASR();
-  const { lang } = useI18n();
 
   const isRecording = useDigitalHumanStore((s) => s.isRecording);
   const isMuted = useDigitalHumanStore((s) => s.isMuted);
@@ -106,7 +104,7 @@ export function useVoiceInteraction(
 
     if (hasSpeechSynthesis) {
       const voices = tts.getVoices();
-      const languagePrefix = lang.toLowerCase().split('-')[0];
+      const languagePrefix = 'zh';
       if (mountedRef.current) {
         setAvailableVoices(voices);
         const savedVoice = speechConfig.voiceName
@@ -125,7 +123,7 @@ export function useVoiceInteraction(
     return () => {
       asr.stop();
     };
-  }, [asr, lang, speechConfig.voiceName, setSpeechConfig, tts]);
+  }, [asr, speechConfig.voiceName, setSpeechConfig, tts]);
 
   const voice =
     availableVoices.find((candidate) => candidate.name === speechConfig.voiceName) ?? null;
@@ -173,7 +171,7 @@ export function useVoiceInteraction(
       if (isMuted) return;
 
       tts.speakWithOptions(text, {
-        lang,
+        lang: 'zh-CN',
         volume: speechConfig.volume,
         pitch: speechConfig.pitch,
         rate: speechConfig.rate,
@@ -182,7 +180,7 @@ export function useVoiceInteraction(
 
       onSpeakRef.current?.(text);
     },
-    [isMuted, lang, speechConfig.pitch, speechConfig.rate, speechConfig.volume, tts, voice],
+    [isMuted, speechConfig.pitch, speechConfig.rate, speechConfig.volume, tts, voice],
   );
 
   return {

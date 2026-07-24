@@ -8,4 +8,4 @@ export { default as DigitalHumanViewer } from './DigitalHumanViewer';
 export { KeyboardControls } from './KeyboardControls';
 export { CyberAvatar } from './CyberAvatar';
 export { Scene } from './Scene';
-export * from './utils/cameraControls';
+export * from './cameraControls';

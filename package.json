@@ -1,7 +1,7 @@
 {
   "name": "metahuman-engine",
   "version": "2.2.0",
-  "description": "A modular, real-time 3D digital human interaction engine for the browser.",
+  "description": "浏览器原生 3D 数字人引擎，集成语音与对话",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -11,7 +11,7 @@ import {
   resetCameraPosition,
   moveCameraVertical,
   zoomCamera,
-} from './utils/cameraControls';
+} from './cameraControls';
 import { useIsTabVisibleRef } from '@/hooks';
 
 interface KeyboardControlsProps {

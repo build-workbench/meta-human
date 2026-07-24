@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Menu, X, Github, Play, Globe } from 'lucide-react';
+import { Activity, Menu, X, Github, Play } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t, lang, toggleLang } = useI18n();
+  const { t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +80,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* CTA Buttons + Language Switch */}
+          {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <a
               href="https://github.com/LessUp/meta-human"
@@ -91,17 +91,6 @@ export default function Navbar() {
             >
               <Github className="w-5 h-5" />
             </a>
-
-            {/* Language Switch */}
-            <button
-              onClick={toggleLang}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-400 hover:text-white transition-colors rounded-md hover:bg-white/5"
-              aria-label={lang === 'zh-CN' ? 'Switch to English' : '切换到中文'}
-              title={lang === 'zh-CN' ? 'Switch to English' : 'Switch to 中文'}
-            >
-              <Globe className="w-4 h-4" />
-              <span>{lang === 'zh-CN' ? 'EN' : '中文'}</span>
-            </button>
 
             <Link
               to="/app"
@@ -161,17 +150,6 @@ export default function Navbar() {
               <Github className="w-5 h-5" />
               <span>GitHub</span>
             </a>
-            {/* Mobile Language Switch */}
-            <button
-              onClick={() => {
-                toggleLang();
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-300 hover:text-white transition-colors"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{lang === 'zh-CN' ? 'Switch to English' : '切换到中文'}</span>
-            </button>
             <Link
               to="/app"
               className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"

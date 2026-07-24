@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import VoiceInteractionPanel from '@/components/VoiceInteractionPanel';
 
@@ -30,19 +30,9 @@ describe('VoiceInteractionPanel', () => {
     localStorage.clear();
   });
 
-  it('surfaces language selection and localizes quick test content', () => {
-    localStorage.setItem('preferred-lang', 'en');
-
+  it('renders Chinese quick test content', () => {
     render(<VoiceInteractionPanel onTranscript={vi.fn()} />);
 
-    const languageSelect = screen.getByLabelText('Language');
-    expect(languageSelect).toHaveValue('en');
-    expect(
-      screen.getByRole('button', { name: 'Hello! I am your digital human assistant.' }),
-    ).toBeInTheDocument();
-
-    fireEvent.change(languageSelect, { target: { value: 'zh-CN' } });
-
-    expect(localStorage.getItem('preferred-lang')).toBe('zh-CN');
+    expect(screen.getByRole('button', { name: '您好！我是数字人助手。' })).toBeInTheDocument();
   });
 });

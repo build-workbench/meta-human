@@ -3,97 +3,53 @@ import { Play, Github, ArrowRight, Download, Code2, Terminal } from 'lucide-reac
 import { useI18n } from '@/hooks/useI18n';
 
 export default function CTASection() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
 
-  const featureCards =
-    lang === 'zh-CN'
-      ? [
-          {
-            icon: Download,
-            title: '精简安装',
-            desc: 'Git Clone + npm install，前端零配置启动',
-          },
-          {
-            icon: Code2,
-            title: 'TypeScript 核心',
-            desc: 'React 19、TypeScript、Zustand 一体化',
-          },
-          {
-            icon: Terminal,
-            title: '优雅降级',
-            desc: 'Mock、文本输出与传输回退默认可用',
-          },
-          {
-            icon: Play,
-            title: '在线演示',
-            desc: '无需安装，浏览器即用',
-          },
-        ]
-      : [
-          {
-            icon: Download,
-            title: 'Lean Setup',
-            desc: 'Git clone + npm install with zero-config startup',
-          },
-          {
-            icon: Code2,
-            title: 'TypeScript Core',
-            desc: 'React 19, TypeScript, and Zustand working as one stack',
-          },
-          {
-            icon: Terminal,
-            title: 'Graceful Fallbacks',
-            desc: 'Mock mode, text-only output, and transport fallback built in',
-          },
-          {
-            icon: Play,
-            title: 'Live Demo',
-            desc: 'No installation, use in browser',
-          },
-        ];
+  const featureCards = [
+    {
+      icon: Download,
+      title: '精简安装',
+      desc: 'Git Clone + npm install，前端零配置启动',
+    },
+    {
+      icon: Code2,
+      title: 'TypeScript 核心',
+      desc: 'React 19、TypeScript、Zustand 一体化',
+    },
+    {
+      icon: Terminal,
+      title: '优雅降级',
+      desc: 'Mock、文本输出与传输回退默认可用',
+    },
+    {
+      icon: Play,
+      title: '在线演示',
+      desc: '无需安装，浏览器即用',
+    },
+  ];
 
-  const footerLinks =
-    lang === 'zh-CN'
-      ? [
-          {
-            label: 'README',
-            href: 'https://github.com/LessUp/meta-human#readme',
-            external: true,
-          },
-          {
-            label: '更新日志',
-            href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
-            external: true,
-          },
-          {
-            label: '问题反馈',
-            href: 'https://github.com/LessUp/meta-human/issues',
-            external: true,
-          },
-          {
-            label: '讨论区',
-            href: 'https://github.com/LessUp/meta-human/discussions',
-            external: true,
-          },
-        ]
-      : [
-          {
-            label: 'README',
-            href: 'https://github.com/LessUp/meta-human#readme',
-            external: true,
-          },
-          {
-            label: 'Changelog',
-            href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
-            external: true,
-          },
-          { label: 'Issues', href: 'https://github.com/LessUp/meta-human/issues', external: true },
-          {
-            label: 'Discussions',
-            href: 'https://github.com/LessUp/meta-human/discussions',
-            external: true,
-          },
-        ];
+  const footerLinks = [
+    {
+      label: 'README',
+      href: 'https://github.com/LessUp/meta-human#readme',
+      external: true,
+    },
+    {
+      label: '更新日志',
+      href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+      external: true,
+    },
+    {
+      label: '问题反馈',
+      href: 'https://github.com/LessUp/meta-human/issues',
+      external: true,
+    },
+    {
+      label: '讨论区',
+      href: 'https://github.com/LessUp/meta-human/discussions',
+      external: true,
+    },
+  ];
 
   return (
     <section id="quickstart" className="relative overflow-hidden py-24 bg-black">
