@@ -1,30 +1,28 @@
 import { Box, Mic, Brain, Cpu, ArrowRight } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
 
 export default function FeaturesSection() {
-  const { t } = useI18n();
-
   const features = [
     {
       icon: Box,
-      title: t('features.avatar.title'),
-      description: t('features.avatar.desc'),
+      title: '3D 数字人引擎',
+      description: '支持 GLB/GLTF 模型加载，提供情绪驱动的表情系统和骨骼动画，自适应性能调节。',
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'bg-blue-500/10',
       borderColor: 'border-blue-500/20',
     },
     {
       icon: Mic,
-      title: t('features.voice.title'),
-      description: t('features.voice.desc'),
+      title: '语音交互',
+      description:
+        '基于浏览器原生 Web Speech API 实现语音合成（TTS）与语音识别（ASR），无需第三方服务。',
       color: 'from-purple-500 to-pink-500',
       bgColor: 'bg-purple-500/10',
       borderColor: 'border-purple-500/20',
     },
     {
       icon: Brain,
-      title: t('features.dialogue.title'),
-      description: t('features.dialogue.desc'),
+      title: '智能对话',
+      description: '多模态响应架构，支持流式输出和优雅降级，会话状态持久化管理。',
       color: 'from-emerald-500 to-teal-500',
       bgColor: 'bg-emerald-500/10',
       borderColor: 'border-emerald-500/20',
@@ -64,7 +62,7 @@ export default function FeaturesSection() {
       <div className="landing-shell relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('features.title')}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">核心功能</h2>
           <p className="text-lg text-gray-400">
             从 3D 渲染到智能对话，从语音交互到视觉感知，
             <br className="hidden sm:block" />

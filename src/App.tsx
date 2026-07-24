@@ -2,10 +2,11 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { ServicesProvider } from '@/services';
 
 // 懒加载页面组件
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const AdvancedDigitalHumanAppPage = lazy(() => import('@/pages/AdvancedDigitalHumanAppPage'));
+const AdvancedDigitalHumanPage = lazy(() => import('@/pages/AdvancedDigitalHumanPage'));
 
 // 页面加载 fallback
 function PageLoader() {
@@ -25,8 +26,15 @@ export default function App() {
             {/* Landing Page - 产品落地页 */}
             <Route path="/" element={<LandingPage />} />
 
-            {/* App Route - 数字人应用 */}
-            <Route path="/app" element={<AdvancedDigitalHumanAppPage />} />
+            {/* App Route - 数字人应用（服务容器仅在此路由挂载） */}
+            <Route
+              path="/app"
+              element={
+                <ServicesProvider>
+                  <AdvancedDigitalHumanPage />
+                </ServicesProvider>
+              }
+            />
 
             {/* Fallback - 防止未知 hash 路径导致空白页 */}
             <Route path="*" element={<Navigate to="/" replace />} />
