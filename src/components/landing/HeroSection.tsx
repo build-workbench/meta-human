@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Play, BookOpen, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react';
+import { Play, Github, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react';
 import { useI18n } from '@/hooks/useI18n';
 
 // 预计算粒子位置，避免 Math.random() 导致每次渲染不一致（hydration 抖动）
@@ -119,11 +119,13 @@ export default function HeroSection() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href={`./docs/${lang === 'zh-CN' ? 'zh' : 'en'}/`}
+                href="https://github.com/LessUp/meta-human"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all hover:border-white/20"
               >
-                <BookOpen className="w-5 h-5" />
-                {t('hero.cta.docs')}
+                <Github className="w-5 h-5" />
+                GitHub
               </a>
             </div>
 

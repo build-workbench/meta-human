@@ -12,11 +12,9 @@ import {
   type AvatarEventType,
 } from './avatarContract';
 
-// Re-export for backward compatibility
-export type { EngineStateAdapter as StateAdapter } from './avatarStateAdapter';
-export type EngineEventType = AvatarEventType;
-
 const logger = loggers.avatar;
+
+type EngineEventType = AvatarEventType;
 
 export class DigitalHumanEngine implements AvatarContract {
   private readonly state: EngineStateAdapter;

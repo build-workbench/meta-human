@@ -1,55 +1,59 @@
 # AGENTS.md
 
-MetaHuman Engine contributor guide.
+MetaHuman Engine 贡献指南。
 
-## Goal
+## 目标
 
-Keep the repository small, truthful, and maintainable. Prefer deleting stale code, tooling, and docs over adding new abstraction.
+保持仓库小巧、真实、可维护。优先删除过时的代码、工具和文档，而非增加新抽象。
 
-## Stack
+## 技术栈
 
-| Layer | Technology                          |
-| ----- | ----------------------------------- |
-| UI    | React 19 + TypeScript 5             |
-| Build | Vite 6                              |
-| 3D    | Three.js + React Three Fiber + Drei |
-| State | Zustand 5                           |
-| Style | Tailwind CSS 4                      |
-| Test  | Vitest + Testing Library            |
+| 层   | 技术                                |
+| ---- | ----------------------------------- |
+| UI   | React 19 + TypeScript 5             |
+| 构建 | Vite 6                              |
+| 3D   | Three.js + React Three Fiber + Drei |
+| 状态 | Zustand 5                           |
+| 样式 | Tailwind CSS 4                      |
+| 测试 | Vitest + Testing Library            |
 
-## Architecture
+## 架构
 
 ```text
 src/
-├── pages/       Route-level pages
-├── components/  UI and landing page components
-├── hooks/       UI-side orchestration hooks
-├── core/        Runtime services, no React imports
-├── store/       Zustand stores
-└── lib/         Shared helpers
+├── pages/       路由页面
+├── components/  UI 和落地页组件
+├── hooks/       UI 侧编排 hooks
+├── services/    React 服务容器（ServicesProvider、useServices）
+├── core/        运行时服务，不引入 React
+├── store/       Zustand 状态
+├── __tests__/   单元测试（Vitest）
+└── lib/         工具函数
 ```
 
-## Core rules
+## 核心规则
 
-1. Use `@/*` path aliases.
-2. `core/` must not import React.
-3. Services read and write Zustand through `useXStore.getState()`.
-4. Every external integration needs an explicit fallback path.
-5. When simplifying, prefer removal and consolidation over new wrappers.
-6. Record project history only in the root `CHANGELOG.md`.
+1. 使用 `@/*` 路径别名。
+2. `core/` 不得引入 React。
+3. 服务通过 `useXStore.getState()` 读写 Zustand。
+4. 每个外部集成都需要明确的降级路径。
+5. 简化时优先删除和合并，而非新增封装。
+6. 项目历史只记录在根目录 `CHANGELOG.md`。
 
-## Key runtime files
+## 关键运行时文件
 
-| File                                           | Responsibility                            |
-| ---------------------------------------------- | ----------------------------------------- |
-| `src/core/avatar/DigitalHumanEngine.ts`        | Avatar control facade                     |
-| `src/core/dialogue/dialogueService.ts`         | HTTP dialogue client + HTTP/SSE transport |
-| `src/core/dialogue/dialogueOrchestrator.ts`    | Turn ownership and request lifecycle      |
-| `src/core/audio/audioService.ts`               | TTS / ASR services                        |
-| `src/store/digitalHumanStore.ts`               | Avatar runtime state                      |
-| `src/components/viewer/DigitalHumanViewer.tsx` | Main 3D viewport                          |
+| 文件                                           | 职责                                                   |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `src/core/avatar/DigitalHumanEngine.ts`        | 数字人控制门面                                         |
+| `src/core/dialogue/dialogueService.ts`         | HTTP 对话客户端 + HTTP/SSE 传输                        |
+| `src/core/dialogue/dialogueOrchestrator.ts`    | 轮次所有权与请求生命周期                               |
+| `src/core/audio/audioService.ts`               | TTS / ASR 服务                                         |
+| `src/core/createServices.ts`                   | 服务容器工厂                                           |
+| `src/services/servicesContext.ts`              | React hooks：useEngine / useTTS / useASR / useDialogue |
+| `src/store/digitalHumanStore.ts`               | 数字人运行时状态                                       |
+| `src/components/viewer/DigitalHumanViewer.tsx` | 主 3D 视口                                             |
 
-## Commands
+## 命令
 
 ```bash
 npm run dev
@@ -60,10 +64,10 @@ npm run build
 npm run build:pages
 ```
 
-## Guardrails
+## 护栏
 
-- Do not create new branches for routine work; stay on `master`.
-- Do not add runtime dependencies without discussion.
-- Do not reintroduce workflow-driving AI framework files or generated skill systems.
-- Do not document Docker, Render, CLI scaffolds, or templates unless the repository actually ships them.
-- Keep GitHub Pages focused on product and docs, not changelog browsing.
+- 日常工作不创建新分支，保持在 `master`。
+- 未经讨论不添加运行时依赖。
+- 不重新引入 AI 工作流框架或生成的技能系统。
+- 不文档化 Docker、Render、CLI 脚手架或模板，除非仓库实际包含它们。
+- GitHub Pages 聚焦产品和文档，不做更新日志浏览。

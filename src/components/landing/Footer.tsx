@@ -28,10 +28,21 @@ export default function Footer() {
           resources: {
             title: '资源',
             links: [
-              { label: '快速开始', href: 'docs/zh/' },
-              { label: 'API 文档', href: 'docs/zh/api/' },
-              { label: '架构设计', href: 'docs/zh/architecture/' },
-              { label: '贡献指南', href: 'docs/contributing/' },
+              {
+                label: 'README',
+                href: 'https://github.com/LessUp/meta-human#readme',
+                external: true,
+              },
+              {
+                label: '更新日志',
+                href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+                external: true,
+              },
+              {
+                label: '贡献指南',
+                href: 'https://github.com/LessUp/meta-human/blob/master/AGENTS.md',
+                external: true,
+              },
             ] as FooterLink[],
           },
           community: {
@@ -64,10 +75,21 @@ export default function Footer() {
           resources: {
             title: 'Resources',
             links: [
-              { label: 'Quick Start', href: 'docs/en/' },
-              { label: 'API Docs', href: 'docs/en/api/' },
-              { label: 'Architecture', href: 'docs/en/architecture/' },
-              { label: 'Contributing', href: 'docs/contributing/' },
+              {
+                label: 'README',
+                href: 'https://github.com/LessUp/meta-human#readme',
+                external: true,
+              },
+              {
+                label: 'Changelog',
+                href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+                external: true,
+              },
+              {
+                label: 'Contributing',
+                href: 'https://github.com/LessUp/meta-human/blob/master/AGENTS.md',
+                external: true,
+              },
             ] as FooterLink[],
           },
           community: {

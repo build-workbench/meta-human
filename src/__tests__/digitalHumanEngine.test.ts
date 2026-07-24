@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DigitalHumanEngine } from '../core/avatar/DigitalHumanEngine';
-import type { StateAdapter } from '../core/avatar/DigitalHumanEngine';
+import type { EngineStateAdapter } from '../core/avatar/avatarStateAdapter';
 
-function createMockState(): StateAdapter & Record<string, ReturnType<typeof vi.fn>> {
+function createMockState(): EngineStateAdapter & Record<string, ReturnType<typeof vi.fn>> {
   return {
     play: vi.fn(),
     pause: vi.fn(),
@@ -29,7 +29,7 @@ describe('DigitalHumanEngine', () => {
     engine.dispose();
   });
 
-  // --- Delegation to StateAdapter ---
+  // --- Delegation to EngineStateAdapter ---
 
   it('play delegates to state.play', () => {
     engine.play();

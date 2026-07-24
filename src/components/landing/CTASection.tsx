@@ -55,9 +55,16 @@ export default function CTASection() {
   const footerLinks =
     lang === 'zh-CN'
       ? [
-          { label: '文档', href: 'docs/zh/' },
-          { label: 'API 参考', href: 'docs/zh/api/' },
-          { label: '架构设计', href: 'docs/zh/architecture/' },
+          {
+            label: 'README',
+            href: 'https://github.com/LessUp/meta-human#readme',
+            external: true,
+          },
+          {
+            label: '更新日志',
+            href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+            external: true,
+          },
           {
             label: '问题反馈',
             href: 'https://github.com/LessUp/meta-human/issues',
@@ -70,9 +77,16 @@ export default function CTASection() {
           },
         ]
       : [
-          { label: 'Docs', href: 'docs/en/' },
-          { label: 'API', href: 'docs/en/api/' },
-          { label: 'Architecture', href: 'docs/en/architecture/' },
+          {
+            label: 'README',
+            href: 'https://github.com/LessUp/meta-human#readme',
+            external: true,
+          },
+          {
+            label: 'Changelog',
+            href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+            external: true,
+          },
           { label: 'Issues', href: 'https://github.com/LessUp/meta-human/issues', external: true },
           {
             label: 'Discussions',

@@ -209,21 +209,19 @@ export default function TechStackSection() {
                 <span className="ml-2 text-xs text-gray-500 font-mono">example.ts</span>
               </div>
               <pre className="p-4 text-sm font-mono text-gray-300 overflow-x-auto">
-                <code>{`import { digitalHumanEngine } from '@core/avatar';
-import { dialogueService } from '@core/dialogue';
+                <code>{`import { useEngine, useDialogue } from '@/services';
+
+const engine = useEngine();
+const dialogue = useDialogue();
 
 // ${lang === 'zh-CN' ? '发送消息并驱动数字人响应' : 'Send message and drive avatar response'}
-const response = await dialogueService.send(
+const response = await dialogue.runDialogueTurn(
   '${lang === 'zh-CN' ? '你好，请介绍一下自己' : 'Hello, please introduce yourself'}'
 );
 
 // ${lang === 'zh-CN' ? '数字人自动执行对应的情绪和动作' : 'Avatar automatically executes emotion and action'}
-digitalHumanEngine.perform({
-  emotion: response.emotion,
-  expression: response.expression,
-  animation: response.action,
-  speech: response.replyText,
-});`}</code>
+engine.setEmotion(response.emotion);
+engine.playAnimation(response.action);`}</code>
               </pre>
             </div>
           </div>
