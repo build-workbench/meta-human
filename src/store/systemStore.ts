@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { ChatTransportMode } from '../core/dialogue/dialogueService';
-import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueTurnSnapshot';
-import { createIdleDialogueTurnSnapshot } from '../core/dialogue/dialogueTurnSnapshot';
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
 
@@ -27,7 +25,6 @@ interface SystemState {
   lastErrorTime: number | null;
   chatTransportMode: Exclude<ChatTransportMode, 'auto'>;
   connectionDiagnostics: ConnectionDiagnostics;
-  dialogueTurn: DialogueTurnSnapshot;
   runtimeApiConfig: RuntimeApiConfig | null;
   setConnected: (connected: boolean) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
@@ -45,7 +42,6 @@ interface SystemState {
     didFailover?: boolean;
     recordedAt?: number;
   }) => void;
-  setDialogueTurn: (snapshot: DialogueTurnSnapshot) => void;
   clearError: () => void;
   setRuntimeApiConfig: (config: RuntimeApiConfig | null) => void;
   resetSystemState: () => void;
@@ -101,7 +97,6 @@ export const useSystemStore = create<SystemState>()(
       lastErrorTime: null,
       chatTransportMode: 'sse',
       connectionDiagnostics: createInitialConnectionDiagnostics(),
-      dialogueTurn: createIdleDialogueTurnSnapshot(),
       runtimeApiConfig: loadRuntimeApiConfig(),
 
       setConnected: (connected) => set({ isConnected: connected }),
@@ -116,11 +111,16 @@ export const useSystemStore = create<SystemState>()(
 
       setChatTransportMode: (chatTransportMode) => set({ chatTransportMode }),
 
-      recordConnectionHealth: ({ status }) =>
-        set({
+      recordConnectionHealth: ({ status, checkedAt = Date.now(), latencyMs = null }) =>
+        set((state) => ({
           connectionStatus: status,
           isConnected: status === 'connected',
-        }),
+          connectionDiagnostics: {
+            ...state.connectionDiagnostics,
+            lastHealthCheckAt: checkedAt,
+            lastHealthCheckLatencyMs: latencyMs,
+          },
+        })),
 
       recordEndpointRouting: ({ activeEndpoint, didFailover = false, recordedAt = Date.now() }) =>
         set((state) => ({
@@ -133,8 +133,6 @@ export const useSystemStore = create<SystemState>()(
             lastFailoverAt: didFailover ? recordedAt : state.connectionDiagnostics.lastFailoverAt,
           },
         })),
-
-      setDialogueTurn: (dialogueTurn) => set({ dialogueTurn }),
 
       setError: (error) => {
         if (!error) {
@@ -168,7 +166,6 @@ export const useSystemStore = create<SystemState>()(
           isLoading: false,
           chatTransportMode: 'sse',
           connectionDiagnostics: createInitialConnectionDiagnostics(),
-          dialogueTurn: createIdleDialogueTurnSnapshot(),
         }),
     }),
     { name: 'system-store', enabled: ENABLE_DEVTOOLS },

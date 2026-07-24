@@ -41,7 +41,7 @@ export default function FeaturesSection() {
   ];
 
   const stats = [
-    { value: '189', label: '单元测试用例' },
+    { value: '183', label: '单元测试用例' },
     { value: '~240KB', label: 'gzip 打包体积' },
     { value: '2', label: '传输协议 (HTTP/SSE)' },
     { value: '0 配置', label: '开箱即用' },

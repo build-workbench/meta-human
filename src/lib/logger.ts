@@ -1,6 +1,6 @@
 /**
  * Logger utility that respects environment settings.
- * In production, debug logs are suppressed while warnings and errors remain.
+ * 生产环境通过 vite esbuild.pure 移除 debug/info/log，保留 warn/error。
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';

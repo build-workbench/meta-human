@@ -44,10 +44,14 @@ export default defineConfig(({ mode }) => {
       },
     },
 
+    esbuild: {
+      // 生产环境移除 debug/info/log，保留 warn/error（与 logger 设计一致）。
+      pure: isProduction ? ['console.debug', 'console.info', 'console.log'] : [],
+    },
+
     plugins: [
       react({
         jsxImportSource: 'react',
-        removeConsole: isProduction,
       }),
       tailwindcss(),
       htmlTransformPlugin(),

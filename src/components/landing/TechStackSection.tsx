@@ -52,7 +52,7 @@ export default function TechStackSection() {
     {
       icon: TestTube,
       title: 'TDD · Vitest',
-      desc: '189 个单元测试，覆盖核心服务与 UI 编排',
+      desc: '183 个单元测试，覆盖核心服务与 UI 编排',
     },
     {
       icon: GitBranch,

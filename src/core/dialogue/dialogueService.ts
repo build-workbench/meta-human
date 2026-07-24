@@ -542,8 +542,12 @@ function buildEmptyResponse(): ChatResponsePayload {
 }
 
 function getFallbackResponse(userText: string): ChatResponsePayload {
-  const greetings = ['你好', '您好', 'hello', 'hi', '嗨'];
-  const isGreeting = greetings.some((g) => userText.toLowerCase().includes(g));
+  const lower = userText.toLowerCase();
+  const chineseGreetings = ['你好', '您好', '嗨'];
+  const englishGreetings = ['hello', 'hi'];
+  const isGreeting =
+    chineseGreetings.some((g) => userText.includes(g)) ||
+    englishGreetings.some((g) => new RegExp(`\\b${g}\\b`).test(lower));
   if (isGreeting) {
     return {
       replyText: '您好！很高兴见到您。由于网络问题，我目前处于离线模式，但仍然可以进行简单的交互。',
@@ -711,7 +715,8 @@ export async function* streamUserInput(
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n\n');
+            // 兼容 CRLF 行尾：某些代理/服务器会改写为 \r\n\r\n。
+            const lines = buffer.replace(/\r\n/g, '\n').split('\n\n');
             buffer = lines.pop() || '';
             for (const line of lines) {
               if (!line.startsWith('data: ')) continue;
