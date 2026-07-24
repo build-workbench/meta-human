@@ -8,7 +8,7 @@ from urllib.parse import urlparse, urlunparse
 import httpx
 
 from app.config import get_settings
-from app.stores.session_store import SessionStore, create_session_store
+from app.stores.session_store import SessionStore, InMemorySessionStore
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class DialogueService:
     self.max_session_messages = settings.max_session_messages
     self.session_ttl = settings.session_ttl_seconds
     self.cleanup_interval = settings.session_cleanup_interval
-    self.store: SessionStore = create_session_store(settings.redis_url)
+    self.store: SessionStore = InMemorySessionStore()
 
   def _normalize_user_text(self, user_text: str) -> str:
     return (user_text or "").strip()
@@ -430,25 +430,6 @@ class DialogueService:
         "content": f"附加上下文信息（可选）：{json.dumps(meta, ensure_ascii=False)}",
       })
     return messages
-
-  def _parse_llm_response(self, content: str, user_text: str) -> Dict[str, Any]:
-    """解析 LLM 返回的 JSON 内容，做字段校验和兜底"""
-    try:
-      parsed = json.loads(content)
-    except json.JSONDecodeError:
-      logger.warning("LLM 返回内容不是合法 JSON: %s", content[:200])
-      return {"replyText": content, "emotion": "neutral", "action": "idle"}
-
-    reply_text = str(parsed.get("replyText", "")).strip() or f"你刚才说：{user_text}"
-    emotion = str(parsed.get("emotion", "neutral")).strip() or "neutral"
-    action = str(parsed.get("action", "idle")).strip() or "idle"
-
-    if emotion not in {"neutral", "happy", "surprised", "sad", "angry"}:
-      emotion = "neutral"
-    if action not in {"idle", "wave", "greet", "think", "nod", "shakeHead", "dance", "speak"}:
-      action = "idle"
-
-    return {"replyText": reply_text, "emotion": emotion, "action": action}
 
   async def _call_llm_stream(self, messages: list[dict[str, str]]) -> AsyncGenerator[str, None]:
     """流式调用 LLM，逐块 yield 文本内容"""

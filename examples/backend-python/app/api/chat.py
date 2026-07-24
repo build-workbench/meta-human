@@ -35,8 +35,6 @@ class ChatRequest(BaseModel):
   sessionId: Optional[str] = None
   userText: Optional[str] = None
   meta: Optional[Dict[str, Any]] = None
-  metadata: Optional[Dict[str, Any]] = None
-  context: Optional[Dict[str, Any]] = None
   messages: Optional[List[ChatMessage]] = None
 
   @field_validator("userText")
@@ -70,19 +68,6 @@ class ChatRequest(BaseModel):
 
     return ""
 
-  def resolve_meta(self) -> Optional[Dict[str, Any]]:
-    merged: Dict[str, Any] = {}
-    if self.meta:
-      merged.update(self.meta)
-    if self.metadata:
-      merged.update(self.metadata)
-    if self.context:
-      merged["context"] = self.context
-    if not merged:
-      return None
-    return merged
-
-
 class ChatResponse(BaseModel):
   replyText: str
   emotion: str = "neutral"
@@ -97,7 +82,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
   result = await dialogue_service.generate_reply(
     user_text=req.resolve_user_text(),
     session_id=req.sessionId,
-    meta=req.resolve_meta(),
+    meta=req.meta,
   )
   return ChatResponse(**result)
 
@@ -116,7 +101,7 @@ async def chat_stream(req: ChatRequest) -> StreamingResponse:
     async for chunk in dialogue_service.generate_reply_stream(
       user_text=req.resolve_user_text(),
       session_id=req.sessionId,
-      meta=req.resolve_meta(),
+      meta=req.meta,
     ):
       yield f"data: {chunk}\n\n"
 

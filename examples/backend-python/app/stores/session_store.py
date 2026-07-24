@@ -1,14 +1,12 @@
 """Session storage abstraction for DialogueService.
 
-Provides a pluggable interface for session persistence, with in-memory
-and Redis implementations. The in-memory store is the default and works
-for single-process development. The Redis store enables distributed
-session management across multiple workers/instances.
+Provides a pluggable SessionStore interface with an in-memory implementation.
+The in-memory store is the default and works for single-process development;
+sessions are lost on restart.
 """
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
-import json
 import time
 import logging
 from collections import defaultdict
@@ -139,114 +137,3 @@ class InMemorySessionStore(SessionStore):
         if expired:
             logger.info("Cleaned up %d expired sessions", len(expired))
         return len(expired)
-
-
-class RedisSessionStore(SessionStore):
-    """Redis-backed session storage.
-
-    Requires the `redis` package. Falls back gracefully if Redis is unavailable.
-    """
-
-    def __init__(self, redis_url: str, key_prefix: str = "metahuman:session:") -> None:
-        try:
-            import redis
-        except ImportError as e:
-            raise ImportError(
-                "redis package required for RedisSessionStore. "
-                "Install with: pip install redis"
-            ) from e
-        self._redis = redis.from_url(redis_url, decode_responses=True)
-        self._prefix = key_prefix
-
-    def _history_key(self, session_id: str) -> str:
-        return f"{self._prefix}{session_id}:history"
-
-    def _messages_key(self, session_id: str) -> str:
-        return f"{self._prefix}{session_id}:messages"
-
-    def _active_key(self, session_id: str) -> str:
-        return f"{self._prefix}{session_id}:active"
-
-    def get_history(self, session_id: str) -> List[Dict[str, str]]:
-        raw = self._redis.get(self._history_key(session_id))
-        return json.loads(raw) if raw else []
-
-    def append_history(
-        self, session_id: str, role: str, content: str, timestamp: str, max_length: int = 40
-    ) -> None:
-        history = self.get_history(session_id)
-        history.append({"role": role, "content": content, "timestamp": timestamp})
-        # Truncate if needed
-        if len(history) > max_length:
-            history = history[-max_length:]
-        self._redis.set(self._history_key(session_id), json.dumps(history))
-        self.touch(session_id)
-
-    def get_messages(self, session_id: str) -> List[Dict[str, str]]:
-        raw = self._redis.get(self._messages_key(session_id))
-        return json.loads(raw) if raw else []
-
-    def append_messages(
-        self, session_id: str, messages: List[Dict[str, str]], max_length: int = 10
-    ) -> None:
-        current = self.get_messages(session_id)
-        current.extend(messages)
-        self._redis.set(self._messages_key(session_id), json.dumps(current[-max_length:]))
-
-    def touch(self, session_id: str) -> None:
-        # 使用 time.time() 而非 time.monotonic()，因为 Redis 是跨进程存储，
-        # monotonic 值在不同进程间不可比较
-        self._redis.set(self._active_key(session_id), str(time.time()), ex=3600)
-
-    def clear(self, session_id: str) -> bool:
-        keys = [
-            self._history_key(session_id),
-            self._messages_key(session_id),
-            self._active_key(session_id),
-        ]
-        return self._redis.delete(*keys) > 0
-
-    def list_sessions(self) -> List[Dict[str, Any]]:
-        pattern = f"{self._prefix}*:history"
-        sessions = []
-        for key in self._redis.scan_iter(pattern):
-            sid = key.replace(self._prefix, "").replace(":history", "")
-            history = self.get_history(sid)
-            if history:
-                sessions.append({
-                    "sessionId": sid,
-                    "messageCount": len(history),
-                    "lastActivity": history[-1].get("timestamp", ""),
-                    "preview": history[-1].get("content", "")[:80],
-                })
-        sessions.sort(key=lambda s: s["lastActivity"], reverse=True)
-        return sessions
-
-    def cleanup_expired(self, ttl_seconds: int) -> int:
-        # Redis handles TTL via the `ex` parameter on touch()
-        # This method is a no-op but kept for interface compatibility
-        return 0
-
-
-def create_session_store(redis_url: Optional[str] = None) -> SessionStore:
-    """Factory function to create the appropriate session store.
-
-    If redis_url is provided and Redis is available, uses RedisSessionStore.
-    Otherwise falls back to InMemorySessionStore.
-    """
-    if redis_url:
-        try:
-            store = RedisSessionStore(redis_url)
-            logger.info("Using Redis session store: %s", redis_url)
-            return store
-        except ImportError:
-            logger.warning(
-                "REDIS_URL set but redis package not installed, "
-                "falling back to in-memory session store"
-            )
-        except Exception as exc:
-            logger.warning(
-                "Redis connection failed (%s), falling back to in-memory session store",
-                exc,
-            )
-    return InMemorySessionStore()
