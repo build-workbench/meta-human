@@ -4,6 +4,8 @@ import type { DialogueOrchestrator } from '../dialogue/dialogueOrchestrator';
 
 const logger = loggers.audio;
 
+type DialogueRuntime = Pick<DialogueOrchestrator, 'runDialogueTurn'>;
+
 // TTS 配置接口
 export interface TTSConfig {
   lang?: string;
@@ -49,6 +51,7 @@ export class TTSService {
   private isInitialized: boolean = false;
   private callbacks: TTSCallbacks;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private cancelling = false;
   private voiceLoadHandler: (() => void) | null = null;
   private visemeTimer: ReturnType<typeof setInterval> | null = null;
   private visemeStartTime = 0;
@@ -186,13 +189,20 @@ export class TTSService {
     };
 
     utterance.onend = () => {
+      const wasCancelled = this.cancelling;
+      this.cancelling = false;
       this.currentUtterance = null;
       this.stopVisemeLoop();
-      this.callbacks.onSpeakEnd?.();
+      // 被 cancelCurrentUtterance 主动触发时，onSpeakEnd 由 stop() 统一调用，
+      // 此处仅 settle Promise，避免重复 onViseme(0)。
+      if (!wasCancelled) {
+        this.callbacks.onSpeakEnd?.();
+      }
       hooks.onEnd?.();
     };
 
     utterance.onerror = (event) => {
+      this.cancelling = false;
       this.currentUtterance = null;
       this.stopVisemeLoop();
       logger.error('语音合成错误:', event);
@@ -206,11 +216,25 @@ export class TTSService {
   }
 
   private cancelCurrentUtterance(): void {
-    if (this.currentUtterance) {
-      this.currentUtterance.onstart = null;
-      this.currentUtterance.onend = null;
-      this.currentUtterance.onerror = null;
+    const previous = this.currentUtterance;
+    if (previous) {
+      // 标记正在 cancel，使 onend 跳过 onSpeakEnd（由 stop() 统一调用），
+      // 仅 settle Promise，避免重复 onViseme(0)。
+      // onend 内会调 stopVisemeLoop，此处不再调，避免二次 onViseme(0)。
+      this.cancelling = true;
+      previous.onstart = null;
+      previous.onerror = null;
+      const onEnd = previous.onend;
+      previous.onend = null;
       this.currentUtterance = null;
+      if (typeof onEnd === 'function') {
+        try {
+          onEnd.call(previous, new Event('end') as SpeechSynthesisEvent);
+        } catch (error) {
+          logger.warn('Failed to settle previous utterance onend:', error);
+        }
+      }
+      return;
     }
     this.stopVisemeLoop();
   }
@@ -251,16 +275,6 @@ export class TTSService {
   }
 }
 
-// ASR 回调接口
-export interface ASRCallbacks {
-  onTranscript?: (text: string, isFinal: boolean) => void;
-  onError?: (error: string) => void;
-  onStart?: () => void;
-  onEnd?: () => void;
-}
-
-type DialogueRuntime = Pick<DialogueOrchestrator, 'runDialogueTurn'>;
-
 // ASR 配置接口
 export interface ASRConfig {
   lang?: string;
@@ -278,7 +292,6 @@ type ASRStartOptions = {
 export class ASRService {
   private recognition: SpeechRecognitionLike | null = null;
   private isSupportedFlag: boolean;
-  private callbacks: ASRCallbacks = {};
   private config: ASRConfig;
   private sendToBackend: boolean = true;
   private tts: TTSService;
@@ -313,10 +326,6 @@ export class ASRService {
     }
   }
 
-  setCallbacks(callbacks: ASRCallbacks): void {
-    this.callbacks = callbacks;
-  }
-
   setSendToBackend(send: boolean): void {
     this.sendToBackend = send;
   }
@@ -349,14 +358,12 @@ export class ASRService {
     this.recognition.onstart = () => {
       if (currentGeneration !== this.recognitionGeneration) return;
       this.state.setBehavior('listening');
-      this.callbacks.onStart?.();
     };
 
     this.recognition.onresult = (event: SpeechRecognitionEventLike) => {
       if (currentGeneration !== this.recognitionGeneration) return;
 
       let finalTranscript = '';
-      let interimTranscript = '';
 
       const startIndex = event.resultIndex ?? 0;
       for (let i = startIndex; i < event.results.length; i++) {
@@ -365,17 +372,10 @@ export class ASRService {
         const isFinal = result?.isFinal ?? false;
         if (isFinal) {
           finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
         }
       }
 
-      if (interimTranscript) {
-        this.callbacks.onTranscript?.(interimTranscript, false);
-      }
-
       if (finalTranscript) {
-        this.callbacks.onTranscript?.(finalTranscript, true);
         if (this.onResultCallback) {
           this.onResultCallback(finalTranscript);
         }
@@ -393,7 +393,6 @@ export class ASRService {
       this.state.setRecording(false);
       this.state.setBehavior('idle');
       this.state.setError(errorMsg);
-      this.callbacks.onError?.(errorMsg);
     };
 
     this.recognition.onend = () => {
@@ -401,7 +400,6 @@ export class ASRService {
 
       this.state.setRecording(false);
       this.state.setBehavior('idle');
-      this.callbacks.onEnd?.();
     };
   }
 
@@ -468,6 +466,9 @@ export class ASRService {
       clearTimeout(this.pendingRestartTimer);
       this.pendingRestartTimer = null;
     }
+    // 先递增 generation，使异步 onend/onerror 回调早退，
+    // 再由这里统一重置状态（与 abort() 对齐）。
+    this.recognitionGeneration++;
     if (this.recognition && this.isSupportedFlag) {
       try {
         this.recognition.stop();
@@ -477,13 +478,13 @@ export class ASRService {
     }
     this.onResultCallback = null;
     this.mode = 'command';
-    this.recognitionGeneration++;
+    this.state.setRecording(false);
+    this.state.setBehavior('idle');
   }
 
   dispose(): void {
     this.stop();
     this.recognition = null;
-    this.callbacks = {};
     this.onResultCallback = null;
 
     if (this.pendingRestartTimer) {

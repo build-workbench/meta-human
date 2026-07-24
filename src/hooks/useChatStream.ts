@@ -5,7 +5,6 @@ import { useSystemStore } from '@/store/systemStore';
 import { useTTS, useEngine, useDialogue } from '@/services';
 import { toast } from 'sonner';
 import { loggers } from '@/lib/logger';
-import { createIdleDialogueTurnSnapshot } from '@/core/dialogue/dialogueService';
 import { buildDialogueRequestMeta } from '@/core/dialogue/dialogueRequestMeta';
 
 const logger = loggers.chat;
@@ -26,7 +25,6 @@ export function useChatStream(options: UseChatStreamOptions) {
   const updateChatMessage = useChatSessionStore((s) => s.updateChatMessage);
   const removeChatMessage = useChatSessionStore((s) => s.removeChatMessage);
   const setLoading = useSystemStore((s) => s.setLoading);
-  const setDialogueTurn = useSystemStore((s) => s.setDialogueTurn);
   const isLoading = useSystemStore((s) => s.isLoading);
   const [chatInput, setChatInput] = useState('');
   const { sessionId, isMuted, onConnectionChange, onClearError, onError } = options;
@@ -41,23 +39,12 @@ export function useChatStream(options: UseChatStreamOptions) {
   chatInputRef.current = chatInput;
 
   useEffect(() => {
-    setDialogueTurn(dialogue.getTurnSnapshot());
-
-    const unsubscribe = dialogue.subscribeTurnSnapshot((snapshot) => {
-      // Skip per-token 'streaming' snapshots to avoid store churn;
-      // streaming text is handled via onStreamToken directly.
-      if (snapshot.status === 'streaming') return;
-      setDialogueTurn(snapshot);
-    });
-
     return () => {
       dialogue.reset();
       activeTurnRef.current?.settleForTeardown();
-      unsubscribe();
-      setDialogueTurn(createIdleDialogueTurnSnapshot());
       activeTurnRef.current = null;
     };
-  }, [dialogue, sessionId, setDialogueTurn]);
+  }, [dialogue]);
 
   const handleChatSend = useCallback(
     async (text?: string) => {
@@ -153,9 +140,6 @@ export function useChatStream(options: UseChatStreamOptions) {
             if (assistantMessageId) {
               updateChatMessage(assistantMessageId, { text: accumulatedText, isStreaming: true });
             }
-          }),
-          onTurnResponse: guardTurn((response: { replyText: string }) => {
-            syncAssistantMessageWithResult(response.replyText);
           }),
           onStreamEnd: guardTurn(() => finalizeAssistantMessage()),
           onConnectionChange: guardTurn((status: 'connected' | 'error') => {

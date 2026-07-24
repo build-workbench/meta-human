@@ -119,11 +119,16 @@ export function useVoiceInteraction(
         }
       }
     }
+    // 仅依赖 voiceName 决定默认语音；不在此 effect 中停止 ASR，
+    // 避免切换语音时误中断正在进行的录音。
+  }, [speechConfig.voiceName, setSpeechConfig, tts]);
 
+  // 组件卸载时停止 ASR
+  useEffect(() => {
     return () => {
       asr.stop();
     };
-  }, [asr, speechConfig.voiceName, setSpeechConfig, tts]);
+  }, [asr]);
 
   const voice =
     availableVoices.find((candidate) => candidate.name === speechConfig.voiceName) ?? null;

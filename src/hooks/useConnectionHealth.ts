@@ -55,6 +55,8 @@ export function useConnectionHealth() {
     }) => {
       recordConnectionHealth({
         status: result.status,
+        checkedAt: result.checkedAt,
+        latencyMs: result.latencyMs,
       });
 
       if (result.transportMode) {

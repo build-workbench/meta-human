@@ -226,14 +226,6 @@ describe('useChatStream', () => {
         timestamp: expect.any(Number),
       }),
     );
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'complete',
-      mode: 'streaming',
-      turnId: 1,
-      userText: '你好',
-      replyText: '你好',
-      error: null,
-    });
   });
 
   it('uses zh-CN language in dialogue request metadata', async () => {
@@ -348,25 +340,15 @@ describe('useChatStream', () => {
       await result.current.handleChatSend('complete me');
     });
 
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'complete',
-      mode: 'streaming',
-      turnId: 1,
-      userText: 'complete me',
-      replyText: 'done',
-      error: null,
-    });
-
     unmount();
 
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'idle',
-      mode: null,
-      turnId: null,
-      userText: null,
-      replyText: '',
-      error: null,
-    });
+    // dialogueTurn 已从 systemStore 移除；仅验证卸载不抛错。
+    expect(useChatSessionStore.getState().chatHistory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ role: 'user', text: 'complete me' }),
+        expect.objectContaining({ role: 'assistant', text: 'done' }),
+      ]),
+    );
   });
 
   it('does not rehydrate a stale completed snapshot when a new session mounts', async () => {
@@ -382,38 +364,20 @@ describe('useChatStream', () => {
       await firstMount.result.current.handleChatSend('complete me');
     });
 
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'complete',
-      mode: 'streaming',
-      userText: 'complete me',
-      replyText: 'done',
-      error: null,
-    });
-
     firstMount.unmount();
-
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'idle',
-      mode: null,
-      turnId: null,
-      userText: null,
-      replyText: '',
-      error: null,
-    });
 
     renderChatStreamHook({
       services,
       sessionId: 'session_b',
     });
 
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'idle',
-      mode: null,
-      turnId: null,
-      userText: null,
-      replyText: '',
-      error: null,
-    });
+    // dialogueTurn 已从 systemStore 移除；仅验证新会话挂载不抛错。
+    expect(useChatSessionStore.getState().chatHistory).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ role: 'user', text: 'complete me' }),
+        expect.objectContaining({ role: 'assistant', text: 'done' }),
+      ]),
+    );
   });
 
   it('removes the transient assistant placeholder and settles performance on unmount during a pending stream', async () => {
@@ -440,13 +404,5 @@ describe('useChatStream', () => {
     expect(useChatSessionStore.getState().chatHistory).toEqual([
       expect.objectContaining({ role: 'user', text: 'pending' }),
     ]);
-    expect(useSystemStore.getState().dialogueTurn).toMatchObject({
-      status: 'idle',
-      mode: null,
-      turnId: null,
-      userText: null,
-      replyText: '',
-      error: null,
-    });
   });
 });
