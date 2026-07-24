@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Menu, X, Github, Play } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,9 +25,9 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { label: t('nav.features'), href: '#features' },
-    { label: t('nav.tech'), href: '#tech-stack' },
-    { label: t('nav.quickstart'), href: '#quickstart' },
+    { label: '功能', href: '#features' },
+    { label: '技术', href: '#tech-stack' },
+    { label: '快速开始', href: '#quickstart' },
     {
       label: 'GitHub',
       href: 'https://github.com/LessUp/meta-human',
@@ -97,7 +95,7 @@ export default function Navbar() {
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-blue-600/20"
             >
               <Play className="w-4 h-4" />
-              {t('nav.tryNow')}
+              {'立即体验'}
             </Link>
           </div>
 
@@ -156,7 +154,7 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <Play className="w-4 h-4" />
-              {t('nav.tryNow')}
+              {'立即体验'}
             </Link>
           </div>
         </div>

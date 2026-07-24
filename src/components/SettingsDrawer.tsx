@@ -12,7 +12,6 @@ import {
   applyRuntimeApiEndpoints,
   resetRuntimeApiEndpoints,
 } from '../core/dialogue/dialogueService';
-import { t } from '../lib/i18n';
 
 interface SettingsDrawerProps {
   show: boolean;
@@ -149,10 +148,8 @@ export default function SettingsDrawer({
                 </div>
                 <div className="rounded-xl border border-white/5 bg-white/5 p-4">
                   <div className="space-y-1">
-                    <h3 className="text-sm font-medium text-white">
-                      {t('settings.character.title')}
-                    </h3>
-                    <p className="text-xs text-gray-400">{t('settings.character.desc')}</p>
+                    <h3 className="text-sm font-medium text-white">角色预设</h3>
+                    <p className="text-xs text-gray-400">切换数字人对话人设，下一轮对话生效。</p>
                   </div>
                   <div className="mt-3 grid gap-2">
                     {CHARACTER_PRESETS.map((preset) => (
@@ -189,16 +186,18 @@ export default function SettingsDrawer({
             {activeTab === 'avatar' && (
               <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-white">{t('settings.avatar.title')}</h3>
-                  <p className="text-xs text-gray-400">{t('settings.avatar.desc')}</p>
+                  <h3 className="text-sm font-medium text-white">头像来源</h3>
+                  <p className="text-xs text-gray-400">
+                    上传 GLB/GLTF 模型。加载失败时自动回退到内置程序化头像。
+                  </p>
                 </div>
 
                 <div className="rounded-lg border border-dashed border-white/15 bg-black/20 p-3 text-xs text-gray-300">
-                  {t('settings.avatar.current')}: {avatarFileName ?? t('settings.avatar.builtin')}
+                  当前头像: {avatarFileName ?? '内置程序化头像'}
                 </div>
 
                 <label className="block text-sm font-medium text-gray-300" htmlFor="avatar-upload">
-                  {t('settings.avatar.upload')}
+                  上传自定义头像
                 </label>
                 <input
                   id="avatar-upload"
@@ -217,13 +216,13 @@ export default function SettingsDrawer({
 
                 <div className="flex items-center justify-between gap-3 text-xs">
                   <span className="text-gray-400">
-                    {t('settings.avatar.status')}:
+                    状态:
                     <span className="ml-2 text-white">
                       {avatarLoadStatus === 'ready'
-                        ? t('settings.avatar.statusReady')
+                        ? '已就绪'
                         : avatarLoadStatus === 'error'
-                          ? t('settings.avatar.statusError')
-                          : t('settings.avatar.statusIdle')}
+                          ? '加载失败，已回退'
+                          : '等待加载'}
                     </span>
                   </span>
                   <button
@@ -231,7 +230,7 @@ export default function SettingsDrawer({
                     onClick={onUseBuiltInAvatar}
                     className="rounded-lg border border-white/10 px-3 py-1.5 text-gray-200 transition-colors hover:bg-white/10"
                   >
-                    {t('settings.avatar.useBuiltin')}
+                    使用内置头像
                   </button>
                 </div>
 
@@ -288,13 +287,15 @@ function RuntimeConfigPanel() {
   return (
     <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4">
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-white">{t('settings.config.title')}</h3>
-        <p className="text-xs text-gray-400">{t('settings.config.desc')}</p>
+        <h3 className="text-sm font-medium text-white">API 端点</h3>
+        <p className="text-xs text-gray-400">
+          运行时覆盖后端地址（优先于 env 配置），刷新后仍生效。
+        </p>
       </div>
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-300" htmlFor="runtime-api-base">
-          {t('settings.config.baseUrl')}
+          主端点 Base URL
         </label>
         <input
           id="runtime-api-base"
@@ -308,7 +309,7 @@ function RuntimeConfigPanel() {
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-300" htmlFor="runtime-api-fallbacks">
-          {t('settings.config.fallbacks')}
+          备用端点（逗号分隔）
         </label>
         <input
           id="runtime-api-fallbacks"
@@ -327,27 +328,22 @@ function RuntimeConfigPanel() {
           disabled={!baseUrl.trim()}
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {t('settings.config.apply')}
+          应用
         </button>
         <button
           type="button"
           onClick={handleReset}
           className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-200 transition-colors hover:bg-white/10"
         >
-          {t('settings.config.reset')}
+          恢复 env 默认
         </button>
-        {saved && <span className="text-xs text-green-400">{t('settings.config.saved')}</span>}
+        {saved && <span className="text-xs text-green-400">已保存</span>}
       </div>
 
       {runtimeApiConfig && (
         <div className="rounded-lg border border-white/10 bg-black/20 p-3 text-xs text-gray-400">
-          {t('settings.config.current')}: {runtimeApiConfig.baseUrl}
-          {runtimeApiConfig.fallbacks && (
-            <>
-              {' '}
-              + {t('settings.config.fallbacks')}: {runtimeApiConfig.fallbacks}
-            </>
-          )}
+          当前覆盖: {runtimeApiConfig.baseUrl}
+          {runtimeApiConfig.fallbacks && <> + 备用端点（逗号分隔）: {runtimeApiConfig.fallbacks}</>}
         </div>
       )}
     </div>

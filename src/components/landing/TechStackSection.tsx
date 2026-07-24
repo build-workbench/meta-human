@@ -1,5 +1,4 @@
 import { TestTube, GitBranch, ShieldCheck, CheckSquare } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
 import {
   ReactLogo,
   ThreeJsIcon,
@@ -10,8 +9,6 @@ import {
 } from './icons';
 
 export default function TechStackSection() {
-  const { t } = useI18n();
-
   const techLayers = [
     {
       title: 'UI 层',
@@ -81,7 +78,7 @@ export default function TechStackSection() {
       <div className="landing-shell relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('tech.title')}</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">技术架构</h2>
           <p className="text-lg text-gray-400">
             基于业界领先的开源技术构建，确保性能、可维护性和扩展性
           </p>

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Play, Github, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
 
 // 预计算粒子位置，避免 Math.random() 导致每次渲染不一致（hydration 抖动）
 const PARTICLES = [
@@ -27,12 +26,10 @@ const PARTICLES = [
 ];
 
 export default function HeroSection() {
-  const { t } = useI18n();
-
   const highlights = [
-    { icon: Sparkles, label: t('hero.highlight.config') },
-    { icon: Zap, label: t('hero.highlight.offline') },
-    { icon: Shield, label: t('hero.highlight.quality') },
+    { icon: Sparkles, label: '零配置启动' },
+    { icon: Zap, label: '离线可用' },
+    { icon: Shield, label: '开源 MIT' },
   ];
 
   return (
@@ -78,7 +75,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-6">
               <Sparkles className="w-4 h-4" />
-              <span>{t('hero.badge')}</span>
+              <span>开源 3D 数字人引擎 v2.2</span>
             </div>
 
             {/* Main Heading */}
@@ -86,14 +83,14 @@ export default function HeroSection() {
               让 AI 拥有
               <br />
               <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                {t('hero.titleHighlight')}
+                实时交互的数字身体
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400 sm:text-xl lg:mx-0 lg:max-w-xl">
-              {t('hero.subtitle')}
-              <span className="text-gray-300">{t('hero.subtitleHighlight')}</span>
+              浏览器原生的 3D 数字人交互引擎，支持语音、对话能力。
+              <span className="text-gray-300">零配置启动，离线可用，开源 MIT。</span>
             </p>
 
             {/* CTA Buttons */}
@@ -103,7 +100,7 @@ export default function HeroSection() {
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-xl hover:shadow-blue-600/20 hover:-translate-y-0.5"
               >
                 <Play className="w-5 h-5" />
-                {t('hero.cta.try')}
+                立即体验
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
@@ -143,7 +140,7 @@ export default function HeroSection() {
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
                   <div className="flex-1 text-center text-xs text-gray-500 font-mono">
-                    {t('hero.preview.title')}
+                    MetaHuman Engine Preview
                   </div>
                 </div>
 
@@ -180,9 +177,7 @@ export default function HeroSection() {
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
-                    <div className="flex-1 text-sm text-gray-400">
-                      {t('hero.preview.placeholder')}
-                    </div>
+                    <div className="flex-1 text-sm text-gray-400">输入消息与数字人互动...</div>
                     <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                       <ArrowRight className="w-4 h-4 text-gray-400" />
                     </div>
@@ -192,7 +187,7 @@ export default function HeroSection() {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span>{t('hero.preview.connected')}</span>
+                      <span>系统已连接</span>
                     </div>
                     <div>Three.js | WebGL 2.0</div>
                   </div>
@@ -204,20 +199,20 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Floating Stats Cards — values verifiable via npm run test:run / npm run build */}
+            {/* Floating Stats Cards - values verifiable via npm run test:run / npm run build */}
             <div className="absolute left-0 top-1/4 hidden xl:block">
               <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
                 <div className="text-2xl font-bold text-white">
                   183<span className="text-blue-400"> tests</span>
                 </div>
-                <div className="text-xs text-gray-400">{t('hero.stats.fps')}</div>
+                <div className="text-xs text-gray-400">单元测试</div>
               </div>
             </div>
 
             <div className="absolute right-0 bottom-1/3 hidden xl:block">
               <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
                 <div className="text-2xl font-bold text-white">~240KB</div>
-                <div className="text-xs text-gray-400">{t('hero.stats.landmarks')}</div>
+                <div className="text-xs text-gray-400">gzip 体积</div>
               </div>
             </div>
           </div>
@@ -226,7 +221,7 @@ export default function HeroSection() {
 
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-gray-500 md:flex">
-        <span className="text-xs">{t('hero.scrollHint')}</span>
+        <span className="text-xs">向下滚动了解更多</span>
         <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1">
           <div className="w-1.5 h-3 bg-blue-400 rounded-full animate-bounce" />
         </div>

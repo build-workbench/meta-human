@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Play, Github, ArrowRight, Download, Code2, Terminal } from 'lucide-react';
-import { useI18n } from '@/hooks/useI18n';
 
 export default function CTASection() {
-  const { t } = useI18n();
-
   const featureCards = [
     {
       icon: Download,
@@ -63,8 +60,8 @@ export default function CTASection() {
         <div className="landing-center max-w-5xl grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           {/* Left: CTA Content */}
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">{t('cta.title')}</h2>
-            <p className="text-lg text-gray-400 mb-8">{t('cta.subtitle')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">开始构建你的数字人</h2>
+            <p className="text-lg text-gray-400 mb-8">几分钟即可拥有功能完整的 3D 交互体验</p>
 
             {/* Quick Install */}
             <div className="p-4 rounded-xl bg-[#0d1117] border border-white/10 mb-6">
@@ -93,7 +90,7 @@ export default function CTASection() {
                 className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-600/20"
               >
                 <Play className="w-5 h-5" />
-                {t('cta.button')}
+                开始体验
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a

@@ -1,6 +1,5 @@
 import { Activity, Github, Twitter, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useI18n } from '@/hooks/useI18n';
 
 type FooterLink = {
   label: string;
@@ -11,7 +10,6 @@ type FooterLink = {
 };
 
 export default function Footer() {
-  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
@@ -154,7 +152,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-center text-sm text-gray-600 sm:text-left">
-            {t('footer.copyright', { year: String(currentYear) })}
+            {`© ${currentYear} LessUp. 保留所有权利。`}
           </p>
           <p className="flex items-center justify-center gap-1 text-center text-sm text-gray-600 sm:justify-end sm:text-right">
             用 <Heart className="w-4 h-4 text-red-500 fill-red-500" />{' '}
