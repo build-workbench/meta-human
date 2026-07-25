@@ -12,6 +12,21 @@
   <img src="public/preview.svg" width="720" alt="MetaHuman Engine 预览" />
 </p>
 
+打开页面，一个赛博风格的 3D 数字人站在场景中央。你在底部输入框打字或按下麦克风说话，它会逐字回复你，说话时嘴巴跟着张合，语气带上表情和肢体动作。你也可以让它打招呼、跳舞、点头，或者换一套自己的 GLB 模型上去。
+
+不需要后端、不需要 API Key，克隆下来就能跑。接入后端后解锁 LLM 对话。
+
+## 特性
+
+- **开箱即用** — 内置程序化 3D 形象，不依赖任何外部模型文件
+- **流式对话** — 回复逐字输出，不用等整句生成完
+- **表情联动** — 对话时数字人自动切换情绪、表情和肢体动作
+- **嘴型同步** — TTS 朗读时嘴部实时张合
+- **语音交互** — 支持语音输入（Chrome/Edge）和语音播报，可调语速、音调、音量
+- **角色预设** — 4 种人设一键切换，活泼助手、严肃顾问、可爱伙伴、专业客服
+- **自定义形象** — 上传 GLB/GLTF 模型替换默认形象，加载失败自动回退
+- **离线可用** — 无后端时本地模拟回复，所有功能不受影响
+
 ## 快速开始
 
 ```bash
@@ -21,82 +36,11 @@ npm install
 npm run dev
 ```
 
-打开 http://localhost:5173 即可使用。无需 API Key，无后端时自动降级到本地模拟回复。
+打开 http://localhost:5173，直接开始对话。
 
-## 架构
+## 接入后端
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Pages / Components（React 19 + Tailwind 4）            │
-│  LandingPage · AdvancedDigitalHumanPage · ChatDock · HUD│
-├─────────────────────────────────────────────────────────┤
-│  Hooks（UI 编排）                                        │
-│  useChatStream · useVoiceInteraction · useConnectionHealth│
-├─────────────────────────────────────────────────────────┤
-│  Services（React DI 容器）                               │
-│  ServicesProvider → useEngine / useTTS / useASR / useDialogue│
-├─────────────────────────────────────────────────────────┤
-│  Core（纯 TS，不引入 React）                             │
-│  ┌───────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ Avatar    │  │ Dialogue     │  │ Audio            │  │
-│  │ Engine    │  │ Service +    │  │ TTS + ASR        │  │
-│  │ 表情/动画 │  │ Orchestrator │  │ 嘴型驱动         │  │
-│  └───────────┘  └──────────────┘  └──────────────────┘  │
-├─────────────────────────────────────────────────────────┤
-│  Store（Zustand 5）                                      │
-│  digitalHumanStore · chatSessionStore · systemStore      │
-└─────────────────────────────────────────────────────────┘
-```
-
-Core 层通过适配器（`getState()`）读写 Zustand，不依赖 React。UI 层通过 hooks 编排 Core 服务。
-
-## 核心能力
-
-### 3D 形象
-
-- 内置程序化 CyberAvatar（Three.js 几何体拼装，无需外部模型）
-- 支持上传 GLB/GLTF 替换，加载失败自动回退内置形象
-- 5 种情绪 → 11 种表情映射，10 种动作 → 15 种行为映射
-- 骨骼动画自动定时复位，支持 `prefers-reduced-motion`
-
-### 对话
-
-- HTTP / SSE 双传输，环境变量或运行时面板切换
-- SSE 真流式：逐字输出，`token` → `done` 事件协议
-- 主/备端点故障切换（`EndpointRouter`），HUD 显示路由诊断
-- 轮次隔离：单调递增 `turnId` + Symbol 令牌，防止跨轮次状态污染
-- 4 种角色预设，前端只发 `characterId`，系统提示词由后端管控
-
-### 语音
-
-- TTS：浏览器原生 `speechSynthesis`，支持语速/音调/音量调节
-- ASR：`webkitSpeechRecognition`（仅 Chrome/Edge），命令/听写双模式
-- 嘴型同步：viseme 循环（≈16Hz 正弦 + 噪声）驱动 `mouthOpen` 状态通道
-- 中文语音指令解析：播放、暂停、打招呼、跳舞、点头等
-
-### 降级策略
-
-每一层外部依赖都有明确退路：
-
-| 场景                    | 降级行为                          |
-| ----------------------- | --------------------------------- |
-| 无后端                  | 本地模拟回复（区分问候/普通对话） |
-| SSE 失败                | 回退到 HTTP 非流式请求            |
-| 全部端点不可达          | 返回离线提示 + 情绪/动作          |
-| 后端无 LLM Key          | 关键词匹配的智能回复              |
-| 浏览器无 Web Speech API | 隐藏语音 UI，文字交互不受影响     |
-| 自定义模型加载失败      | 回退程序化 CyberAvatar            |
-
-## 浏览器兼容
-
-| 能力                 | Chrome / Edge | Firefox | Safari |
-| -------------------- | :-----------: | :-----: | :----: |
-| 3D 渲染 + 对话 + TTS |      ✅       |   ✅    |   ✅   |
-| ASR 语音识别         |      ✅       |   ❌    |   ❌   |
-
-## 后端参考实现
-
-`examples/backend-python/` 提供 FastAPI 参考后端，可选部署：
+前端自带模拟回复，接后端可以获得真实的 LLM 对话能力。`examples/backend-python/` 有一个 FastAPI 参考实现：
 
 ```bash
 cd examples/backend-python
@@ -104,11 +48,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-- 无 `OPENAI_API_KEY` 时以关键词匹配模式运行，无需任何外部服务
-- 有 Key 时接入 OpenAI 兼容 API，`===META===` 标记协议分离文本流与情绪/动作元数据
-- 内置会话管理（TTL 清理）、限流、CORS
+- 不配 `OPENAI_API_KEY` 也能跑，走关键词匹配
+- 配了 Key 就接入 OpenAI 兼容 API，支持流式输出
+- 前端在设置面板填后端地址，或写进 `VITE_API_BASE_URL` 环境变量
 
-前端通过 `VITE_API_BASE_URL` 或运行时设置面板指向后端。
+## 浏览器兼容
+
+| 能力                 | Chrome / Edge | Firefox | Safari |
+| -------------------- | :-----------: | :-----: | :----: |
+| 3D 渲染 + 对话 + TTS |      ✅       |   ✅    |   ✅   |
+| ASR 语音识别         |      ✅       |   ❌    |   ❌   |
 
 ## 开发
 
@@ -119,7 +68,7 @@ npm run test:run     # Vitest 全量测试
 npm run build        # 生产构建
 ```
 
-架构约定、目录职责、护栏规则见 [AGENTS.md](AGENTS.md)。
+架构分层、目录职责、贡献规则见 [AGENTS.md](AGENTS.md)。
 
 ## 许可证
 
