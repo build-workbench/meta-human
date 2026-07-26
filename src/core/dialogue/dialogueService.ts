@@ -97,7 +97,6 @@ const API_BASE_URLS = parseApiEndpoints(ORIGINAL_API_BASE_URL, ORIGINAL_API_BASE
  * 注入实例（由 createServices 提供）。
  */
 let defaultRouting: DialogueRouting | null = null;
-let injectedRouting = false;
 
 function createDefaultRouting(): DialogueRouting {
   return new DialogueRouting(API_BASE_URLS);
@@ -114,7 +113,6 @@ export function createDefaultDialogueRouting(): DialogueRouting {
 function getRouting(): DialogueRouting {
   if (!defaultRouting) {
     defaultRouting = createDefaultRouting();
-    injectedRouting = false;
   }
   return defaultRouting;
 }
@@ -125,7 +123,6 @@ function getRouting(): DialogueRouting {
  */
 export function configureDialogueRouting(routing: DialogueRouting | null): void {
   defaultRouting = routing;
-  injectedRouting = routing !== null;
 }
 
 // ============================================================================
@@ -207,17 +204,11 @@ export function applyRuntimeApiEndpoints(baseUrl: string, fallbacks: string = ''
 }
 
 export function resetRuntimeApiEndpoints(): void {
-  if (injectedRouting) {
-    getRouting().applyEndpoints(ORIGINAL_API_BASE_URL, ORIGINAL_API_BASE_FALLBACKS);
-    return;
-  }
-  // 懒默认实例：丢弃后下次访问时按初始环境变量重建。
-  defaultRouting = null;
+  getRouting().applyEndpoints(ORIGINAL_API_BASE_URL, ORIGINAL_API_BASE_FALLBACKS);
 }
 
 export function resetDialogueServiceRoutingForTests(): void {
   defaultRouting = null;
-  injectedRouting = false;
 }
 
 // ============================================================================
