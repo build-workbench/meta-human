@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useAdvancedDigitalHumanController } from '../hooks/useAdvancedDigitalHumanController';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useChatSessionStore } from '../store/chatSessionStore';
-import { useSystemStore } from '../store/systemStore';
+import { useAdvancedDigitalHumanController } from '@/hooks/useAdvancedDigitalHumanController';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore } from '@/store/systemStore';
 
 const mocks = vi.hoisted(() => ({
   setChatInputMock: vi.fn(),

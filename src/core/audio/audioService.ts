@@ -1,4 +1,4 @@
-import { loggers } from '../../lib/logger';
+import { loggers } from '@/lib/logger';
 import type { TTSCallbacks, ASRStateAdapter } from './audioAdapters';
 
 const logger = loggers.audio;

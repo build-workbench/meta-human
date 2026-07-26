@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  DialogueOrchestrator,
-  handleDialogueResponse,
-} from '../core/dialogue/dialogueOrchestrator';
-import type { DialogueTurnSnapshot } from '../core/dialogue/dialogueService';
-import type { ChatTransport } from '../core/dialogue/dialogueService';
+import { DialogueOrchestrator, handleDialogueResponse } from '@/core/dialogue/dialogueOrchestrator';
+import type { DialogueTurnSnapshot } from '@/core/dialogue/dialogueService';
+import type { ChatTransport } from '@/core/dialogue/dialogueService';
 
 // Mock transport to control turn behavior
 vi.mock('../core/dialogue/dialogueService', () => {

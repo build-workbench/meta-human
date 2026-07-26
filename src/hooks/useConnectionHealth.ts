@@ -1,11 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useSystemStore } from '../store/systemStore';
-import type { ConnectionStatus } from '../store/systemStore';
+import { useSystemStore } from '@/store/systemStore';
+import type { ConnectionStatus } from '@/store/systemStore';
 import {
   checkServerHealth,
   evaluateConnectionRecovery,
   getPreferredChatTransportMode,
-} from '../core/dialogue/dialogueService';
+} from '@/core/dialogue/dialogueService';
 import { toast } from 'sonner';
 
 const DEGRADED_CONNECTION_MESSAGE = '服务器连接不稳定，部分功能可能受限';

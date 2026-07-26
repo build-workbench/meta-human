@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
-import { DEFAULT_CHARACTER_ID } from '@/core/dialogue/characterPresets';
-import type {
-  AvatarAction,
-  BehaviorType,
-  EmotionType,
-  ExpressionType,
-} from '@/core/avatar/avatarContract';
+import type { BehaviorType, EmotionType, ExpressionType } from '@/core/avatar/avatarContract';
 
 // Named constants
 const DEFAULT_EXPRESSION_INTENSITY = 0.8;
@@ -14,15 +8,6 @@ const ENABLE_DEVTOOLS =
   typeof import.meta !== 'undefined' &&
   import.meta.env?.DEV === true &&
   import.meta.env?.MODE !== 'test';
-
-export type {
-  AvatarAction,
-  BehaviorType,
-  EmotionType,
-  ExpressionType,
-} from '@/core/avatar/avatarContract';
-
-export type HeadMotionType = Extract<AvatarAction, 'nod' | 'shakeHead' | 'raiseHand' | 'waveHand'>;
 
 export interface SpeechConfigSnapshot {
   voiceName: string | null;
@@ -114,7 +99,7 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       avatarLoadStatus: 'ready',
       avatarLoadError: null,
       mouthOpen: 0,
-      activeCharacterId: DEFAULT_CHARACTER_ID,
+      activeCharacterId: 'lively-assistant',
 
       // 状态设置方法
       setPlaying: (playing) => set({ isPlaying: playing }),

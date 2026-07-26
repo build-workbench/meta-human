@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTTS, useASR } from '@/services';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 
 export interface UseVoiceInteractionOptions {
   /** Called when a transcript is received from ASR */

@@ -1,4 +1,4 @@
-import { useDigitalHumanStore } from '../../store/digitalHumanStore';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import type { BehaviorType, EmotionType, ExpressionType } from './avatarContract';
 
 export interface EngineStateAdapter {

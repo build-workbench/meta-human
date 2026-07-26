@@ -1,6 +1,6 @@
-import { useDigitalHumanStore } from '../../store/digitalHumanStore';
-import { useSystemStore } from '../../store/systemStore';
-import type { BehaviorType, EmotionType, ExpressionType } from '../avatar/avatarContract';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useSystemStore } from '@/store/systemStore';
+import type { BehaviorType, EmotionType, ExpressionType } from '@/core/avatar/avatarContract';
 
 export interface TTSCallbacks {
   onSpeakStart?: () => void;

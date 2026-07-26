@@ -6,7 +6,7 @@ import {
   clearRemoteSession,
   DialogueApiError,
   resetDialogueServiceRoutingForTests,
-} from '../core/dialogue/dialogueService';
+} from '@/core/dialogue/dialogueService';
 
 // ---------------------------------------------------------------------------
 // Helpers – mock fetch with fine-grained control

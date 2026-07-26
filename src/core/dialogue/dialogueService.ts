@@ -5,10 +5,9 @@
  * clearRemoteSession），并通过模块级 `defaultRouting` 懒单例承载路由状态。
  * 原有模块级可变 `endpointRouter`/`transportOverride` 已收进 DialogueRouting 实例。
  */
-import { sleep } from '../../lib/utils';
-import { loggers } from '../../lib/logger';
-import type { EmotionType } from '../../store/digitalHumanStore';
-import { normalizeAvatarEmotion } from '../avatar/avatarContract';
+import { sleep } from '@/lib/utils';
+import { loggers } from '@/lib/logger';
+import { normalizeAvatarEmotion, type EmotionType } from '@/core/avatar/avatarContract';
 
 import {
   fetchWithTimeout,
@@ -72,47 +71,14 @@ export interface StreamCallbacks {
 export type ChatTransportMode = 'auto' | 'http' | 'sse';
 
 // ============================================================================
-// Re-exports from split modules
+// Re-exports (public API surface consumed outside this module)
 // ============================================================================
 
 export { DialogueApiError } from './httpClient';
-export {
-  fetchWithTimeout,
-  sendDialogueHttpRequest,
-  sendDialogueStreamRequest,
-  normalizeDialogueError,
-  isRetryableDialogueError,
-  shouldAbort,
-  classifyAttemptError,
-  normalizeApiEndpoint,
-  parseApiEndpoints,
-  validateApiUrl,
-  parseChatResponse,
-  getLatestUserMessage,
-} from './httpClient';
-export type { FailoverDecision, AttemptClassification } from './httpClient';
-
 export type { ChatTransport } from './transports';
-export { httpChatTransport, sseChatTransport, getPreferredChatTransportMode } from './transports';
-
+export { getPreferredChatTransportMode } from './transports';
 export { evaluateConnectionRecovery } from './connectionRecovery';
-export type { ConnectionRecoveryResult } from './connectionRecovery';
-
-export { EndpointRouter } from './endpointRouter';
-export type { EndpointRoutingOutcome } from './endpointRouter';
-
-export { DialogueRouting } from './dialogueRouting';
-export type { RecordRoutingFn } from './dialogueRouting';
-
-// ============================================================================
-// Turn lifecycle re-exports
-// ============================================================================
-
-export type {
-  DialogueTurnStatus,
-  DialogueTurnMode,
-  DialogueTurnSnapshot,
-} from './dialogueTurnSnapshot';
+export type { DialogueTurnSnapshot } from './dialogueTurnSnapshot';
 export { createIdleDialogueTurnSnapshot } from './dialogueTurnSnapshot';
 
 // ============================================================================
@@ -234,10 +200,6 @@ export function getChatTransport(
 
 export function getDefaultChatTransport(): ChatTransport {
   return getRouting().getTransport();
-}
-
-export function setChatTransportOverride(transport: ChatTransport | null): void {
-  getRouting().setTransportOverride(transport);
 }
 
 export function applyRuntimeApiEndpoints(baseUrl: string, fallbacks: string = ''): void {

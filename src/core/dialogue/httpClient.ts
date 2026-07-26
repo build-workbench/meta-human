@@ -3,8 +3,8 @@
  *
  * 纯函数工具，不持有模块级可变状态。故障转移副作用通过回调注入。
  */
-import { loggers } from '../../lib/logger';
-import type { EmotionType } from '../../store/digitalHumanStore';
+import { loggers } from '@/lib/logger';
+import type { EmotionType } from '@/core/avatar/avatarContract';
 import type { ChatRequestPayload, ChatResponsePayload, DialogueMessage } from './dialogueService';
 
 const logger = loggers.dialogue;

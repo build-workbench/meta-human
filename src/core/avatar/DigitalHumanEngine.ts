@@ -1,4 +1,4 @@
-import { loggers } from '../../lib/logger';
+import { loggers } from '@/lib/logger';
 import { ANIMATION_TO_BEHAVIOR, ANIMATION_DURATIONS } from './constants';
 import type { EngineStateAdapter } from './avatarStateAdapter';
 import {

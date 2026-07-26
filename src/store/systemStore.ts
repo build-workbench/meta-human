@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { ChatTransportMode } from '../core/dialogue/dialogueService';
+import type { ChatTransportMode } from '@/core/dialogue/dialogueService';
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error';
 

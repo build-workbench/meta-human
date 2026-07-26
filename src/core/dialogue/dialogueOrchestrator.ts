@@ -6,13 +6,13 @@
 import { ChatResponsePayload, type StreamCallbacks } from './dialogueService';
 import { getDefaultChatTransport, type ChatTransport } from './dialogueService';
 import type { DialogueServiceResult } from './dialogueService';
-import type { DigitalHumanEngine } from '../avatar/DigitalHumanEngine';
-import { loggers } from '../../lib/logger';
+import type { DigitalHumanEngine } from '@/core/avatar/DigitalHumanEngine';
+import { loggers } from '@/lib/logger';
 import {
   createIdleDialogueTurnSnapshot,
   type DialogueTurnMode,
   type DialogueTurnSnapshot,
-} from './dialogueService';
+} from './dialogueTurnSnapshot';
 
 const logger = loggers.orchestrator;
 
