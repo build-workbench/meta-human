@@ -1,8 +1,8 @@
 import { Activity, Wifi, WifiOff, RefreshCw, Settings, RotateCcw } from 'lucide-react';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useChatSessionStore } from '../store/chatSessionStore';
-import { useSystemStore, type ConnectionStatus } from '../store/systemStore';
-import type { ChatTransportMode } from '../core/dialogue/dialogueService';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore, type ConnectionStatus } from '@/store/systemStore';
+import type { ChatTransportMode } from '@/core/dialogue/dialogueService';
 
 const TRANSPORT_LABELS: Record<Exclude<ChatTransportMode, 'auto'>, string> = {
   http: 'HTTP',

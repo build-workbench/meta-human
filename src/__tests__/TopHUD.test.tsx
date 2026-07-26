@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import TopHUD from '../components/TopHUD';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useChatSessionStore } from '../store/chatSessionStore';
-import { useSystemStore } from '../store/systemStore';
+import TopHUD from '@/components/TopHUD';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore } from '@/store/systemStore';
 
 describe('TopHUD', () => {
   beforeEach(() => {

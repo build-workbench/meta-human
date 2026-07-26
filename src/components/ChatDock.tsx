@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useChatSessionStore } from '../store/chatSessionStore';
-import { useSystemStore } from '../store/systemStore';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore } from '@/store/systemStore';
 import { Mic, MessageSquare, Radio, AlertCircle, X } from 'lucide-react';
-import { usePrefersReducedMotion } from '../hooks';
+import { usePrefersReducedMotion } from '@/hooks';
 
 interface ChatDockProps {
   chatInput: string;
@@ -46,7 +46,9 @@ export default function ChatDock({
           aria-live="polite"
         >
           {chatHistory.length === 0 ? (
-            <div className="py-8 text-center text-sm text-white/30">发送消息或使用语音开始对话...</div>
+            <div className="py-8 text-center text-sm text-white/30">
+              发送消息或使用语音开始对话...
+            </div>
           ) : (
             chatHistory.map((msg) => (
               <div

@@ -1,4 +1,4 @@
-import { useVoiceInteraction } from '../hooks/useVoiceInteraction';
+import { useVoiceInteraction } from '@/hooks/useVoiceInteraction';
 import { Mic, MicOff, Volume2, VolumeX, Play } from 'lucide-react';
 
 interface VoiceInteractionPanelProps {

@@ -17,8 +17,8 @@ import {
   selectCurrentBehavior,
   selectIsSpeaking,
   useDigitalHumanStore,
-} from '../store/digitalHumanStore';
-import { useSystemStore, type ConnectionStatus } from '../store/systemStore';
+} from '@/store/digitalHumanStore';
+import { useSystemStore, type ConnectionStatus } from '@/store/systemStore';
 
 interface ControlPanelProps {
   isPlaying: boolean;

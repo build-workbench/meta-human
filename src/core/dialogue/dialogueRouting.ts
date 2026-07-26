@@ -4,7 +4,7 @@
  * 所有路由状态（endpointRouter、transportOverride）都收进实例，
  * 不再使用模块级 `let` 可变全局。
  */
-import { useSystemStore } from '../../store/systemStore';
+import { useSystemStore } from '@/store/systemStore';
 import { EndpointRouter, type EndpointRoutingOutcome } from './endpointRouter';
 import { parseApiEndpoints } from './httpClient';
 import {

@@ -1,4 +1,4 @@
-import type { AvatarAction, EmotionType } from '../avatar/avatarContract';
+import type { AvatarAction, EmotionType } from '@/core/avatar/avatarContract';
 
 export interface CharacterPreset {
   id: string;

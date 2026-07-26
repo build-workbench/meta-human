@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DigitalHumanEngine } from '../core/avatar/DigitalHumanEngine';
-import type { EngineStateAdapter } from '../core/avatar/avatarStateAdapter';
+import { DigitalHumanEngine } from '@/core/avatar/DigitalHumanEngine';
+import type { EngineStateAdapter } from '@/core/avatar/avatarStateAdapter';
 
 function createMockState(): EngineStateAdapter & Record<string, ReturnType<typeof vi.fn>> {
   return {

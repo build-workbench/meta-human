@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { generateId } from '../lib/utils';
+import { generateId } from '@/lib/utils';
 
 export type ChatRole = 'user' | 'assistant';
 

@@ -1,13 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import { useChatStream } from '../hooks/useChatStream';
+import { useChatStream } from '@/hooks/useChatStream';
 import { ServicesProvider } from '@/services';
 import type { Services } from '@/core/createServices';
 import { DialogueOrchestrator } from '@/core/dialogue/dialogueOrchestrator';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useChatSessionStore } from '../store/chatSessionStore';
-import { useSystemStore } from '../store/systemStore';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore } from '@/store/systemStore';
 
 type MockStreamResult = {
   response: { replyText: string; emotion: string; action: string };

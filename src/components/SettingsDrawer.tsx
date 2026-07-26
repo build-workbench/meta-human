@@ -1,17 +1,17 @@
 import { Settings, X, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
-import { useDigitalHumanStore } from '../store/digitalHumanStore';
-import { useSystemStore } from '../store/systemStore';
-import { useFocusTrap, useTheme } from '../hooks';
+import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useSystemStore } from '@/store/systemStore';
+import { useFocusTrap, useTheme } from '@/hooks';
 import ControlPanel from './ControlPanel';
 import ExpressionControlPanel from './ExpressionControlPanel';
 import BehaviorControlPanel from './BehaviorControlPanel';
 import VoiceInteractionPanel from './VoiceInteractionPanel';
-import { CHARACTER_PRESETS } from '../core/dialogue/characterPresets';
+import { CHARACTER_PRESETS } from '@/core/dialogue/characterPresets';
 import {
   applyRuntimeApiEndpoints,
   resetRuntimeApiEndpoints,
-} from '../core/dialogue/dialogueService';
+} from '@/core/dialogue/dialogueService';
 
 interface SettingsDrawerProps {
   show: boolean;
