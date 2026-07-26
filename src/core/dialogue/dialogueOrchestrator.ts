@@ -28,7 +28,6 @@ export interface DialogueHandleOptions {
 export interface DialogueTurnOptions extends DialogueHandleOptions {
   sessionId?: string;
   meta?: Record<string, unknown>;
-  streaming?: boolean;
   onStreamToken?: (text: string) => void;
   onStreamEnd?: () => void;
   onTurnResponse?: (response: ChatResponsePayload) => void;
