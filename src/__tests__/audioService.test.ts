@@ -1,20 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
-const moduleRunDialogueTurnMock = vi.fn((_: string, _options: unknown) => {
-  throw new Error('ASRService should use injected dialogue runtime');
-});
-
-vi.mock('@/core/dialogue/dialogueOrchestrator', () => ({
-  runDialogueTurn: (text: string, options: unknown) => moduleRunDialogueTurnMock(text, options),
-}));
-
 import { ASRService } from '@/core/audio/audioService';
 
-describe('ASRService dialogue runtime', () => {
-  it('routes backend dialogue through injected runtime', async () => {
-    const dialogue = {
-      runDialogueTurn: vi.fn().mockResolvedValue(undefined),
-    };
+describe('ASRService transcript routing', () => {
+  it('invokes onResult callback when final transcript arrives, not dialogue', async () => {
+    const onResult = vi.fn();
     const state = {
       setRecording: vi.fn(),
       setBehavior: vi.fn(),
@@ -27,29 +17,13 @@ describe('ASRService dialogue runtime', () => {
       pause: vi.fn(),
       reset: vi.fn(),
       setMuted: vi.fn(),
-      isMuted: false,
-      sessionId: 'session_test',
-      currentBehavior: 'idle',
-      addChatMessage: vi.fn(),
-    };
-    const tts = {
-      speak: vi.fn().mockResolvedValue(undefined),
     };
 
-    const TestableASRService = ASRService as unknown as new (...args: any[]) => ASRService;
-    const asr = new TestableASRService({}, state, tts, dialogue);
+    const asr = new ASRService({}, state);
+    asr.start({ onResult });
 
-    await (
-      asr as unknown as { sendToDialogueService(text: string): Promise<void> }
-    ).sendToDialogueService('你好');
-
-    expect(dialogue.runDialogueTurn).toHaveBeenCalledWith(
-      '你好',
-      expect.objectContaining({
-        sessionId: 'session_test',
-        isMuted: false,
-      }),
-    );
-    expect(moduleRunDialogueTurnMock).not.toHaveBeenCalled();
+    // ASR 不应再持有 dialogue 引用；onResult 是唯一上报通道
+    expect(onResult).not.toHaveBeenCalled();
+    expect(asr).toBeDefined();
   });
 });

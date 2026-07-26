@@ -1,4 +1,3 @@
-import { useChatSessionStore } from '../../store/chatSessionStore';
 import { useDigitalHumanStore } from '../../store/digitalHumanStore';
 import { useSystemStore } from '../../store/systemStore';
 import type { BehaviorType, EmotionType, ExpressionType } from '../avatar/avatarContract';
@@ -30,25 +29,9 @@ export interface SpeechAvatarStateAdapter {
   setAnimation(animation: string): void;
 }
 
-export interface SpeechDialogueStateAdapter {
-  isMuted: boolean;
-  sessionId: string;
-  currentBehavior: string;
-  addChatMessage?: (
-    role: 'user' | 'assistant',
-    text: string,
-    isStreaming?: boolean,
-  ) => number | null;
-  updateChatMessage?: (
-    id: number,
-    updates: Partial<{ text: string; isStreaming: boolean }>,
-  ) => void;
-}
-
 export type ASRStateAdapter = SpeechRecognitionStateAdapter &
   SpeechPlaybackStateAdapter &
-  SpeechAvatarStateAdapter &
-  SpeechDialogueStateAdapter;
+  SpeechAvatarStateAdapter;
 
 export function createTTSCallbacks(): TTSCallbacks {
   return {
@@ -72,15 +55,6 @@ export function createTTSCallbacks(): TTSCallbacks {
 
 export function createASRStateAdapter(): ASRStateAdapter {
   return {
-    get isMuted() {
-      return useDigitalHumanStore.getState().isMuted;
-    },
-    get sessionId() {
-      return useChatSessionStore.getState().sessionId;
-    },
-    get currentBehavior() {
-      return useDigitalHumanStore.getState().currentBehavior;
-    },
     setRecording: (recording) => useDigitalHumanStore.getState().setRecording(recording),
     setBehavior: (behavior) =>
       useDigitalHumanStore.getState().setBehavior(behavior as BehaviorType),
@@ -94,9 +68,5 @@ export function createASRStateAdapter(): ASRStateAdapter {
     pause: () => useDigitalHumanStore.getState().pause(),
     reset: () => useDigitalHumanStore.getState().reset(),
     setMuted: (muted) => useDigitalHumanStore.getState().setMuted(muted),
-    addChatMessage: (role, text, isStreaming) =>
-      useChatSessionStore.getState().addChatMessage(role, text, isStreaming),
-    updateChatMessage: (id, updates) =>
-      useChatSessionStore.getState().updateChatMessage(id, updates),
   };
 }

@@ -5,7 +5,7 @@
  * 注意：聊天流已移到页面层，键盘快捷键在此处理。
  */
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
@@ -15,7 +15,15 @@ import { revokeCustomAvatarObjectUrl } from '@/core/avatar/avatarSourceAdapter';
 import { useChatSessionStore } from '@/store/chatSessionStore';
 import { clearRemoteSession } from '@/core/dialogue/dialogueService';
 
-export function useAdvancedDigitalHumanController() {
+interface UseAdvancedDigitalHumanControllerOptions {
+  /** 录音识别出文本后，上报给聊天流处理（统一走 useChatStream） */
+  onTranscript?: (text: string) => void;
+}
+
+export function useAdvancedDigitalHumanController(
+  options: UseAdvancedDigitalHumanControllerOptions = {},
+) {
+  const { onTranscript } = options;
   // 服务
   const engine = useEngine();
   const asr = useASR();
@@ -33,7 +41,6 @@ export function useAdvancedDigitalHumanController() {
   const setAvatarLoadState = useDigitalHumanStore((s) => s.setAvatarLoadState);
   const error = useSystemStore((s) => s.error);
   const clearError = useSystemStore((s) => s.clearError);
-  const setConnectionStatus = useSystemStore((s) => s.setConnectionStatus);
   const setError = useSystemStore((s) => s.setError);
   const resetSystemState = useSystemStore((s) => s.resetSystemState);
   const sessionId = useChatSessionStore((s) => s.sessionId);
@@ -43,7 +50,7 @@ export function useAdvancedDigitalHumanController() {
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
 
-  // 播放控制（内联自 usePlaybackController）
+  // 播放控制
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
       engine.pause();
@@ -59,7 +66,7 @@ export function useAdvancedDigitalHumanController() {
     toast.info('系统已重置');
   }, [engine]);
 
-  // 会话管理（内联自 useSessionManager）
+  // 会话管理
   const handleNewSession = useCallback(() => {
     const oldSessionId = sessionId;
     dialogue.abortPendingTurn();
@@ -81,7 +88,6 @@ export function useAdvancedDigitalHumanController() {
   // 键盘快捷键处理
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 忽略输入框中的按键
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       switch (e.key.toLowerCase()) {
@@ -190,12 +196,16 @@ export function useAdvancedDigitalHumanController() {
       return;
     }
 
-    const started = asr.start();
+    const started = asr.start({
+      onResult: (text) => {
+        onTranscript?.(text);
+      },
+    });
     if (started) {
       setRecording(true);
       toast.success('正在聆听...');
     }
-  }, [asr, setRecording]);
+  }, [asr, setRecording, onTranscript]);
 
   // 表情控制
   const handleExpressionChange = useCallback(
@@ -214,68 +224,37 @@ export function useAdvancedDigitalHumanController() {
     [engine],
   );
 
-  // 语音命令处理（需要外部传入 handleChatSend）
+  // 语音命令处理
   const { handleVoiceCommand } = useVoiceCommandHandler();
 
-  return useMemo(
-    () => ({
-      // 播放控制
-      isPlaying,
-      handlePlayPause,
-      handleReset,
+  return {
+    // 播放控制
+    isPlaying,
+    handlePlayPause,
+    handleReset,
 
-      // 会话管理
-      sessionId,
-      handleNewSession,
+    // 会话管理
+    sessionId,
+    handleNewSession,
 
-      // 本地状态
-      activeTab,
-      autoRotate,
-      showSettings,
+    // 本地状态
+    activeTab,
+    autoRotate,
+    showSettings,
 
-      // 回调
-      closeSettings,
-      handleBehaviorChange,
-      handleExpressionChange,
-      handleAvatarLoad,
-      handleAvatarUpload,
-      handleModelLoad: handleAvatarLoad,
-      handleUseBuiltInAvatar,
-      handleToggleRecording,
-      handleVoiceCommand,
-      setActiveTab,
-      toggleAutoRotate,
-      toggleMute,
-      toggleSettings,
-
-      // 服务访问（供 useChatStream 使用）
-      setConnectionStatus,
-      setError,
-      clearError,
-    }),
-    [
-      isPlaying,
-      handlePlayPause,
-      handleReset,
-      sessionId,
-      handleNewSession,
-      activeTab,
-      autoRotate,
-      showSettings,
-      closeSettings,
-      handleBehaviorChange,
-      handleExpressionChange,
-      handleAvatarLoad,
-      handleAvatarUpload,
-      handleUseBuiltInAvatar,
-      handleToggleRecording,
-      handleVoiceCommand,
-      toggleAutoRotate,
-      toggleMute,
-      toggleSettings,
-      setConnectionStatus,
-      setError,
-      clearError,
-    ],
-  );
+    // 回调
+    closeSettings,
+    handleBehaviorChange,
+    handleExpressionChange,
+    handleAvatarLoad,
+    handleAvatarUpload,
+    handleModelLoad: handleAvatarLoad,
+    handleUseBuiltInAvatar,
+    handleToggleRecording,
+    handleVoiceCommand,
+    setActiveTab,
+    toggleAutoRotate,
+    toggleMute,
+    toggleSettings,
+  };
 }

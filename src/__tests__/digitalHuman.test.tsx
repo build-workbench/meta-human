@@ -412,11 +412,7 @@ describe('TTSService', () => {
 
 describe('ASRService', () => {
   let asrService: ASRService;
-  let localTts: TTSService;
   let mockSpeechRecognition: any;
-  const mockDialogue = {
-    runDialogueTurn: vi.fn(),
-  };
 
   beforeEach(() => {
     // Create a proper constructor function for SpeechRecognition
@@ -448,7 +444,6 @@ describe('ASRService', () => {
   let mockState: any;
 
   beforeEach(() => {
-    mockDialogue.runDialogueTurn.mockReset();
     mockState = {
       setRecording: vi.fn(),
       setBehavior: vi.fn(),
@@ -461,33 +456,23 @@ describe('ASRService', () => {
       pause: vi.fn(),
       reset: vi.fn(),
       setMuted: (m: boolean) => useDigitalHumanStore.getState().setMuted(m),
-      get isMuted() {
-        return useDigitalHumanStore.getState().isMuted;
-      },
-      get sessionId() {
-        return useChatSessionStore.getState().sessionId;
-      },
-      get currentBehavior() {
-        return useDigitalHumanStore.getState().currentBehavior;
-      },
     };
-    localTts = new TTSService();
   });
 
   it('initializes correctly when supported', () => {
-    asrService = new ASRService({}, mockState, localTts, mockDialogue);
+    asrService = new ASRService({}, mockState);
     expect(asrService).toBeDefined();
   });
 
   it('starts recognition', () => {
-    asrService = new ASRService({}, mockState, localTts, mockDialogue);
+    asrService = new ASRService({}, mockState);
     asrService.start();
     // Since we can't directly access the mock, we verify the service is created
     expect(asrService).toBeDefined();
   });
 
   it('stops recognition', () => {
-    asrService = new ASRService({}, mockState, localTts, mockDialogue);
+    asrService = new ASRService({}, mockState);
     asrService.stop();
     // Verify no errors are thrown
     expect(asrService).toBeDefined();
