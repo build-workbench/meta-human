@@ -187,14 +187,25 @@ describe('useAdvancedDigitalHumanController', () => {
   });
 
   it('starts recording when idle and stops recording when already recording', () => {
-    const { result, rerender } = renderHook(() => useAdvancedDigitalHumanController());
+    const onTranscript = vi.fn();
+    const { result, rerender } = renderHook(() =>
+      useAdvancedDigitalHumanController({ onTranscript }),
+    );
 
     act(() => {
       result.current.handleToggleRecording();
     });
 
     expect(mocks.asrStartMock).toHaveBeenCalledTimes(1);
+    expect(mocks.asrStartMock).toHaveBeenCalledWith(
+      expect.objectContaining({ onResult: expect.any(Function) }),
+    );
     expect(mocks.toastSuccessMock).toHaveBeenCalledWith('正在聆听...');
+
+    // 识别出文本时应通过 onTranscript 上报，由上层统一走 chat stream
+    const startArg = mocks.asrStartMock.mock.calls[0]?.[0] as { onResult: (t: string) => void };
+    act(() => startArg.onResult('你好'));
+    expect(onTranscript).toHaveBeenCalledWith('你好');
 
     act(() => {
       useDigitalHumanStore.getState().setRecording(true);

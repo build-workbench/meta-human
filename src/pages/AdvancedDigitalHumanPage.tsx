@@ -6,6 +6,8 @@ import { useAdvancedDigitalHumanController } from '@/hooks/useAdvancedDigitalHum
 import { useChatStream } from '@/hooks/useChatStream';
 import { useConnectionHealth } from '@/hooks/useConnectionHealth';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useChatSessionStore } from '@/store/chatSessionStore';
+import { useSystemStore } from '@/store/systemStore';
 import { getAvatarViewerModelUrl } from '@/core/avatar/avatarSourceAdapter';
 
 export default function AdvancedDigitalHumanPage() {
@@ -14,7 +16,20 @@ export default function AdvancedDigitalHumanPage() {
   const avatarLoadStatus = useDigitalHumanStore((s) => s.avatarLoadStatus);
   const avatarLoadError = useDigitalHumanStore((s) => s.avatarLoadError);
 
-  // 控制器 hook（不含聊天流）
+  // 聊天流 hook（先调，以便 handleChatSend 可注入 controller）
+  const sessionId = useChatSessionStore((s) => s.sessionId);
+  const setConnectionStatus = useSystemStore((s) => s.setConnectionStatus);
+  const setError = useSystemStore((s) => s.setError);
+  const clearError = useSystemStore((s) => s.clearError);
+  const { chatInput, setChatInput, isChatLoading, handleChatSend } = useChatStream({
+    sessionId,
+    isMuted,
+    onConnectionChange: (status) => setConnectionStatus(status),
+    onClearError: () => clearError(),
+    onError: (msg) => setError(msg),
+  });
+
+  // 控制器 hook（录音识别出的文本统一走 handleChatSend）
   const {
     activeTab,
     autoRotate,
@@ -34,19 +49,8 @@ export default function AdvancedDigitalHumanPage() {
     toggleMute,
     toggleSettings,
     toggleAutoRotate,
-    setConnectionStatus,
-    setError,
-    clearError,
-    sessionId,
-  } = useAdvancedDigitalHumanController();
-
-  // 聊天流 hook（直接调用）
-  const { chatInput, setChatInput, isChatLoading, handleChatSend } = useChatStream({
-    sessionId,
-    isMuted,
-    onConnectionChange: (status) => setConnectionStatus(status),
-    onClearError: () => clearError(),
-    onError: (msg) => setError(msg),
+  } = useAdvancedDigitalHumanController({
+    onTranscript: (text) => handleChatSend(text),
   });
 
   // 连接健康检查

@@ -1,10 +1,7 @@
 import { loggers } from '../../lib/logger';
 import type { TTSCallbacks, ASRStateAdapter } from './audioAdapters';
-import type { DialogueOrchestrator } from '../dialogue/dialogueOrchestrator';
 
 const logger = loggers.audio;
-
-type DialogueRuntime = Pick<DialogueOrchestrator, 'runDialogueTurn'>;
 
 // TTS 配置接口
 export interface TTSConfig {
@@ -293,21 +290,12 @@ export class ASRService {
   private recognition: SpeechRecognitionLike | null = null;
   private isSupportedFlag: boolean;
   private config: ASRConfig;
-  private sendToBackend: boolean = true;
-  private tts: TTSService;
   private state: ASRStateAdapter;
   private onResultCallback: ((text: string) => void) | null = null;
-  private mode: 'command' | 'dictation' = 'command';
   private pendingRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private recognitionGeneration = 0;
-  private dialogue: DialogueRuntime;
 
-  constructor(
-    config: ASRConfig = {},
-    state: ASRStateAdapter,
-    tts: TTSService,
-    dialogue: DialogueRuntime,
-  ) {
+  constructor(config: ASRConfig = {}, state: ASRStateAdapter) {
     this.isSupportedFlag =
       typeof window !== 'undefined' &&
       ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
@@ -318,16 +306,10 @@ export class ASRService {
       maxAlternatives: config.maxAlternatives ?? 1,
     };
     this.state = state;
-    this.tts = tts;
-    this.dialogue = dialogue;
 
     if (this.isSupportedFlag && typeof window !== 'undefined') {
       this.initRecognition();
     }
-  }
-
-  setSendToBackend(send: boolean): void {
-    this.sendToBackend = send;
   }
 
   checkSupport(): boolean {
@@ -376,12 +358,7 @@ export class ASRService {
       }
 
       if (finalTranscript) {
-        if (this.onResultCallback) {
-          this.onResultCallback(finalTranscript);
-        }
-        if (this.mode === 'command') {
-          void this.processVoiceInput(finalTranscript);
-        }
+        this.onResultCallback?.(finalTranscript);
       }
     };
 
@@ -437,7 +414,6 @@ export class ASRService {
     }
 
     this.onResultCallback = options?.onResult ?? null;
-    this.mode = options?.mode ?? 'command';
 
     try {
       this.recognition.start();
@@ -477,7 +453,6 @@ export class ASRService {
       }
     }
     this.onResultCallback = null;
-    this.mode = 'command';
     this.state.setRecording(false);
     this.state.setBehavior('idle');
   }
@@ -509,36 +484,5 @@ export class ASRService {
     }
     this.state.setRecording(false);
     this.state.setBehavior('idle');
-  }
-
-  private async processVoiceInput(text: string): Promise<void> {
-    if (this.sendToBackend) {
-      await this.sendToDialogueService(text);
-    }
-  }
-
-  private async sendToDialogueService(text: string): Promise<void> {
-    try {
-      await this.dialogue.runDialogueTurn(text, {
-        sessionId: this.state.sessionId,
-        isMuted: this.state.isMuted,
-        speakWith: (textToSpeak) => this.tts.speak(textToSpeak),
-        onAddUserMessage: (t) => {
-          this.state.addChatMessage?.('user', t);
-        },
-        onAddAssistantMessage: (replyText) => {
-          this.state.addChatMessage?.('assistant', replyText);
-        },
-        onResetBehavior: () => {
-          if (this.state.currentBehavior === 'thinking') {
-            this.state.setBehavior('idle');
-          }
-        },
-      });
-    } catch (error: unknown) {
-      logger.error('对话服务错误:', error);
-      this.state.setError('对话服务暂时不可用，请稍后重试');
-      this.state.setBehavior('idle');
-    }
   }
 }
