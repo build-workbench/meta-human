@@ -73,7 +73,9 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('@react-three/drei', () => ({
   OrbitControls: () =>
     React.createElement('div', { 'data-testid': 'orbit-controls' }, 'OrbitControls'),
-  Environment: () => React.createElement('div', { 'data-testid': 'environment' }, 'Environment'),
+  Environment: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement('div', { 'data-testid': 'environment' }, children),
+  Lightformer: () => React.createElement('div', { 'data-testid': 'lightformer' }, 'Lightformer'),
   Html: ({ children }: { children: React.ReactNode }) =>
     React.createElement('div', { 'data-testid': 'html' }, children),
   useGLTF: vi.fn(() => ({ scene: {} })),
