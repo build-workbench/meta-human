@@ -6,8 +6,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTTS, useASR } from '@/services';
+import { useTTS } from '@/services';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { useRecorder } from './useRecorder';
 
 export interface UseVoiceInteractionOptions {
   /** Called when a transcript is received from ASR */
@@ -65,11 +66,8 @@ export function useVoiceInteraction(
 ): VoiceInteractionControls {
   const { onTranscript, onSpeak } = options;
   const tts = useTTS();
-  const asr = useASR();
 
-  const isRecording = useDigitalHumanStore((s) => s.isRecording);
   const isMuted = useDigitalHumanStore((s) => s.isMuted);
-  const setRecording = useDigitalHumanStore((s) => s.setRecording);
   const toggleMute = useDigitalHumanStore((s) => s.toggleMute);
   const speechConfig = useDigitalHumanStore((s) => s.speechConfig);
   const setSpeechConfig = useDigitalHumanStore((s) => s.setSpeechConfig);
@@ -86,6 +84,18 @@ export function useVoiceInteraction(
   const onSpeakRef = useRef(onSpeak);
   onTranscriptRef.current = onTranscript;
   onSpeakRef.current = onSpeak;
+
+  // 录音统一走 useRecorder；本地额外保留 transcript 状态供面板展示
+  const {
+    isRecording,
+    startRecording: startRecorder,
+    stopRecording,
+  } = useRecorder({
+    onTranscript: (text) => {
+      setTranscript(text);
+      onTranscriptRef.current?.(text);
+    },
+  });
 
   useEffect(() => {
     mountedRef.current = true;
@@ -123,13 +133,6 @@ export function useVoiceInteraction(
     // 避免切换语音时误中断正在进行的录音。
   }, [speechConfig.voiceName, setSpeechConfig, tts]);
 
-  // 组件卸载时停止 ASR
-  useEffect(() => {
-    return () => {
-      asr.stop();
-    };
-  }, [asr]);
-
   const voice =
     availableVoices.find((candidate) => candidate.name === speechConfig.voiceName) ?? null;
 
@@ -141,25 +144,11 @@ export function useVoiceInteraction(
     [setSpeechConfig],
   );
 
-  // Start recording
+  // Start recording（听写模式）；不支持时静默忽略
   const startRecording = useCallback(() => {
     if (!isSupported) return;
-
-    asr.start({
-      mode: 'dictation',
-      onResult: (text: string) => {
-        if (!mountedRef.current) return;
-        setTranscript(text);
-        onTranscriptRef.current?.(text);
-      },
-    });
-  }, [isSupported, asr]);
-
-  // Stop recording
-  const stopRecording = useCallback(() => {
-    asr.stop();
-    setRecording(false);
-  }, [setRecording, asr]);
+    startRecorder('dictation');
+  }, [isSupported, startRecorder]);
 
   // Toggle recording
   const toggleRecording = useCallback(() => {
