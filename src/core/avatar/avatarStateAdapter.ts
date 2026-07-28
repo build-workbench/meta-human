@@ -1,5 +1,6 @@
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import type { BehaviorType, EmotionType, ExpressionType } from './avatarContract';
+import { mouthOpenSignal } from './mouthOpenSignal';
 
 export interface EngineStateAdapter {
   play(): void;
@@ -17,7 +18,10 @@ export function createEngineStateAdapter(): EngineStateAdapter {
   return {
     play: () => useDigitalHumanStore.getState().play(),
     pause: () => useDigitalHumanStore.getState().pause(),
-    reset: () => useDigitalHumanStore.getState().reset(),
+    reset: () => {
+      useDigitalHumanStore.getState().reset();
+      mouthOpenSignal.reset();
+    },
     setExpression: (expression) => useDigitalHumanStore.getState().setExpression(expression),
     setExpressionIntensity: (intensity) =>
       useDigitalHumanStore.getState().setExpressionIntensity(intensity),
