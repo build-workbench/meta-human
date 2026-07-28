@@ -18,11 +18,12 @@ export default defineConfig({
         '**/*.config.js',
       ],
       include: ['src/**/*.{ts,tsx}'],
+      // 阈值设在实际水平略下方，防止覆盖率无声回退（当前实际约 62/70/75/62）。
       thresholds: {
-        lines: 40,
-        functions: 34,
-        branches: 30,
-        statements: 40,
+        lines: 60,
+        functions: 68,
+        branches: 73,
+        statements: 60,
       },
     },
   },

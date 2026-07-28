@@ -21,6 +21,8 @@ describe('main entry redirect restore', () => {
     document.body.innerHTML = '<div id="root"></div>';
   });
 
+  // 动态 import 整个入口模块图（含 coverage instrumentation）较慢，
+  // 并行 + 覆盖率模式下可能超过默认 5s，显式放宽避免 flaky。
   it('clears malformed redirect payloads and warns instead of retrying forever', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     sessionStorage.setItem('spa_redirect', '{bad json');
@@ -30,5 +32,5 @@ describe('main entry redirect restore', () => {
     expect(sessionStorage.getItem('spa_redirect')).toBeNull();
     expect(warnSpy).toHaveBeenCalled();
     expect(renderMock).toHaveBeenCalledTimes(1);
-  });
+  }, 15_000);
 });
