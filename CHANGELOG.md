@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+### 🛠️ 健壮性与质量
+
+- **TTS 挂起兜底** — `TTSService.speak()` 增加 watchdog：Chrome `speechSynthesis` 在已知缺陷下 `onend`/`onerror` 永不触发，导致 Promise 挂起、`isSpeaking` 与嘴型循环卡死，现在超时后强制清理并正常 settle。词边界事件（`onboundary`）会重置 watchdog，长文本不会误杀。
+- **ASR 录音入口统一** — 新增 `useRecorder` hook 作为管理识别的唯一 React 入口，顶栏 / 聊天坞 / 设置面板录音按钮共用，消除多入口各自调 `asr.start()` 导致的回调覆盖与 stop→restart 竞态。`ASRService.start()` 在录音中仅替换回调；`'already started'` 重试增加 3 次上限，不再无限递归。关闭设置面板不再中断其他入口发起的录音。
+- **嘴型数据通道** — `mouthOpen` 移出 Zustand store，改为模块级 `mouthOpenSignal`，`CyberAvatar` 在 `useFrame` 中直读。≈16Hz 的 viseme 高频数据不再写穿 React 状态层。
+- **环境贴图离线化** — `Scene` 环境反射从 `Environment preset="city"`（运行时从外部 CDN 拉取 HDR，弱网/离线失效）改为 `Lightformer` 程序化光带，与赛博主题配色一致；反射内容随之变化。
+- 新增 TTS watchdog、ASR 幂等 / 事件路径 / generation 竞态、`useRecorder`、`connectionRecovery` 测试（+24 个，183 → 207）；覆盖率阈值从 lines 40 / functions 34 / branches 30 上调至 60 / 68 / 73，门禁重新生效。
+
 ### 🎭 流式对话与嘴型同步
 
 - **真流式对话** — Python 后端从假流式改为真逐字流式。LLM 先输出纯文本回复，随后以 `===META===` 标记行携带 emotion/action JSON，用户在 LLM 生成过程中即可看到逐字输出。
