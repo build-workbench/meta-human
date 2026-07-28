@@ -3,6 +3,16 @@ import type { TTSCallbacks, ASRStateAdapter } from './audioAdapters';
 
 const logger = loggers.audio;
 
+// Chrome speechSynthesis 存在已知缺陷：某些情况下 onend/onerror 永不触发，
+// 导致 speak Promise 挂起、isSpeaking 与嘴型循环卡死。watchdog 在超时后强制清理：
+// 初始超时按文本长度估算，boundary（词边界）事件到达后收紧为固定间隔。
+const HANG_TIMEOUT_MIN_MS = 10_000;
+const HANG_TIMEOUT_PER_CHAR_MS = 500;
+const HANG_TIMEOUT_AFTER_BOUNDARY_MS = 5_000;
+
+// ASR 遭遇 'already started' 时的最大重启次数，超过则报错放弃，避免无限重试循环。
+const MAX_RESTART_ATTEMPTS = 3;
+
 // TTS 配置接口
 export interface TTSConfig {
   lang?: string;
@@ -52,6 +62,7 @@ export class TTSService {
   private voiceLoadHandler: (() => void) | null = null;
   private visemeTimer: ReturnType<typeof setInterval> | null = null;
   private visemeStartTime = 0;
+  private hangWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(config: TTSConfig = {}, callbacks: TTSCallbacks = {}) {
     this.synth =
@@ -182,10 +193,16 @@ export class TTSService {
 
     utterance.onstart = () => {
       this.callbacks.onSpeakStart?.();
+      this.startHangWatchdog(text);
       this.startVisemeLoop();
     };
 
+    utterance.onboundary = () => {
+      this.feedHangWatchdog();
+    };
+
     utterance.onend = () => {
+      this.stopHangWatchdog();
       const wasCancelled = this.cancelling;
       this.cancelling = false;
       this.currentUtterance = null;
@@ -199,6 +216,7 @@ export class TTSService {
     };
 
     utterance.onerror = (event) => {
+      this.stopHangWatchdog();
       this.cancelling = false;
       this.currentUtterance = null;
       this.stopVisemeLoop();
@@ -212,7 +230,39 @@ export class TTSService {
     return utterance;
   }
 
+  private startHangWatchdog(text: string): void {
+    this.stopHangWatchdog();
+    const timeout = Math.max(HANG_TIMEOUT_MIN_MS, text.length * HANG_TIMEOUT_PER_CHAR_MS);
+    this.hangWatchdogTimer = setTimeout(() => this.handleHangTimeout(), timeout);
+  }
+
+  private feedHangWatchdog(): void {
+    if (!this.hangWatchdogTimer) return;
+    this.stopHangWatchdog();
+    this.hangWatchdogTimer = setTimeout(
+      () => this.handleHangTimeout(),
+      HANG_TIMEOUT_AFTER_BOUNDARY_MS,
+    );
+  }
+
+  private stopHangWatchdog(): void {
+    if (this.hangWatchdogTimer) {
+      clearTimeout(this.hangWatchdogTimer);
+      this.hangWatchdogTimer = null;
+    }
+  }
+
+  private handleHangTimeout(): void {
+    this.hangWatchdogTimer = null;
+    if (!this.currentUtterance) return;
+    logger.warn('语音合成超时（onend 未触发），强制清理');
+    this.cancelCurrentUtterance();
+    this.synth?.cancel();
+    this.callbacks.onSpeakEnd?.();
+  }
+
   private cancelCurrentUtterance(): void {
+    this.stopHangWatchdog();
     const previous = this.currentUtterance;
     if (previous) {
       // 标记正在 cancel，使 onend 跳过 onSpeakEnd（由 stop() 统一调用），
@@ -294,6 +344,7 @@ export class ASRService {
   private onResultCallback: ((text: string) => void) | null = null;
   private pendingRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private recognitionGeneration = 0;
+  private recordingActive = false;
 
   constructor(config: ASRConfig = {}, state: ASRStateAdapter) {
     this.isSupportedFlag =
@@ -367,6 +418,7 @@ export class ASRService {
 
       logger.error('语音识别错误:', event.error);
       const errorMsg = this.getErrorMessage(event.error);
+      this.recordingActive = false;
       this.state.setRecording(false);
       this.state.setBehavior('idle');
       this.state.setError(errorMsg);
@@ -375,6 +427,7 @@ export class ASRService {
     this.recognition.onend = () => {
       if (currentGeneration !== this.recognitionGeneration) return;
 
+      this.recordingActive = false;
       this.state.setRecording(false);
       this.state.setBehavior('idle');
     };
@@ -408,6 +461,21 @@ export class ASRService {
       return false;
     }
 
+    // 已在录音中：仅替换结果回调，不重启识别。
+    // 多个 UI 入口（顶栏、聊天坞、设置面板）共用同一 ASRService，
+    // 重启会导致 stop→start 竞态并丢失正在进行的识别。
+    if (this.recordingActive) {
+      this.onResultCallback = options?.onResult ?? null;
+      return true;
+    }
+
+    return this.attemptStart(options, 0);
+  }
+
+  private attemptStart(options: ASRStartOptions | undefined, restartAttempts: number): boolean {
+    const recognition = this.recognition;
+    if (!recognition) return false;
+
     if (this.pendingRestartTimer) {
       clearTimeout(this.pendingRestartTimer);
       this.pendingRestartTimer = null;
@@ -416,18 +484,25 @@ export class ASRService {
     this.onResultCallback = options?.onResult ?? null;
 
     try {
-      this.recognition.start();
+      recognition.start();
+      this.recordingActive = true;
       this.state.setRecording(true);
       return true;
     } catch (error: unknown) {
       logger.error('启动语音识别失败:', error);
+      this.recordingActive = false;
       this.state.setRecording(false);
 
       if (error instanceof Error && error.message?.includes('already started')) {
-        this.recognition.stop();
+        if (restartAttempts >= MAX_RESTART_ATTEMPTS) {
+          logger.warn(`语音识别重启 ${MAX_RESTART_ATTEMPTS} 次后仍不可用`);
+          this.state.setError('启动语音识别失败');
+          return false;
+        }
+        recognition.stop();
         this.pendingRestartTimer = setTimeout(() => {
           this.pendingRestartTimer = null;
-          this.start(options);
+          this.attemptStart(options, restartAttempts + 1);
         }, 100);
         return true;
       }
@@ -453,6 +528,7 @@ export class ASRService {
       }
     }
     this.onResultCallback = null;
+    this.recordingActive = false;
     this.state.setRecording(false);
     this.state.setBehavior('idle');
   }
@@ -482,6 +558,7 @@ export class ASRService {
         // 忽略中断错误
       }
     }
+    this.recordingActive = false;
     this.state.setRecording(false);
     this.state.setBehavior('idle');
   }
