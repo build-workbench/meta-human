@@ -9,7 +9,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
-import { useEngine, useASR, useDialogue } from '@/services';
+import { useEngine, useDialogue } from '@/services';
+import { useRecorder } from './useRecorder';
 import { useVoiceCommandHandler } from './useVoiceCommandHandler';
 import { revokeCustomAvatarObjectUrl } from '@/core/avatar/avatarSourceAdapter';
 import { useChatSessionStore } from '@/store/chatSessionStore';
@@ -26,7 +27,6 @@ export function useAdvancedDigitalHumanController(
   const { onTranscript } = options;
   // 服务
   const engine = useEngine();
-  const asr = useASR();
   const dialogue = useDialogue();
 
   // 直接访问 store
@@ -34,7 +34,6 @@ export function useAdvancedDigitalHumanController(
   const autoRotate = useDigitalHumanStore((s) => s.autoRotate);
   const toggleAutoRotate = useDigitalHumanStore((s) => s.toggleAutoRotate);
   const toggleMute = useDigitalHumanStore((s) => s.toggleMute);
-  const setRecording = useDigitalHumanStore((s) => s.setRecording);
   const avatarSource = useDigitalHumanStore((s) => s.avatarSource);
   const setCustomAvatar = useDigitalHumanStore((s) => s.setCustomAvatar);
   const activateProceduralAvatar = useDigitalHumanStore((s) => s.useProceduralAvatar);
@@ -186,26 +185,18 @@ export function useAdvancedDigitalHumanController(
     [activateProceduralAvatar, avatarSource, handleModelLoad, setAvatarLoadState, setError],
   );
 
-  // 录音控制
+  // 录音控制（与设置面板共用同一 ASR 入口，见 useRecorder）
+  const { startRecording, stopRecording } = useRecorder({ onTranscript });
   const handleToggleRecording = useCallback(() => {
-    const isRecording = useDigitalHumanStore.getState().isRecording;
-    if (isRecording) {
-      asr.stop();
-      setRecording(false);
+    if (useDigitalHumanStore.getState().isRecording) {
+      stopRecording();
       toast.info('录音已停止');
       return;
     }
-
-    const started = asr.start({
-      onResult: (text) => {
-        onTranscript?.(text);
-      },
-    });
-    if (started) {
-      setRecording(true);
+    if (startRecording()) {
       toast.success('正在聆听...');
     }
-  }, [asr, setRecording, onTranscript]);
+  }, [startRecording, stopRecording]);
 
   // 表情控制
   const handleExpressionChange = useCallback(
