@@ -11,6 +11,7 @@ import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { shallow } from 'zustand/shallow';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
+import { mouthOpenSignal } from '@/core/avatar/mouthOpenSignal';
 import { useIsTabVisibleRef } from '@/hooks';
 
 interface CyberAvatarProps {
@@ -28,10 +29,10 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   // 使用 ref 避免 useFrame 中触发重渲染
   const storeRef = useRef(useDigitalHumanStore.getState());
   const intensityRef = useRef(storeRef.current.expressionIntensity ?? 0.8);
-  const mouthOpenRef = useRef(storeRef.current.mouthOpen ?? 0);
   const isVisibleRef = useIsTabVisibleRef();
 
-  // 精细订阅：仅在 useFrame 实际读取的字段变化时更新 ref
+  // 精细订阅：仅在 useFrame 实际读取的字段变化时更新 ref。
+  // 嘴型开合度走 mouthOpenSignal（useFrame 直读），不经过 store 订阅。
   useEffect(() => {
     const unsubscribe = useDigitalHumanStore.subscribe(
       (s) => ({
@@ -39,12 +40,10 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
         isSpeaking: s.isSpeaking,
         currentAnimation: s.currentAnimation,
         expressionIntensity: s.expressionIntensity,
-        mouthOpen: s.mouthOpen,
       }),
       (slice) => {
         storeRef.current = useDigitalHumanStore.getState();
         intensityRef.current = slice.expressionIntensity ?? 0.8;
-        mouthOpenRef.current = slice.mouthOpen ?? 0;
       },
       { equalityFn: shallow },
     );
@@ -120,12 +119,13 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
       rightEyeRef.current.scale.y = THREE.MathUtils.lerp(rightEyeRef.current.scale.y, scaleY, 0.2);
     }
 
-    // 嘴型 Lipsync：由 TTS 驱动 mouthOpen（0-1），渲染层平滑跟随
+    // 嘴型 Lipsync：由 TTS 驱动 mouthOpenSignal（0-1），渲染层每帧直读并平滑跟随
     if (mouthRef.current?.scale) {
-      const targetMouthY = 0.15 + mouthOpenRef.current * 0.85;
+      const mouthOpen = mouthOpenSignal.value;
+      const targetMouthY = 0.15 + mouthOpen * 0.85;
       mouthRef.current.scale.y = THREE.MathUtils.lerp(mouthRef.current.scale.y, targetMouthY, 0.3);
       // 嘴部张开时略变窄
-      const targetMouthX = 1 - mouthOpenRef.current * 0.2;
+      const targetMouthX = 1 - mouthOpen * 0.2;
       mouthRef.current.scale.x = THREE.MathUtils.lerp(mouthRef.current.scale.x, targetMouthX, 0.3);
     }
 

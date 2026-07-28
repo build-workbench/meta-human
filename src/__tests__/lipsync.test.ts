@@ -2,40 +2,43 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { createTTSCallbacks } from '@/core/audio/audioAdapters';
 import { TTSService } from '@/core/audio/audioService';
+import { mouthOpenSignal } from '@/core/avatar/mouthOpenSignal';
 
-describe('Lipsync: store mouthOpen', () => {
+describe('Lipsync: mouthOpenSignal', () => {
   beforeEach(() => {
-    useDigitalHumanStore.getState().setMouthOpen(0);
+    mouthOpenSignal.reset();
   });
 
-  it('setMouthOpen clamps to [0, 1]', () => {
-    useDigitalHumanStore.getState().setMouthOpen(-0.5);
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(0);
+  it('set clamps to [0, 1]', () => {
+    mouthOpenSignal.set(-0.5);
+    expect(mouthOpenSignal.value).toBe(0);
 
-    useDigitalHumanStore.getState().setMouthOpen(1.5);
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(1);
+    mouthOpenSignal.set(1.5);
+    expect(mouthOpenSignal.value).toBe(1);
 
-    useDigitalHumanStore.getState().setMouthOpen(0.4);
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(0.4);
+    mouthOpenSignal.set(0.4);
+    expect(mouthOpenSignal.value).toBe(0.4);
   });
 
-  it('reset clears mouthOpen', () => {
-    useDigitalHumanStore.getState().setMouthOpen(0.8);
-    useDigitalHumanStore.getState().reset();
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(0);
+  it('reset clears the value', () => {
+    mouthOpenSignal.set(0.8);
+    mouthOpenSignal.reset();
+    expect(mouthOpenSignal.value).toBe(0);
   });
 });
 
 describe('Lipsync: createTTSCallbacks', () => {
   beforeEach(() => {
-    useDigitalHumanStore.getState().setMouthOpen(0);
+    mouthOpenSignal.reset();
     useDigitalHumanStore.getState().setSpeaking(false);
   });
 
-  it('onViseme writes mouthOpen to store', () => {
+  it('onViseme writes the mouth signal, bypassing the React state layer', () => {
     const callbacks = createTTSCallbacks();
     callbacks.onViseme?.(0.6);
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(0.6);
+    expect(mouthOpenSignal.value).toBe(0.6);
+    // mouthOpen 不再存在于 store，杜绝常规订阅引发高频重渲染
+    expect(useDigitalHumanStore.getState()).not.toHaveProperty('mouthOpen');
   });
 
   it('onSpeakStart sets speaking + behavior', () => {
@@ -45,15 +48,15 @@ describe('Lipsync: createTTSCallbacks', () => {
     expect(useDigitalHumanStore.getState().currentBehavior).toBe('speaking');
   });
 
-  it('onSpeakEnd clears speaking + mouthOpen', () => {
+  it('onSpeakEnd clears speaking + mouth signal', () => {
     const callbacks = createTTSCallbacks();
-    useDigitalHumanStore.getState().setMouthOpen(0.7);
+    mouthOpenSignal.set(0.7);
     useDigitalHumanStore.getState().setSpeaking(true);
 
     callbacks.onSpeakEnd?.();
 
     expect(useDigitalHumanStore.getState().isSpeaking).toBe(false);
-    expect(useDigitalHumanStore.getState().mouthOpen).toBe(0);
+    expect(mouthOpenSignal.value).toBe(0);
   });
 });
 

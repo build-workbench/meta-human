@@ -1,6 +1,7 @@
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
 import type { BehaviorType, EmotionType, ExpressionType } from '@/core/avatar/avatarContract';
+import { mouthOpenSignal } from '@/core/avatar/mouthOpenSignal';
 
 export interface TTSCallbacks {
   onSpeakStart?: () => void;
@@ -42,13 +43,13 @@ export function createTTSCallbacks(): TTSCallbacks {
     onSpeakEnd: () => {
       useDigitalHumanStore.getState().setSpeaking(false);
       useDigitalHumanStore.getState().setBehavior('idle');
-      useDigitalHumanStore.getState().setMouthOpen(0);
+      mouthOpenSignal.reset();
     },
     onError: (message) => {
       useSystemStore.getState().setError(message);
     },
     onViseme: (open) => {
-      useDigitalHumanStore.getState().setMouthOpen(open);
+      mouthOpenSignal.set(open);
     },
   };
 }
