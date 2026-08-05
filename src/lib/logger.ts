@@ -12,8 +12,9 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
-// Only show debug logs in development
-const MIN_LOG_LEVEL: LogLevel = process.env.NODE_ENV === 'development' ? 'debug' : 'info';
+// Only show debug logs in development（测试环境保持 info，避免用例输出噪音）
+const MIN_LOG_LEVEL: LogLevel =
+  import.meta.env.DEV && import.meta.env.MODE !== 'test' ? 'debug' : 'info';
 
 function shouldLog(level: LogLevel): boolean {
   return LOG_LEVELS[level] >= LOG_LEVELS[MIN_LOG_LEVEL];
