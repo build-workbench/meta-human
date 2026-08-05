@@ -48,14 +48,10 @@ export function parseApiEndpoints(primaryUrl: string, fallbackUrls = ''): string
 }
 
 export function validateApiUrl(url: string): string {
-  const normalized = url.replace(/\/+$/, '');
-  try {
-    new URL(normalized);
-    return normalized;
-  } catch {
-    logger.error(`Invalid API URL: ${url}`);
-    return 'http://localhost:8000';
-  }
+  const normalized = normalizeApiEndpoint(url);
+  if (normalized) return normalized;
+  logger.error(`Invalid API URL: ${url}`);
+  return 'http://localhost:8000';
 }
 
 // ============================================================================
@@ -129,14 +125,7 @@ export function isRetryableDialogueError(error: Error): boolean {
 }
 
 export function shouldAbort(error: unknown, signal?: AbortSignal): boolean {
-  return (
-    signal?.aborted === true ||
-    (error instanceof DOMException && error.name === 'AbortError') ||
-    (error instanceof Error &&
-      error.message === '请求被取消' &&
-      error instanceof DialogueApiError &&
-      error.status === 408)
-  );
+  return signal?.aborted === true || (error instanceof DOMException && error.name === 'AbortError');
 }
 
 // ============================================================================

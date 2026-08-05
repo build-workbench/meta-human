@@ -66,6 +66,11 @@ export interface StreamCallbacks {
   onConnected?: () => void;
   onError?: (message: string) => void;
   onDone?: (response: ChatResponsePayload) => void;
+  /**
+   * 流在 yield 过部分 token 后失败并即将重试/降级时触发。
+   * 调用方应丢弃已累计的部分文本，避免与新请求的内容拼接出重复回复。
+   */
+  onRetry?: () => void;
 }
 
 export type ChatTransportMode = 'auto' | 'http' | 'sse';
@@ -162,6 +167,23 @@ export function normalizeDialogueRequestPayload(payload: ChatRequestPayload): Ch
 
 function buildEmptyResponse(): ChatResponsePayload {
   return { replyText: '', emotion: 'neutral', action: 'idle' };
+}
+
+/**
+ * 从一个 SSE 事件块中提取 data 负载。
+ *
+ * 兼容标准 SSE 格式：块内可含 `event:`/`id:`/注释等字段行（一律忽略），
+ * 多行 `data:` 按规范以换行拼接；`data:` 后允许无空格。
+ */
+function extractSSEData(block: string): string | null {
+  const dataParts: string[] = [];
+  for (const line of block.split('\n')) {
+    if (!line.startsWith('data:')) continue;
+    dataParts.push(line.slice(5).replace(/^ /, ''));
+  }
+  if (dataParts.length === 0) return null;
+  const joined = dataParts.join('\n').trim();
+  return joined || null;
 }
 
 function getFallbackResponse(userText: string): ChatResponsePayload {
@@ -319,6 +341,8 @@ export async function* streamUserInput(
   let finalResponse: ChatResponsePayload | null = null;
   let streamError: string | null = null;
   let lastError: Error | null = null;
+  // 是否已向调用方 yield 过 token：中途失败重试时须通知调用方丢弃已累计文本。
+  let hasYieldedTokens = false;
 
   if (signal?.aborted) {
     return { response: buildEmptyResponse(), connectionStatus: 'error', error: '请求被取消' };
@@ -355,15 +379,15 @@ export async function* streamUserInput(
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
             // 兼容 CRLF 行尾：某些代理/服务器会改写为 \r\n\r\n。
-            const lines = buffer.replace(/\r\n/g, '\n').split('\n\n');
-            buffer = lines.pop() || '';
-            for (const line of lines) {
-              if (!line.startsWith('data: ')) continue;
-              const raw = line.slice(6).trim();
+            const blocks = buffer.replace(/\r\n/g, '\n').split('\n\n');
+            buffer = blocks.pop() || '';
+            for (const block of blocks) {
+              const raw = extractSSEData(block);
               if (!raw) continue;
               try {
                 const event = JSON.parse(raw);
                 if (event.type === 'token' && event.content) {
+                  hasYieldedTokens = true;
                   yield event.content;
                 } else if (event.type === 'error') {
                   streamError = event.message || '流式响应错误';
@@ -410,8 +434,15 @@ export async function* streamUserInput(
             error: '请求被取消',
           };
         }
-        if (decision === 'next-candidate') continue;
         if (decision === 'fail') break attemptLoop;
+        // 重试/故障转移前：若已 yield 过 token，通知调用方丢弃累计文本，
+        // 避免新旧请求的内容拼接出重复回复。
+        if (hasYieldedTokens) {
+          hasYieldedTokens = false;
+          streamError = null;
+          callbacks.onRetry?.();
+        }
+        if (decision === 'next-candidate') continue;
         await sleep(retryDelay * (attempt + 1));
         continue attemptLoop;
       }
@@ -419,6 +450,7 @@ export async function* streamUserInput(
   }
 
   logger.warn('流式请求失败，降级到普通请求:', lastError);
+  if (hasYieldedTokens) callbacks.onRetry?.();
   const fallback = await sendUserInput(normalized, { ...config, endpoint }, signal);
   if (fallback.response.replyText) yield fallback.response.replyText;
   return {

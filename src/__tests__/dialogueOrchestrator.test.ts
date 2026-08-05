@@ -498,6 +498,34 @@ describe('runDialogueTurnStream', () => {
     expect(result?.replyText).toBe('你好！');
   });
 
+  it('resets accumulated text when transport signals onRetry after partial tokens', async () => {
+    const { __setMockStreamImplementation } =
+      (await import('../core/dialogue/dialogueService')) as any;
+    // 模拟流中途断开后重试：先 yield 部分 token，触发 onRetry，再 yield 完整内容
+    __setMockStreamImplementation(
+      (_payload: unknown, _config: unknown, callbacks: { onRetry?: () => void }) =>
+        (async function* () {
+          yield '残缺';
+          callbacks.onRetry?.();
+          yield '完整回复';
+          return {
+            response: { replyText: '完整回复', emotion: 'neutral', action: 'idle' },
+            connectionStatus: 'connected',
+            error: null,
+          };
+        })(),
+    );
+
+    const streamTokens: string[] = [];
+    const onStreamToken = vi.fn((text: string) => streamTokens.push(text));
+
+    const result = await orchestrator.runDialogueTurnStream('hi', { onStreamToken });
+
+    // onRetry 之后累计文本必须重新开始，不能出现 "残缺完整回复" 的拼接
+    expect(streamTokens).toEqual(['残缺', '完整回复']);
+    expect(result?.replyText).toBe('完整回复');
+  });
+
   it('returns undefined for empty input', async () => {
     const result = await orchestrator.runDialogueTurnStream('   ');
     expect(result).toBeUndefined();
