@@ -1,8 +1,11 @@
 /**
  * 服务容器 Provider。
+ *
+ * 自有服务在 effect 中创建：StrictMode 双挂载时 cleanup 销毁旧实例后，
+ * 第二次 setup 会重建新实例，消费者不会拿到已 dispose 的服务。
  */
 
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createServices, disposeServices, type Services } from '@/core/createServices';
 import { applyRuntimeApiEndpoints } from '@/core/dialogue/dialogueService';
 import { useSystemStore } from '@/store/systemStore';
@@ -14,13 +17,17 @@ interface ServicesProviderProps {
 }
 
 export function ServicesProvider({ children, services }: ServicesProviderProps) {
-  const ownedRef = useRef<Services | null>(null);
+  const [owned, setOwned] = useState<Services | null>(null);
 
-  if (services === undefined && ownedRef.current === null) {
-    ownedRef.current = createServices();
-  }
-
-  const svc = services ?? ownedRef.current!;
+  useEffect(() => {
+    if (services) return;
+    const created = createServices();
+    setOwned(created);
+    return () => {
+      disposeServices(created);
+      setOwned(null);
+    };
+  }, [services]);
 
   useEffect(() => {
     if (services) return;
@@ -30,15 +37,8 @@ export function ServicesProvider({ children, services }: ServicesProviderProps) 
     }
   }, [services]);
 
-  useEffect(() => {
-    if (services) return;
-    return () => {
-      if (ownedRef.current) {
-        disposeServices(ownedRef.current);
-        ownedRef.current = null;
-      }
-    };
-  }, [services]);
+  const svc = services ?? owned;
+  if (!svc) return null;
 
   return <ServicesContext.Provider value={svc}>{children}</ServicesContext.Provider>;
 }
