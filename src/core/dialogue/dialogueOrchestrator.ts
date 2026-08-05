@@ -189,11 +189,31 @@ export class DialogueOrchestrator {
       const chatTransport = this.getChatTransport();
       let accumulatedText = '';
 
+      // 流在部分 token 后失败重试时，丢弃已累计文本，
+      // 避免新请求的内容与旧片段拼接出重复回复。
+      const transportCallbacks: StreamCallbacks = {
+        ...streamCallbacks,
+        onRetry: () => {
+          accumulatedText = '';
+          this.publishTurnSnapshot({
+            status: 'streaming',
+            mode: 'streaming',
+            turnId,
+            userText: content,
+            replyText: '',
+            error: null,
+            startedAt: this.turnSnapshot.startedAt,
+            updatedAt: Date.now(),
+          });
+          streamCallbacks.onRetry?.();
+        },
+      };
+
       try {
         const generator = chatTransport.stream(
           { sessionId, userText: content, meta },
           {},
-          streamCallbacks,
+          transportCallbacks,
           abortCtrl.signal,
         );
         pendingTurn.streamGenerator = generator;

@@ -66,6 +66,38 @@ function buildSSEStream(events: Array<Record<string, unknown>>): ReadableStream<
   });
 }
 
+/** Build a ReadableStream from raw SSE chunks. */
+function buildRawSSEStream(chunks: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  let index = 0;
+  return new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (index < chunks.length) {
+        controller.enqueue(encoder.encode(chunks[index++]));
+      } else {
+        controller.close();
+      }
+    },
+  });
+}
+
+/** Build a stream that emits given SSE events then fails mid-stream. */
+function buildFailingSSEStream(events: Array<Record<string, unknown>>): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  const chunks = events.map((e) => encoder.encode(`data: ${JSON.stringify(e)}\n\n`));
+
+  let index = 0;
+  return new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (index < chunks.length) {
+        controller.enqueue(chunks[index++]);
+      } else {
+        controller.error(new TypeError('fetch failed'));
+      }
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Test suites
 // ---------------------------------------------------------------------------
@@ -479,5 +511,95 @@ describe('streamUserInput', () => {
 
     // Malformed data is skipped, valid token is yielded
     expect(tokens).toEqual(['OK']);
+  });
+
+  it('parses SSE blocks that carry an event: field line before data', async () => {
+    const stream = buildRawSSEStream([
+      `event: token\ndata: ${JSON.stringify({ type: 'token', content: '带事件行的块' })}\n\n`,
+      `event: done\ndata: ${JSON.stringify({ type: 'done', replyText: '带事件行的块', emotion: 'neutral', action: 'idle' })}\n\n`,
+    ]);
+
+    mockFetchStream(stream);
+
+    const tokens: string[] = [];
+    const gen = streamUserInput({ userText: 'hi' }, { maxRetries: 0 });
+
+    for await (const token of gen) {
+      tokens.push(token);
+    }
+
+    expect(tokens).toEqual(['带事件行的块']);
+  });
+
+  it('parses multi-line data fields joined across lines', async () => {
+    const stream = buildRawSSEStream([
+      `data: {"type":"token",\ndata: "content":"多行数据"}\n\n`,
+      `data: {"type":"done","replyText":"多行数据","emotion":"neutral","action":"idle"}\n\n`,
+    ]);
+
+    mockFetchStream(stream);
+
+    const tokens: string[] = [];
+    const gen = streamUserInput({ userText: 'hi' }, { maxRetries: 0 });
+
+    for await (const token of gen) {
+      tokens.push(token);
+    }
+
+    expect(tokens).toEqual(['多行数据']);
+  });
+
+  it('notifies onRetry when a mid-stream failure restarts after tokens were yielded', async () => {
+    // 第一次：流中途断开（已 yield 部分 token）；第二次：完整流
+    mockFetchStream(buildFailingSSEStream([{ type: 'token', content: 'partial' }]));
+    mockFetchStream(
+      buildSSEStream([
+        { type: 'token', content: 'full' },
+        { type: 'done', replyText: 'full', emotion: 'neutral', action: 'idle' },
+      ]),
+    );
+
+    const onRetry = vi.fn();
+    const tokens: string[] = [];
+    const gen = streamUserInput({ userText: 'hi' }, { maxRetries: 1, retryDelay: 1 }, { onRetry });
+
+    for await (const token of gen) {
+      tokens.push(token);
+    }
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(tokens).toEqual(['partial', 'full']);
+  });
+
+  it('notifies onRetry before HTTP fallback when partial tokens were yielded', async () => {
+    mockFetchStream(buildFailingSSEStream([{ type: 'token', content: 'partial' }]));
+    mockFetchOk({ replyText: 'fallback reply', emotion: 'neutral', action: 'idle' });
+
+    const onRetry = vi.fn();
+    const tokens: string[] = [];
+    const gen = streamUserInput({ userText: 'hi' }, { maxRetries: 0, retryDelay: 1 }, { onRetry });
+
+    for await (const token of gen) {
+      tokens.push(token);
+    }
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(tokens).toEqual(['partial', 'fallback reply']);
+  });
+
+  it('does not notify onRetry when no tokens were yielded before failure', async () => {
+    mockFetchError(new TypeError('fetch failed'));
+    mockFetchOk({ replyText: 'fb', emotion: 'neutral', action: 'idle' });
+
+    const onRetry = vi.fn();
+    const tokens: string[] = [];
+    const gen = streamUserInput({ userText: 'hi' }, { maxRetries: 0, retryDelay: 1 }, { onRetry });
+
+    for await (const token of gen) {
+      tokens.push(token);
+    }
+
+    expect(onRetry).not.toHaveBeenCalled();
+    expect(tokens).toEqual(['fb']);
   });
 });
