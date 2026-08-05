@@ -35,7 +35,11 @@ export function moveCameraVertical(camera: THREE.Camera, delta: number, min = -2
 
 /**
  * 缩放相机距离。
+ *
+ * 距离钳制在 OrbitControls 的 minDistance/maxDistance 范围内，
+ * 避免键盘缩放越界后与轨道控制器的下一次交互产生位置跳变。
  */
-export function zoomCamera(camera: THREE.Camera, factor: number): void {
-  camera.position.multiplyScalar(factor);
+export function zoomCamera(camera: THREE.Camera, factor: number, min = 3, max = 10): void {
+  const next = Math.max(min, Math.min(max, camera.position.length() * factor));
+  camera.position.setLength(next);
 }
