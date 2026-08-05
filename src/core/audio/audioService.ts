@@ -60,6 +60,7 @@ export class TTSService {
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private cancelling = false;
   private voiceLoadHandler: (() => void) | null = null;
+  private voicesListeners = new Set<(voices: SpeechSynthesisVoice[]) => void>();
   private visemeTimer: ReturnType<typeof setInterval> | null = null;
   private visemeStartTime = 0;
   private hangWatchdogTimer: ReturnType<typeof setTimeout> | null = null;
@@ -88,6 +89,10 @@ export class TTSService {
     const loadVoiceList = () => {
       this.voices = this.synth!.getVoices();
       this.isInitialized = this.voices.length > 0;
+      // 部分平台（如 Chrome）voices 异步就绪，通知订阅者刷新列表
+      if (this.voices.length > 0) {
+        this.voicesListeners.forEach((listener) => listener(this.voices));
+      }
     };
 
     loadVoiceList();
@@ -97,11 +102,23 @@ export class TTSService {
     }
   }
 
+  /**
+   * 订阅语音列表变化（voiceschanged）。返回取消订阅函数。
+   * 用于 voices 异步加载的平台，避免 UI 拿到永久的空列表。
+   */
+  subscribeVoices(listener: (voices: SpeechSynthesisVoice[]) => void): () => void {
+    this.voicesListeners.add(listener);
+    return () => {
+      this.voicesListeners.delete(listener);
+    };
+  }
+
   dispose(): void {
     if (this.synth && this.voiceLoadHandler) {
       this.synth.onvoiceschanged = null;
       this.voiceLoadHandler = null;
     }
+    this.voicesListeners.clear();
     this.stopVisemeLoop();
     this.stop();
   }
@@ -308,9 +325,11 @@ export class TTSService {
   }
 
   stop(): void {
+    // 空闲时 stop 不应产生 onSpeakEnd 副作用，避免误重置说话/行为状态
+    const hadActiveUtterance = this.currentUtterance !== null || (this.synth?.speaking ?? false);
     this.cancelCurrentUtterance();
     this.synth?.cancel();
-    this.callbacks.onSpeakEnd?.();
+    if (hadActiveUtterance) this.callbacks.onSpeakEnd?.();
   }
 
   pause(): void {
