@@ -104,6 +104,20 @@ export function useVoiceInteraction(
     };
   }, []);
 
+  // 无已保存语音时，优先挑选中文语音作为默认值
+  const applyDefaultVoice = useCallback(
+    (voices: SpeechSynthesisVoice[]) => {
+      if (speechConfig.voiceName) return;
+      const languagePrefix = 'zh';
+      const matchingVoice = voices.find((v) => v.lang.toLowerCase().startsWith(languagePrefix));
+      const nextVoice = matchingVoice ?? voices[0] ?? null;
+      if (nextVoice) {
+        setSpeechConfig({ voiceName: nextVoice.name });
+      }
+    },
+    [setSpeechConfig, speechConfig.voiceName],
+  );
+
   // Initialize voice support check
   useEffect(() => {
     const hasSpeechRecognition =
@@ -112,26 +126,24 @@ export function useVoiceInteraction(
 
     setIsSupported(hasSpeechRecognition && hasSpeechSynthesis);
 
-    if (hasSpeechSynthesis) {
+    if (hasSpeechSynthesis && mountedRef.current) {
       const voices = tts.getVoices();
-      const languagePrefix = 'zh';
-      if (mountedRef.current) {
-        setAvailableVoices(voices);
-        const savedVoice = speechConfig.voiceName
-          ? voices.find((v) => v.name === speechConfig.voiceName)
-          : null;
-        if (!savedVoice) {
-          const matchingVoice = voices.find((v) => v.lang.toLowerCase().startsWith(languagePrefix));
-          const nextVoice = matchingVoice ?? voices[0] ?? null;
-          if (nextVoice) {
-            setSpeechConfig({ voiceName: nextVoice.name });
-          }
-        }
-      }
+      setAvailableVoices(voices);
+      applyDefaultVoice(voices);
     }
     // 仅依赖 voiceName 决定默认语音；不在此 effect 中停止 ASR，
     // 避免切换语音时误中断正在进行的录音。
-  }, [speechConfig.voiceName, setSpeechConfig, tts]);
+  }, [applyDefaultVoice, tts]);
+
+  // voices 可能异步加载（voiceschanged），订阅后刷新列表并补选默认语音
+  useEffect(() => {
+    if (typeof tts.subscribeVoices !== 'function') return;
+    return tts.subscribeVoices((voices) => {
+      if (!mountedRef.current) return;
+      setAvailableVoices(voices);
+      applyDefaultVoice(voices);
+    });
+  }, [applyDefaultVoice, tts]);
 
   const voice =
     availableVoices.find((candidate) => candidate.name === speechConfig.voiceName) ?? null;

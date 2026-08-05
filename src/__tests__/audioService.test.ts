@@ -108,6 +108,88 @@ describe('TTSService hang watchdog', () => {
   });
 });
 
+describe('TTSService stop', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not fire onSpeakEnd when stopping while idle', () => {
+    const callbacks = createTTSCallbacks();
+    const tts = new TTSService({}, callbacks);
+
+    tts.stop();
+
+    expect(callbacks.onSpeakEnd).not.toHaveBeenCalled();
+  });
+
+  it('fires onSpeakEnd exactly once when stopping an active utterance', () => {
+    const callbacks = createTTSCallbacks();
+    const tts = new TTSService({}, callbacks);
+    const getUtterance = captureUtterance();
+
+    void tts.speak('你好');
+    getUtterance().onstart?.();
+
+    tts.stop();
+
+    expect(callbacks.onSpeakEnd).toHaveBeenCalledTimes(1);
+    expect(window.speechSynthesis.cancel).toHaveBeenCalled();
+  });
+});
+
+describe('TTSService voices subscription', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (window.speechSynthesis.getVoices as ReturnType<typeof vi.fn>).mockReturnValue([]);
+  });
+
+  const createVoice = (name: string, lang: string) =>
+    ({ name, lang, voiceURI: name, default: false, localService: true }) as SpeechSynthesisVoice;
+
+  it('notifies subscribers when voices become available asynchronously', () => {
+    const tts = new TTSService();
+    const listener = vi.fn();
+    tts.subscribeVoices(listener);
+
+    const voices = [createVoice('中文语音', 'zh-CN')];
+    (window.speechSynthesis.getVoices as ReturnType<typeof vi.fn>).mockReturnValue(voices);
+    window.speechSynthesis.onvoiceschanged?.(new Event('voiceschanged'));
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith(voices);
+    expect(tts.getVoices()).toEqual(voices);
+  });
+
+  it('stops notifying after unsubscribe', () => {
+    const tts = new TTSService();
+    const listener = vi.fn();
+    const unsubscribe = tts.subscribeVoices(listener);
+    unsubscribe();
+
+    (window.speechSynthesis.getVoices as ReturnType<typeof vi.fn>).mockReturnValue([
+      createVoice('中文语音', 'zh-CN'),
+    ]);
+    window.speechSynthesis.onvoiceschanged?.(new Event('voiceschanged'));
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('clears subscribers on dispose', () => {
+    const tts = new TTSService();
+    const listener = vi.fn();
+    tts.subscribeVoices(listener);
+
+    tts.dispose();
+
+    (window.speechSynthesis.getVoices as ReturnType<typeof vi.fn>).mockReturnValue([
+      createVoice('中文语音', 'zh-CN'),
+    ]);
+    window.speechSynthesis.onvoiceschanged?.(new Event('voiceschanged'));
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+});
+
 type MockRecognitionInstance = {
   start: ReturnType<typeof vi.fn>;
   stop: ReturnType<typeof vi.fn>;
