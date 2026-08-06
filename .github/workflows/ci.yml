@@ -13,9 +13,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-  pull-requests: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -66,10 +63,6 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
 
-    environment:
-      name: github-pages
-      url: https://mirror-plan.github.io/meta-human/
-
     steps:
       - uses: actions/checkout@v4
 
@@ -83,19 +76,30 @@ jobs:
 
       - run: npm ci --prefer-offline
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
       - name: Build for Pages
         run: npm run build:pages
         env:
           NODE_ENV: production
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-
-      - uses: actions/deploy-pages@v4
+      - name: Publish gh-pages branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          publish_dir="${RUNNER_TEMP}/gh-pages"
+          git worktree add --detach "${publish_dir}" HEAD
+          git -C "${publish_dir}" switch --orphan gh-pages
+          cp -a dist/. "${publish_dir}/"
+          touch "${publish_dir}/.nojekyll"
+          git -C "${publish_dir}" add -A
+          git -C "${publish_dir}" \
+            -c 'user.name=github-actions[bot]' \
+            -c 'user.email=41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "deploy: ${GITHUB_SHA}"
+          git -C "${publish_dir}" push --force \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:gh-pages
 
   # ========== 发布 Release ==========
   release:
