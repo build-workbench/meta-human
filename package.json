@@ -69,13 +69,13 @@
   ],
   "author": "LessUp",
   "license": "MIT",
-  "homepage": "https://lessup.github.io/meta-human/",
+  "homepage": "https://mirror-plan.github.io/meta-human/",
   "bugs": {
-    "url": "https://github.com/LessUp/meta-human/issues"
+    "url": "https://github.com/mirror-plan/meta-human/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/LessUp/meta-human.git"
+    "url": "https://github.com/mirror-plan/meta-human.git"
   },
   "engines": {
     "node": ">=22.0.0",

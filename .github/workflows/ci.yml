@@ -68,7 +68,7 @@ jobs:
 
     environment:
       name: github-pages
-      url: https://lessup.github.io/meta-human/
+      url: https://mirror-plan.github.io/meta-human/
 
     steps:
       - uses: actions/checkout@v4

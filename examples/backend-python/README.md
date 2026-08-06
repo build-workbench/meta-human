@@ -80,17 +80,17 @@ uvicorn app.main:app --reload --port 8000
 
 见 `.env.example`。关键项：
 
-| 变量                          | 默认                        | 说明                                                    |
-| :---------------------------- | :-------------------------- | :------------------------------------------------------ |
-| `OPENAI_API_KEY`              | 空                          | 留空则 Mock 模式                                        |
-| `OPENAI_MODEL`                | `gpt-4o-mini`               | LLM 模型                                                |
-| `OPENAI_BASE_URL`             | `https://api.openai.com/v1` | 需以 `/v1` 结尾                                         |
-| `TTS_PROVIDER`                | `edge`                      | `edge`（edge-tts）或 `openai`                           |
-| `ASR_PROVIDER`                | `whisper`                   | 仅 `whisper`（OpenAI Whisper API）                      |
-| `DIALOGUE_MAX_HISTORY_LENGTH` | `20`                        | 历史截断阈值                                            |
-| `RATE_LIMIT_RPM`              | `60`                        | 每 IP 每分钟请求上限                                    |
-| `CORS_ALLOW_ORIGINS`          | `https://lessup.github.io`  | 逗号分隔；留空则用默认 dev+Pages 白名单                 |
-| `AUTH_ENABLED` / `API_KEYS`   | `false` / 空                | 启用后需 `X-API-Key` 头（`/health`、`/`、`/docs` 豁免） |
+| 变量                          | 默认                            | 说明                                                    |
+| :---------------------------- | :------------------------------ | :------------------------------------------------------ |
+| `OPENAI_API_KEY`              | 空                              | 留空则 Mock 模式                                        |
+| `OPENAI_MODEL`                | `gpt-4o-mini`                   | LLM 模型                                                |
+| `OPENAI_BASE_URL`             | `https://api.openai.com/v1`     | 需以 `/v1` 结尾                                         |
+| `TTS_PROVIDER`                | `edge`                          | `edge`（edge-tts）或 `openai`                           |
+| `ASR_PROVIDER`                | `whisper`                       | 仅 `whisper`（OpenAI Whisper API）                      |
+| `DIALOGUE_MAX_HISTORY_LENGTH` | `20`                            | 历史截断阈值                                            |
+| `RATE_LIMIT_RPM`              | `60`                            | 每 IP 每分钟请求上限                                    |
+| `CORS_ALLOW_ORIGINS`          | `https://mirror-plan.github.io` | 逗号分隔；留空则用默认 dev+Pages 白名单                 |
+| `AUTH_ENABLED` / `API_KEYS`   | `false` / 空                    | 启用后需 `X-API-Key` 头（`/health`、`/`、`/docs` 豁免） |
 
 ## 测试
 

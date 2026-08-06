@@ -30,7 +30,7 @@ export default function Navbar() {
     { label: '快速开始', href: '#quickstart' },
     {
       label: 'GitHub',
-      href: 'https://github.com/LessUp/meta-human',
+      href: 'https://github.com/mirror-plan/meta-human',
       external: true,
     },
   ];
@@ -81,7 +81,7 @@ export default function Navbar() {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <a
-              href="https://github.com/LessUp/meta-human"
+              href="https://github.com/mirror-plan/meta-human"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-gray-400 hover:text-white transition-colors"
@@ -140,7 +140,7 @@ export default function Navbar() {
           )}
           <div className="pt-3 border-t border-white/10 flex items-center gap-3">
             <a
-              href="https://github.com/LessUp/meta-human"
+              href="https://github.com/mirror-plan/meta-human"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
