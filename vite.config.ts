@@ -18,7 +18,9 @@ function htmlTransformPlugin(): Plugin {
     transformIndexHtml(html) {
       // 根据构建 base 判断是否为 GitHub Pages 部署
       const isPages = config.base === '/meta-human/';
-      const baseUrl = isPages ? 'https://lessup.github.io/meta-human/' : 'http://localhost:5173/';
+      const baseUrl = isPages
+        ? 'https://mirror-plan.github.io/meta-human/'
+        : 'http://localhost:5173/';
 
       return html.replace(/\$\{BASE_URL\}/g, baseUrl);
     },

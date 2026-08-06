@@ -26,17 +26,17 @@ export default function Footer() {
       links: [
         {
           label: 'README',
-          href: 'https://github.com/LessUp/meta-human#readme',
+          href: 'https://github.com/mirror-plan/meta-human#readme',
           external: true,
         },
         {
           label: '更新日志',
-          href: 'https://github.com/LessUp/meta-human/blob/master/CHANGELOG.md',
+          href: 'https://github.com/mirror-plan/meta-human/blob/master/CHANGELOG.md',
           external: true,
         },
         {
           label: '贡献指南',
-          href: 'https://github.com/LessUp/meta-human/blob/master/AGENTS.md',
+          href: 'https://github.com/mirror-plan/meta-human/blob/master/AGENTS.md',
           external: true,
         },
       ] as FooterLink[],
@@ -44,15 +44,15 @@ export default function Footer() {
     community: {
       title: '社区',
       links: [
-        { label: 'GitHub', href: 'https://github.com/LessUp/meta-human', external: true },
+        { label: 'GitHub', href: 'https://github.com/mirror-plan/meta-human', external: true },
         {
           label: '讨论区',
-          href: 'https://github.com/LessUp/meta-human/discussions',
+          href: 'https://github.com/mirror-plan/meta-human/discussions',
           external: true,
         },
         {
           label: '问题反馈',
-          href: 'https://github.com/LessUp/meta-human/issues',
+          href: 'https://github.com/mirror-plan/meta-human/issues',
           external: true,
         },
         { label: 'Twitter', href: 'https://x.com/LessUpHQ', external: true },
@@ -83,7 +83,7 @@ export default function Footer() {
             <p className="text-sm text-gray-500 mb-4">浏览器原生的 3D 数字人交互引擎</p>
             <div className="flex items-center gap-3">
               <a
-                href="https://github.com/LessUp/meta-human"
+                href="https://github.com/mirror-plan/meta-human"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-gray-400 hover:text-white transition-colors"

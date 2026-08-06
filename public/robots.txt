@@ -5,7 +5,7 @@ User-agent: *
 Allow: /
 
 # 站点地图
-Sitemap: https://lessup.github.io/meta-human/sitemap.xml
+Sitemap: https://mirror-plan.github.io/meta-human/sitemap.xml
 
 # 抓取延迟（礼貌性设置，防止服务器过载）
 Crawl-delay: 1
