@@ -96,6 +96,8 @@ jobs:
           path: ./dist
 
       - uses: actions/deploy-pages@v4
+        with:
+          timeout: 1800000
 
   # ========== 发布 Release ==========
   release:
