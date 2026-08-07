@@ -69,13 +69,13 @@
   ],
   "author": "LessUp",
   "license": "MIT",
-  "homepage": "https://mirror-plan.github.io/meta-human/",
+  "homepage": "https://vibe-knight.github.io/meta-human/",
   "bugs": {
-    "url": "https://github.com/mirror-plan/meta-human/issues"
+    "url": "https://github.com/vibe-knight/meta-human/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mirror-plan/meta-human.git"
+    "url": "https://github.com/vibe-knight/meta-human.git"
   },
   "engines": {
     "node": ">=22.0.0",
