@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+（暂无待发布变更）
+
+---
+
+## [2.3.0] - 2026-08-07
+
+### 🛠️ 工程与测试
+
+- **依赖升级** — react / react-dom 升至 19.2.8，three 升至 0.185，vite 6.4.3，zustand 5.0.14，eslint 9.39，typescript-eslint 8.66 等全部升至当前最新 minor；大版本（vite 8、vitest 4、eslint 10、typescript 7）保持延后，避免无必要的迁移成本
+- **3D 渲染层测试** — 新增 `CyberAvatar`（嘴型跟随、表情、动画、reducedMotion 跳过）、`Scene`（编排与 prop 透传）、`KeyboardControls`（按键映射、输入框/不可见守卫、卸载清理）冒烟测试，+16 个（232 → 248）；`CyberAvatar` 覆盖率 5.4% → 90.1%，`Scene` 10.1% → 100%，全量 62.7% → 67.7%
+
 ### 🛠️ 健壮性与质量
 
 - **TTS 挂起兜底** — `TTSService.speak()` 增加 watchdog：Chrome `speechSynthesis` 在已知缺陷下 `onend`/`onerror` 永不触发，导致 Promise 挂起、`isSpeaking` 与嘴型循环卡死，现在超时后强制清理并正常 settle。词边界事件（`onboundary`）会重置 watchdog，长文本不会误杀。
@@ -165,6 +176,7 @@
 
 ---
 
+[2.3.0]: https://github.com/mirror-plan/meta-human/releases/tag/v2.3.0
 [2.2.0]: https://github.com/mirror-plan/meta-human/releases/tag/v2.2.0
 [2.1.0]: https://github.com/mirror-plan/meta-human/releases/tag/v2.1.0
 [1.1.0]: https://github.com/mirror-plan/meta-human/releases/tag/v1.1.0
