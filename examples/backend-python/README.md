@@ -89,7 +89,7 @@ uvicorn app.main:app --reload --port 8000
 | `ASR_PROVIDER`                | `whisper`                       | 仅 `whisper`（OpenAI Whisper API）                      |
 | `DIALOGUE_MAX_HISTORY_LENGTH` | `20`                            | 历史截断阈值                                            |
 | `RATE_LIMIT_RPM`              | `60`                            | 每 IP 每分钟请求上限                                    |
-| `CORS_ALLOW_ORIGINS`          | `https://mirror-plan.github.io` | 逗号分隔；留空则用默认 dev+Pages 白名单                 |
+| `CORS_ALLOW_ORIGINS`          | `https://vibe-knight.github.io` | 逗号分隔；留空则用默认 dev+Pages 白名单                 |
 | `AUTH_ENABLED` / `API_KEYS`   | `false` / 空                    | 启用后需 `X-API-Key` 头（`/health`、`/`、`/docs` 豁免） |
 
 ## 测试

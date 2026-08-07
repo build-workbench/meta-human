@@ -2,11 +2,11 @@
 
 浏览器里的 3D 数字人。能听、能说、能对话，零配置即可运行。
 
-[![CI](https://img.shields.io/github/actions/workflow/status/mirror-plan/meta-human/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/mirror-plan/meta-human/actions)
-[![Demo](https://img.shields.io/badge/Demo-在线-green?style=flat-square&logo=githubpages)](https://mirror-plan.github.io/meta-human/)
+[![CI](https://img.shields.io/github/actions/workflow/status/vibe-knight/meta-human/ci.yml?branch=master&label=CI&style=flat-square)](https://github.com/vibe-knight/meta-human/actions)
+[![Demo](https://img.shields.io/badge/Demo-在线-green?style=flat-square&logo=githubpages)](https://vibe-knight.github.io/meta-human/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-**[在线体验 →](https://mirror-plan.github.io/meta-human/)**
+**[在线体验 →](https://vibe-knight.github.io/meta-human/)**
 
 <p align="center">
   <img src="public/preview.svg" width="720" alt="MetaHuman Engine 预览" />
@@ -30,7 +30,7 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/mirror-plan/meta-human.git
+git clone https://github.com/vibe-knight/meta-human.git
 cd meta-human
 npm install
 npm run dev
