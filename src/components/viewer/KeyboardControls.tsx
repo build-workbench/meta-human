@@ -26,7 +26,13 @@ export function KeyboardControls(_props: KeyboardControlsProps) {
     (e: KeyboardEvent) => {
       // 只在标签页可见且不在输入框时处理
       if (!isVisibleRef.current) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const target = e.target as HTMLElement | null;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable === true;
+      if (isEditable) return;
 
       const step = 0.1; // 旋转步长（弧度）
       const zoomStep = 0.5;

@@ -92,9 +92,14 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
       }
     }
 
-    // 说话动画（下巴/头部摆动）
-    if (!prefersReducedMotion && isSpeaking && headRef.current) {
-      headRef.current.rotation.x = Math.sin(t * 15) * 0.05;
+    // 说话动画（下巴/头部摆动）；停止后平滑归零，避免冻结在最后一个采样点
+    if (headRef.current) {
+      const targetHeadX = !prefersReducedMotion && isSpeaking ? Math.sin(t * 15) * 0.05 : 0;
+      headRef.current.rotation.x = THREE.MathUtils.lerp(
+        headRef.current.rotation.x,
+        targetHeadX,
+        0.3,
+      );
     }
 
     // 表情

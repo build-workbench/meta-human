@@ -98,6 +98,16 @@ export default function DigitalHumanViewer({
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           materials.forEach((mat) => {
             if (mat instanceof THREE.Material) {
+              // Material.dispose() 不会释放其引用的纹理，需显式逐个释放
+              for (const value of Object.values(mat)) {
+                if (value instanceof THREE.Texture) {
+                  try {
+                    value.dispose();
+                  } catch (error) {
+                    logger.warn('Failed to dispose texture:', error);
+                  }
+                }
+              }
               try {
                 mat.dispose();
               } catch (error) {

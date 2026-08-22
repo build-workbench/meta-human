@@ -363,6 +363,7 @@ export class ASRService {
   private onResultCallback: ((text: string) => void) | null = null;
   private pendingRestartTimer: ReturnType<typeof setTimeout> | null = null;
   private recognitionGeneration = 0;
+  private recognitionGenerationAtInit = -1;
   private recordingActive = false;
 
   constructor(config: ASRConfig = {}, state: ASRStateAdapter) {
@@ -398,6 +399,7 @@ export class ASRService {
     if (!SpeechRecognition) return;
 
     this.recognitionGeneration++;
+    this.recognitionGenerationAtInit = this.recognitionGeneration;
     const currentGeneration = this.recognitionGeneration;
 
     this.recognition = new SpeechRecognition();
@@ -471,7 +473,11 @@ export class ASRService {
       return false;
     }
 
-    if (!this.recognition) {
+    // stop()/dispose() 会递增 recognitionGeneration 使旧实例的事件回调
+    // 全部早退，但不清空 this.recognition。若直接复用该实例，
+    // 其闭包捕获的仍是过期 generation，所有事件都会被守卫吞掉（永久失聪）。
+    // 因此仅当实例已过期时重建；未过期则复用，保留"录音中只换回调不重启"的幂等语义。
+    if (this.recognitionGenerationAtInit !== this.recognitionGeneration || !this.recognition) {
       this.initRecognition();
     }
 

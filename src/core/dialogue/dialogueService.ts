@@ -17,6 +17,7 @@ import {
   parseApiEndpoints,
   validateApiUrl,
   getLatestUserMessage,
+  DialogueApiError,
 } from './httpClient';
 import { getPreferredChatTransportMode, type ChatTransport } from './transports';
 import { DialogueRouting } from './dialogueRouting';
@@ -142,6 +143,9 @@ const DEFAULT_CONFIG: Required<Omit<DialogueServiceConfig, 'endpoint'>> = {
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
 const SESSION_DELETE_TIMEOUT_MS = 5000;
+// 流式 body 单次 read 的空闲上限。SSE 正常会持续产出 token/心跳；
+// 超过此间隔无任何字节视为连接停摆。
+const STREAM_IDLE_TIMEOUT_MS = 30000;
 
 // ============================================================================
 // Payload normalization & response helpers
@@ -349,6 +353,10 @@ export async function* streamUserInput(
   }
 
   attemptLoop: for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (signal?.aborted) {
+      return { response: buildEmptyResponse(), connectionStatus: 'error', error: '请求被取消' };
+    }
+
     const candidates = routing.getCandidates(endpoint);
     for (let ci = 0; ci < candidates.length; ci++) {
       const candidate = candidates[ci];
@@ -375,7 +383,18 @@ export async function* streamUserInput(
                 error: '请求被取消',
               };
             }
-            const { done, value } = await reader.read();
+            // 流式 body 阶段没有 HTTP 层超时（fetch 超时只覆盖到响应头），
+            // 单次 read() 挂起会永久卡住整轮对话。对每次 read 加空闲超时，
+            // 超时按可重试错误处理，走既有重试/故障转移/降级路径。
+            const readResult = await Promise.race([
+              reader.read(),
+              sleep(STREAM_IDLE_TIMEOUT_MS).then(() => 'timeout' as const),
+            ]);
+            if (readResult === 'timeout') {
+              reader.cancel().catch(() => undefined);
+              throw new DialogueApiError('流式响应超时', 408, true);
+            }
+            const { done, value } = readResult;
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
             // 兼容 CRLF 行尾：某些代理/服务器会改写为 \r\n\r\n。

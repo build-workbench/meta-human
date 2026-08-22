@@ -19,7 +19,7 @@ cat > dist/sitemap.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://mirror-plan.github.io/meta-human/</loc>
+    <loc>https://vibe-knight.github.io/meta-human/</loc>
     <lastmod>${BUILD_TIMESTAMP}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>

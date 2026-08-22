@@ -1,5 +1,5 @@
 import { Settings, X, Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
 import { useFocusTrap, useTheme } from '@/hooks';
@@ -264,6 +264,22 @@ function RuntimeConfigPanel() {
   const [baseUrl, setBaseUrl] = useState(runtimeApiConfig?.baseUrl ?? '');
   const [fallbacks, setFallbacks] = useState(runtimeApiConfig?.fallbacks ?? '');
   const [saved, setSaved] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
+
+  const markSaved = () => {
+    setSaved(true);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    savedTimerRef.current = setTimeout(() => {
+      savedTimerRef.current = null;
+      setSaved(false);
+    }, 1500);
+  };
 
   const handleApply = () => {
     const trimmed = baseUrl.trim();
@@ -271,8 +287,7 @@ function RuntimeConfigPanel() {
     const config = { baseUrl: trimmed, fallbacks: fallbacks.trim() };
     setRuntimeApiConfig(config);
     applyRuntimeApiEndpoints(config.baseUrl, config.fallbacks);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    markSaved();
   };
 
   const handleReset = () => {
@@ -280,8 +295,7 @@ function RuntimeConfigPanel() {
     resetRuntimeApiEndpoints();
     setBaseUrl('');
     setFallbacks('');
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    markSaved();
   };
 
   return (
