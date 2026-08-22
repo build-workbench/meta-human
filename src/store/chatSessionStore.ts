@@ -37,15 +37,17 @@ const SESSION_STORAGE_KEY = 'metahuman_session_id';
 const CHAT_HISTORY_STORAGE_KEY = 'metahuman_chat_history';
 const MAX_PERSISTED_CHAT_MESSAGES = 100;
 
-let nextChatMessageId = 0;
+let lastChatMessageId = 0;
 
 const generateSessionId = (): string => {
   return generateId('session');
 };
 
+// 严格单调 ID：历史消息按旧方案持久化在 localStorage，
+// 简单的 Date.now()+计数器在刷新归零后可能与历史碰撞。
 const generateChatMessageId = (): number => {
-  nextChatMessageId += 1;
-  return Date.now() + nextChatMessageId;
+  lastChatMessageId = Math.max(lastChatMessageId + 1, Date.now());
+  return lastChatMessageId;
 };
 
 const getSafeLocalStorage = (): Storage | null => {

@@ -4,7 +4,7 @@
  * 内联解析命令字符串并执行对应动作。
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { useEngine, useTTS } from '@/services';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
@@ -56,6 +56,9 @@ export function useVoiceCommandHandler(options: UseVoiceCommandHandlerOptions = 
   const tts = useTTS();
   const { onChatSend } = options;
 
+  // 上一个动作的重置定时器：新命令先清掉，避免旧定时器把新动画打断回 idle
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleVoiceCommand = useCallback(
     (command: string) => {
       const action = parseCommand(command);
@@ -64,6 +67,10 @@ export function useVoiceCommandHandler(options: UseVoiceCommandHandlerOptions = 
         return;
       }
 
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
       switch (action) {
         case 'play':
           engine.play();
@@ -104,7 +111,8 @@ export function useVoiceCommandHandler(options: UseVoiceCommandHandlerOptions = 
           toast.success(
             `执行${action === 'greeting' ? '打招呼' : action === 'dance' ? '跳舞' : action === 'nod' ? '点头' : '摇头'}动作`,
           );
-          setTimeout(() => {
+          resetTimerRef.current = setTimeout(() => {
+            resetTimerRef.current = null;
             engine.setEmotion('neutral');
             engine.setExpression('neutral');
             engine.setBehavior('idle');
@@ -121,7 +129,10 @@ export function useVoiceCommandHandler(options: UseVoiceCommandHandlerOptions = 
           const randomExpr = expressions[Math.floor(Math.random() * expressions.length)];
           engine.setExpression(randomExpr);
           toast.success(`切换到 ${randomExpr} 表情`);
-          setTimeout(() => engine.setExpression('neutral'), EXPRESSION_RESET_MS);
+          resetTimerRef.current = setTimeout(() => {
+            resetTimerRef.current = null;
+            engine.setExpression('neutral');
+          }, EXPRESSION_RESET_MS);
           break;
         }
         default:
