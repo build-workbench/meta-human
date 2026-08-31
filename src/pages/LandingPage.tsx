@@ -10,22 +10,22 @@ export default function LandingPage() {
     <div className="min-h-screen w-full overflow-x-hidden bg-black text-white">
       {/* Navigation */}
       <Navbar />
-      
+
       {/* Main Content */}
       <main>
         {/* Hero - 首屏主视觉 */}
         <HeroSection />
-        
+
         {/* Features - 核心功能 */}
         <FeaturesSection />
-        
+
         {/* Tech Stack - 技术架构 */}
         <TechStackSection />
-        
+
         {/* CTA - 行动召唤 */}
         <CTASection />
       </main>
-      
+
       {/* Footer */}
       <Footer />
     </div>

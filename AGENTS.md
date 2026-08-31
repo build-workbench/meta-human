@@ -42,16 +42,16 @@ src/
 
 ## 关键运行时文件
 
-| 文件                                           | 职责                                                   |
-| ---------------------------------------------- | ------------------------------------------------------ |
-| `src/core/avatar/DigitalHumanEngine.ts`        | 数字人控制门面                                         |
-| `src/core/dialogue/dialogueService.ts`         | HTTP 对话客户端 + HTTP/SSE 传输                        |
-| `src/core/dialogue/dialogueOrchestrator.ts`    | 轮次所有权与请求生命周期                               |
-| `src/core/audio/audioService.ts`               | TTS / ASR 服务                                         |
-| `src/core/createServices.ts`                   | 服务容器工厂                                           |
-| `src/services/servicesContext.ts`              | React hooks：useEngine / useTTS / useASR / useDialogue |
-| `src/store/digitalHumanStore.ts`               | 数字人运行时状态                                       |
-| `src/components/viewer/DigitalHumanViewer.tsx` | 主 3D 视口                                             |
+| 文件                                           | 职责                                                                       |
+| ---------------------------------------------- | -------------------------------------------------------------------------- |
+| `src/core/avatar/DigitalHumanEngine.ts`        | 数字人控制门面                                                             |
+| `src/core/dialogue/dialogueService.ts`         | 对话客户端入口：请求/流式/健康检查 + 路由（HTTP/SSE 传输在 transports.ts） |
+| `src/core/dialogue/dialogueOrchestrator.ts`    | 轮次所有权与请求生命周期                                                   |
+| `src/core/audio/audioService.ts`               | TTS / ASR 服务                                                             |
+| `src/core/createServices.ts`                   | 服务容器工厂                                                               |
+| `src/services/servicesContext.ts`              | React hooks：useEngine / useTTS / useASR / useDialogue                     |
+| `src/store/digitalHumanStore.ts`               | 数字人运行时状态                                                           |
+| `src/components/viewer/DigitalHumanViewer.tsx` | 主 3D 视口                                                                 |
 
 ## 命令
 

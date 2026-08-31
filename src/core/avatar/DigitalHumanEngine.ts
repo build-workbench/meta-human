@@ -2,7 +2,6 @@ import { loggers } from '@/lib/logger';
 import { ANIMATION_TO_BEHAVIOR, ANIMATION_DURATIONS } from './constants';
 import type { EngineStateAdapter } from './avatarStateAdapter';
 import {
-  ACTION_TO_BEHAVIOR,
   mapEmotionToExpression,
   normalizeAvatarBehavior,
   normalizeAvatarEmotion,
@@ -106,8 +105,7 @@ export class DigitalHumanEngine implements AvatarContract {
     this.state.setPlaying(true);
     this.emit('animation:start', name);
 
-    const mappedBehavior =
-      ACTION_TO_BEHAVIOR[name as keyof typeof ACTION_TO_BEHAVIOR] ?? ANIMATION_TO_BEHAVIOR[name];
+    const mappedBehavior = ANIMATION_TO_BEHAVIOR[name];
     if (mappedBehavior) {
       this.state.setBehavior(mappedBehavior);
     }

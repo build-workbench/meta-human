@@ -57,18 +57,8 @@ export const EMOTION_TO_EXPRESSION: Record<EmotionType, ExpressionType> = {
   angry: 'angry',
 };
 
-export const ACTION_TO_BEHAVIOR: Partial<Record<AvatarAction, BehaviorType>> = {
-  wave: 'greeting',
-  greet: 'greeting',
-  nod: 'listening',
-  shakeHead: 'idle',
-  dance: 'excited',
-  think: 'thinking',
-  speak: 'speaking',
-  waveHand: 'waveHand',
-  raiseHand: 'raiseHand',
-};
-
+// 动作 → 行为映射已收敛到 constants.ANIMATION_TO_BEHAVIOR（单一数据源），
+// 此处不再维护第二份映射，避免两处漂移。
 const normalizeFromList = <T extends readonly string[]>(
   value: string,
   values: T,
@@ -90,11 +80,7 @@ export const mapEmotionToExpression = (emotion: EmotionType): ExpressionType =>
   EMOTION_TO_EXPRESSION[emotion];
 
 export type AvatarEventType =
-  | 'expression:change'
-  | 'emotion:change'
-  | 'behavior:change'
-  | 'animation:start'
-  | 'animation:end';
+  'expression:change' | 'emotion:change' | 'behavior:change' | 'animation:start' | 'animation:end';
 
 export type AvatarEventHandler = (payload: { type: string; value: string }) => void;
 

@@ -1,5 +1,6 @@
 import { loggers } from '@/lib/logger';
 import type { TTSCallbacks, ASRStateAdapter } from './audioAdapters';
+import { DEFAULT_TTS_CONFIG } from './ttsConfig';
 
 const logger = loggers.audio;
 
@@ -70,10 +71,10 @@ export class TTSService {
       typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null;
     this.voices = [];
     this.config = {
-      lang: config.lang ?? 'zh-CN',
-      rate: config.rate ?? 1.0,
-      pitch: config.pitch ?? 1.0,
-      volume: config.volume ?? 0.8,
+      lang: config.lang ?? DEFAULT_TTS_CONFIG.lang,
+      rate: config.rate ?? DEFAULT_TTS_CONFIG.rate,
+      pitch: config.pitch ?? DEFAULT_TTS_CONFIG.pitch,
+      volume: config.volume ?? DEFAULT_TTS_CONFIG.volume,
     };
     this.callbacks = callbacks;
     this.loadVoices();
@@ -192,10 +193,10 @@ export class TTSService {
       this.synth.cancel();
     }
 
-    const lang = config.lang ?? this.config.lang ?? 'zh-CN';
-    const rate = config.rate ?? this.config.rate ?? 1.0;
-    const pitch = config.pitch ?? this.config.pitch ?? 1.0;
-    const volume = config.volume ?? this.config.volume ?? 0.8;
+    const lang = config.lang ?? this.config.lang ?? DEFAULT_TTS_CONFIG.lang;
+    const rate = config.rate ?? this.config.rate ?? DEFAULT_TTS_CONFIG.rate;
+    const pitch = config.pitch ?? this.config.pitch ?? DEFAULT_TTS_CONFIG.pitch;
+    const volume = config.volume ?? this.config.volume ?? DEFAULT_TTS_CONFIG.volume;
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
@@ -524,7 +525,12 @@ export class ASRService {
           this.state.setError('启动语音识别失败');
           return false;
         }
-        recognition.stop();
+        // 识别尚未完全进入停止态时 stop() 可能再抛异常，忽略并继续重试
+        try {
+          recognition.stop();
+        } catch (_e) {
+          // 忽略停止错误
+        }
         this.pendingRestartTimer = setTimeout(() => {
           this.pendingRestartTimer = null;
           this.attemptStart(options, restartAttempts + 1);

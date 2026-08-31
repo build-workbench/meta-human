@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import type { BehaviorType, EmotionType, ExpressionType } from '@/core/avatar/avatarContract';
+import { DEFAULT_TTS_CONFIG } from '@/core/audio/ttsConfig';
 
 // Named constants
 const DEFAULT_EXPRESSION_INTENSITY = 0.8;
@@ -17,8 +18,7 @@ export interface SpeechConfigSnapshot {
 }
 
 export type AvatarSource =
-  | { kind: 'procedural' }
-  | { kind: 'custom'; modelUrl: string; fileName: string };
+  { kind: 'procedural' } | { kind: 'custom'; modelUrl: string; fileName: string };
 
 export type AvatarLoadStatus = 'idle' | 'ready' | 'error';
 
@@ -87,9 +87,9 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       currentBehavior: 'idle',
       speechConfig: {
         voiceName: null,
-        rate: 1,
-        pitch: 1,
-        volume: 0.8,
+        rate: DEFAULT_TTS_CONFIG.rate,
+        pitch: DEFAULT_TTS_CONFIG.pitch,
+        volume: DEFAULT_TTS_CONFIG.volume,
       },
       avatarSource: { kind: 'procedural' },
       avatarLoadStatus: 'ready',
@@ -146,9 +146,14 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       },
 
       reset: () => {
+        // 复位到初始状态（保留用户主动选择的 avatarSource / activeCharacterId / speechConfig）
         set({
           isPlaying: false,
+          autoRotate: false,
           currentAnimation: 'idle',
+          isRecording: false,
+          isMuted: false,
+          isSpeaking: false,
           currentEmotion: 'neutral',
           currentExpression: 'neutral',
           expressionIntensity: DEFAULT_EXPRESSION_INTENSITY,

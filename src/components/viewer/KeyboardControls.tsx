@@ -14,11 +14,7 @@ import {
 } from './cameraControls';
 import { useIsTabVisibleRef } from '@/hooks';
 
-interface KeyboardControlsProps {
-  onCommand?: (cmd: string) => void;
-}
-
-export function KeyboardControls(_props: KeyboardControlsProps) {
+export function KeyboardControls() {
   const { camera } = useThree();
   const isVisibleRef = useIsTabVisibleRef();
 

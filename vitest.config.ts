@@ -23,7 +23,7 @@ export default defineConfig({
         '**/*.config.js',
       ],
       include: ['src/**/*.{ts,tsx}'],
-      // 阈值设在实际水平略下方，防止覆盖率无声回退（当前实际约 67/74/78/67）。
+      // 阈值设在实际水平略下方，防止覆盖率无声回退（当前实际约 67/78/74/67）。
       thresholds: {
         lines: 60,
         functions: 68,

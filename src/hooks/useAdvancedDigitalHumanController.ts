@@ -2,7 +2,7 @@
  * 高级数字人控制器 Hook。
  *
  * 协调播放控制、会话管理、语音命令等子 hooks。
- * 注意：聊天流已移到页面层，键盘快捷键在此处理。
+ * 聊天流与语音识别文本上报走 useChatStream（页面层），键盘快捷键在此处理。
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -15,6 +15,7 @@ import { useVoiceCommandHandler } from './useVoiceCommandHandler';
 import { revokeCustomAvatarObjectUrl } from '@/core/avatar/avatarSourceAdapter';
 import { useChatSessionStore } from '@/store/chatSessionStore';
 import { clearRemoteSession } from '@/core/dialogue/dialogueService';
+import { useIsTabVisibleRef } from './useMediaQuery';
 
 interface UseAdvancedDigitalHumanControllerOptions {
   /** 录音识别出文本后，上报给聊天流处理（统一走 useChatStream） */
@@ -85,8 +86,11 @@ export function useAdvancedDigitalHumanController(
   }, []);
 
   // 键盘快捷键处理
+  const isVisibleRef = useIsTabVisibleRef();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 与 KeyboardControls 对齐：标签页不可见或输入框聚焦时忽略快捷键
+      if (!isVisibleRef.current) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       switch (e.key.toLowerCase()) {
@@ -103,7 +107,7 @@ export function useAdvancedDigitalHumanController(
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSettings, closeSettings]);
+  }, [toggleSettings, closeSettings, isVisibleRef]);
 
   // 错误自动清除
   useEffect(() => {

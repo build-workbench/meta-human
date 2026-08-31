@@ -8,7 +8,20 @@
 
 ## [Unreleased]
 
-（暂无待发布变更）
+### 🐛 修复与清理
+
+- **连接状态收口** — `systemStore.recordConnectionHealth` 改由 `setConnectionStatus` 统一维护 `connectionStatus`/`isConnected`，消除双写漂移
+- **复位语义补全** — `digitalHumanStore.reset()` 复位范围扩至录音/静音/说话/自动旋转等运行时状态（保留角色预设与头像来源）
+- **ASR 竞态加固** — `'already started'` 重启路径中 `recognition.stop()` 包 try/catch，避免停止阶段抛错导致录音状态残留
+- **对话错误可见** — `useChatStream` 异常路径补写系统错误（ChatDock 错误条可显示）
+- **移除伪功能** — 行为面板删除 Auto-Pilot 随机行为模拟循环
+- **默认值收口** — TTS 默认 lang/rate/pitch/volume 收敛到 `core/audio/ttsConfig.ts` 单一来源
+- **动作映射去重** — 删除 `avatarContract.ACTION_TO_BEHAVIOR` 冗余表，统一由 `constants.ANIMATION_TO_BEHAVIOR` 提供
+- **键盘行为对齐** — 控制器快捷键监听补标签页可见性守卫
+- **死代码清理** — 删除 `dialogueService.getChatTransport`、`DialogueRouting.setTransportOverride`、`LoadingSpinner.fullScreen`、`KeyboardControls.onCommand`
+- **文案更新** — 行为/表情控制面板中文化；落地页徽章 `v2.2`→`v2.3.0`、测试数 `183`→`248`
+- **工程** — 新增 `tsconfig.node.json` 让 vite/vitest/eslint 配置文件纳入 typecheck；prettier 格式化对齐
+- **测试补强** — 新增 `createServices` / `systemStore` / `digitalHumanStore.reset` / `useVoiceCommandHandler` 测试（248 → 258）
 
 ---
 

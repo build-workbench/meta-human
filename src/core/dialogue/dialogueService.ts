@@ -2,8 +2,9 @@
  * 对话服务瘦入口。
  *
  * 保留公共类型与函数式 API（sendUserInput/streamUserInput/checkServerHealth/
- * clearRemoteSession），并通过模块级 `defaultRouting` 懒单例承载路由状态。
- * 原有模块级可变 `endpointRouter`/`transportOverride` 已收进 DialogueRouting 实例。
+ * clearRemoteSession/getDefaultChatTransport），并通过模块级 `defaultRouting`
+ * 懒单例承载路由状态。原有模块级可变 `endpointRouter`/`transportOverride`
+ * 已收进 DialogueRouting 实例。
  */
 import { sleep } from '@/lib/utils';
 import { loggers } from '@/lib/logger';
@@ -19,7 +20,7 @@ import {
   getLatestUserMessage,
   DialogueApiError,
 } from './httpClient';
-import { getPreferredChatTransportMode, type ChatTransport } from './transports';
+import type { ChatTransport } from './transports';
 import { DialogueRouting } from './dialogueRouting';
 
 const logger = loggers.dialogue;
@@ -214,12 +215,6 @@ function getFallbackResponse(userText: string): ChatResponsePayload {
 // ============================================================================
 // Transport routing public API
 // ============================================================================
-
-export function getChatTransport(
-  mode: ChatTransportMode = getPreferredChatTransportMode(),
-): ChatTransport {
-  return getRouting().getTransport(mode);
-}
 
 export function getDefaultChatTransport(): ChatTransport {
   return getRouting().getTransport();

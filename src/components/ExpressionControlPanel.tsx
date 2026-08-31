@@ -23,49 +23,49 @@ export default function ExpressionControlPanel({
   const expressions: ExpressionControl[] = [
     {
       name: 'neutral',
-      label: 'Neutral',
+      label: '平静',
       icon: <Meh size={20} />,
       color: 'text-gray-400',
       intensity: 0.5,
     },
     {
       name: 'smile',
-      label: 'Smile',
+      label: '微笑',
       icon: <Smile size={20} />,
       color: 'text-green-400',
       intensity: 0.7,
     },
     {
       name: 'laugh',
-      label: 'Laugh',
+      label: '大笑',
       icon: <Laugh size={20} />,
       color: 'text-yellow-400',
       intensity: 1.0,
     },
     {
       name: 'surprise',
-      label: 'Surprise',
+      label: '惊讶',
       icon: <Zap size={20} />,
       color: 'text-orange-400',
       intensity: 0.8,
     },
     {
       name: 'sad',
-      label: 'Sad',
+      label: '悲伤',
       icon: <Frown size={20} />,
       color: 'text-blue-400',
       intensity: 0.6,
     },
     {
       name: 'angry',
-      label: 'Angry',
+      label: '生气',
       icon: <Angry size={20} />,
       color: 'text-red-400',
       intensity: 0.9,
     },
     {
       name: 'blink',
-      label: 'Blink',
+      label: '眨眼',
       icon: <Eye size={20} />,
       color: 'text-purple-400',
       intensity: 0.4,
@@ -87,16 +87,16 @@ export default function ExpressionControlPanel({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between border-b border-white/10 pb-4">
-        <h3 className="text-lg font-medium text-white">Face Control</h3>
+        <h3 className="text-lg font-medium text-white">表情控制</h3>
         <div className="flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
           <Palette size={14} className="text-white/60" />
           <span className="text-xs text-white/80 font-mono uppercase">
-            {currentExpression || 'Neutral'}
+            {currentExpression || '平静'}
           </span>
         </div>
       </div>
 
-      {/* Grid */}
+      {/* 表情网格 */}
       <div className="grid grid-cols-2 gap-3">
         {expressions.map((expression) => (
           <button
@@ -115,18 +115,18 @@ export default function ExpressionControlPanel({
             <div>
               <div className="font-medium text-gray-200 text-sm">{expression.label}</div>
               <div className="text-[10px] text-white/40">
-                Int: {Math.round(expression.intensity * 100)}%
+                强度: {Math.round(expression.intensity * 100)}%
               </div>
             </div>
           </button>
         ))}
       </div>
 
-      {/* Intensity Slider */}
+      {/* 强度滑杆 */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-white/40 uppercase tracking-wider">
-            Intensity
+            表情强度
           </label>
           <span className="text-xs font-mono text-blue-400">{Math.round(intensity * 100)}%</span>
         </div>
@@ -142,13 +142,11 @@ export default function ExpressionControlPanel({
         />
       </div>
 
-      {/* Advanced Triggers */}
+      {/* 微表情触发 */}
       <div className="space-y-3">
-        <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider">
-          Micro-Expressions
-        </h4>
+        <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider">微表情</h4>
         <div className="grid grid-cols-2 gap-2">
-          {['Eyebrow Raise', 'Quick Blink', 'Mouth Open', 'Nod'].map((action, i) => {
+          {['挑眉', '快速眨眼', '张嘴', '点头'].map((action, i) => {
             const keys = ['eyebrow_raise', 'eye_blink', 'mouth_open', 'head_nod'];
             return (
               <button
@@ -172,7 +170,7 @@ export default function ExpressionControlPanel({
           }}
           className="w-full px-4 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg transition-colors text-sm"
         >
-          Reset Expression
+          重置表情
         </button>
       </div>
     </div>
