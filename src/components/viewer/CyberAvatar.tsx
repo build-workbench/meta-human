@@ -1,7 +1,7 @@
 /**
  * 程序化数字人头像组件。
  *
- * 使用 Three.js 基础几何体构建的赛博风格头像，
+ * 使用 Three.js 基础几何体构建的软萌可爱风格头像，
  * 支持表情、动画和语音同步。
  */
 
@@ -174,65 +174,96 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
         rotationIntensity={0.2}
         floatIntensity={prefersReducedMotion ? 0 : 0.5}
       >
-        {/* --- 头部 --- */}
-        <mesh ref={headRef} position={[0, 0, 0]} castShadow receiveShadow>
-          {/* 主头部形状 - 平滑的胶囊/球体混合 */}
-          <sphereGeometry args={[0.8, 64, 64]} />
-          <meshPhysicalMaterial
-            color="#e2e8f0"
-            metalness={0.6}
-            roughness={0.2}
-            clearcoat={1}
-            clearcoatRoughness={0.1}
-          />
+        {/* --- 天线 --- */}
+        <mesh position={[0, 0.9, 0]}>
+          <cylinderGeometry args={[0.02, 0.03, 0.35, 16]} />
+          <meshStandardMaterial color="#ffb3c1" metalness={0.4} roughness={0.3} />
         </mesh>
-
-        {/* --- 眼睛 --- */}
-        <group position={[0, 0.1, 0.75]}>
-          <mesh ref={leftEyeRef} position={[-0.25, 0, 0]}>
-            <capsuleGeometry args={[0.08, 0.2, 4, 8]} />
-            <meshStandardMaterial
-              color="#0ea5e9"
-              emissive="#0ea5e9"
-              emissiveIntensity={2}
-              toneMapped={false}
-            />
-          </mesh>
-          <mesh ref={rightEyeRef} position={[0.25, 0, 0]}>
-            <capsuleGeometry args={[0.08, 0.2, 4, 8]} />
-            <meshStandardMaterial
-              color="#0ea5e9"
-              emissive="#0ea5e9"
-              emissiveIntensity={2}
-              toneMapped={false}
-            />
-          </mesh>
-          {/* 眼睛发光球体（瞳孔） */}
-          <mesh position={[-0.25, 0, 0.05]} scale={[1, 0.1, 1]}>
-            <sphereGeometry args={[0.09, 16, 16]} />
-            <meshStandardMaterial color="#0ea5e9" emissive="#0ea5e9" emissiveIntensity={4} />
-          </mesh>
-          <mesh position={[0.25, 0, 0.05]} scale={[1, 0.1, 1]}>
-            <sphereGeometry args={[0.09, 16, 16]} />
-            <meshStandardMaterial color="#0ea5e9" emissive="#0ea5e9" emissiveIntensity={4} />
-          </mesh>
-        </group>
-
-        {/* --- 嘴部（Lipsync 驱动） --- */}
-        <mesh ref={mouthRef} position={[0, -0.35, 0.72]} scale={[1, 0.15, 1]}>
-          <boxGeometry args={[0.4, 0.15, 0.05]} />
+        <mesh position={[0, 1.12, 0]}>
+          <sphereGeometry args={[0.08, 24, 24]} />
           <meshStandardMaterial
-            color="#0284c7"
-            emissive="#0284c7"
-            emissiveIntensity={1.5}
+            color="#ff8fab"
+            emissive="#ff8fab"
+            emissiveIntensity={1.2}
             toneMapped={false}
           />
         </mesh>
 
-        {/* --- 颈部/底座 --- */}
-        <mesh position={[0, -1, 0]}>
-          <cylinderGeometry args={[0.3, 0.4, 0.8, 32]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} />
+        {/* --- 头部：圆润的大头，往可爱方向的比例 --- */}
+        <mesh ref={headRef} position={[0, 0, 0]} castShadow receiveShadow scale={[1, 0.95, 1]}>
+          <sphereGeometry args={[0.8, 64, 64]} />
+          <meshStandardMaterial color="#fff3ea" metalness={0.05} roughness={0.55} />
+        </mesh>
+
+        {/* --- 眼睛：大圆眼 + 高光 --- */}
+        <group position={[0, 0.12, 0.72]}>
+          <mesh ref={leftEyeRef} position={[-0.28, 0, 0]}>
+            <sphereGeometry args={[0.11, 24, 24]} />
+            <meshStandardMaterial color="#26262e" roughness={0.25} />
+            <mesh position={[0.035, 0.045, 0.075]} scale={[0.42, 0.42, 0.42]}>
+              <sphereGeometry args={[0.05, 12, 12]} />
+              <meshStandardMaterial
+                color="#ffffff"
+                emissive="#ffffff"
+                emissiveIntensity={0.8}
+                toneMapped={false}
+              />
+            </mesh>
+          </mesh>
+          <mesh ref={rightEyeRef} position={[0.28, 0, 0]}>
+            <sphereGeometry args={[0.11, 24, 24]} />
+            <meshStandardMaterial color="#26262e" roughness={0.25} />
+            <mesh position={[0.035, 0.045, 0.075]} scale={[0.42, 0.42, 0.42]}>
+              <sphereGeometry args={[0.05, 12, 12]} />
+              <meshStandardMaterial
+                color="#ffffff"
+                emissive="#ffffff"
+                emissiveIntensity={0.8}
+                toneMapped={false}
+              />
+            </mesh>
+          </mesh>
+        </group>
+
+        {/* --- 腮红：软粉脸颊 --- */}
+        <mesh position={[-0.52, -0.18, 0.64]} scale={[0.5, 0.25, 0.2]}>
+          <sphereGeometry args={[0.12, 16, 16]} />
+          <meshStandardMaterial
+            color="#ffb3c1"
+            transparent
+            opacity={0.85}
+            emissive="#ffb3c1"
+            emissiveIntensity={0.3}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh position={[0.52, -0.18, 0.64]} scale={[0.5, 0.25, 0.2]}>
+          <sphereGeometry args={[0.12, 16, 16]} />
+          <meshStandardMaterial
+            color="#ffb3c1"
+            transparent
+            opacity={0.85}
+            emissive="#ffb3c1"
+            emissiveIntensity={0.3}
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* --- 嘴部（Lipsync 驱动，椭圆小嘴） --- */}
+        <mesh ref={mouthRef} position={[0, -0.3, 0.78]} scale={[0.85, 0.2, 0.15]}>
+          <sphereGeometry args={[0.2, 24, 24]} />
+          <meshStandardMaterial
+            color="#ff6b9d"
+            emissive="#ff6b9d"
+            emissiveIntensity={0.6}
+            toneMapped={false}
+          />
+        </mesh>
+
+        {/* --- 软萌小身体 --- */}
+        <mesh position={[0, -0.8, 0]} scale={[1, 1.15, 1]} castShadow>
+          <sphereGeometry args={[0.5, 32, 32]} />
+          <meshStandardMaterial color="#fde8e0" metalness={0.05} roughness={0.55} />
         </mesh>
 
         {/* --- 全息光环 --- */}
@@ -240,9 +271,9 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <torusGeometry args={[1.2, 0.02, 16, 100]} />
             <meshBasicMaterial
-              color="#38bdf8"
+              color="#ffb3c1"
               transparent
-              opacity={0.3}
+              opacity={0.35}
               side={THREE.DoubleSide}
               wireframe
             />
@@ -250,7 +281,7 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
           <mesh rotation={[Math.PI / 2.2, 0, 0]}>
             <torusGeometry args={[1.4, 0.01, 16, 100]} />
             <meshBasicMaterial
-              color="#38bdf8"
+              color="#ffd6e0"
               transparent
               opacity={0.3}
               side={THREE.DoubleSide}
@@ -258,16 +289,6 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
             />
           </mesh>
         </group>
-
-        {/* --- 耳机 --- */}
-        <mesh position={[0.8, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.3, 32]} />
-          <meshStandardMaterial color="#475569" />
-        </mesh>
-        <mesh position={[-0.8, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.3, 32]} />
-          <meshStandardMaterial color="#475569" />
-        </mesh>
       </Float>
     </group>
   );

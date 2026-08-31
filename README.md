@@ -19,9 +19,7 @@
 ## 截图
 
 <p align="center">
-  <img src="docs/screenshots/viewer.png" width="720" alt="3D 数字人交互界面" />
   <img src="docs/screenshots/viewer-chat.png" width="720" alt="与数字人对话" />
-  <img src="docs/screenshots/landing.png" width="720" alt="Landing 页面" />
 </p>
 
 ## 特性
