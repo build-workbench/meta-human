@@ -16,6 +16,14 @@
 
 不需要后端、不需要 API Key，克隆下来就能跑。接入后端后解锁 LLM 对话。
 
+## 截图
+
+<p align="center">
+  <img src="docs/screenshots/viewer.png" width="720" alt="3D 数字人交互界面" />
+  <img src="docs/screenshots/viewer-chat.png" width="720" alt="与数字人对话" />
+  <img src="docs/screenshots/landing.png" width="720" alt="Landing 页面" />
+</p>
+
 ## 特性
 
 - **开箱即用** — 内置程序化 3D 形象，不依赖任何外部模型文件
