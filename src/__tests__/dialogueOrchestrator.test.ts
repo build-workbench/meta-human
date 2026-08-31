@@ -14,8 +14,7 @@ vi.mock('../core/dialogue/dialogueService', () => {
   let mockSendResult: any = defaultSendResult;
   let mockSendImplementation: (() => Promise<any> | any) | null = null;
   let mockStreamImplementation:
-    | ((...args: unknown[]) => AsyncGenerator<string, any, unknown>)
-    | null = null;
+    ((...args: unknown[]) => AsyncGenerator<string, any, unknown>) | null = null;
   const send = vi.fn(() => (mockSendImplementation ? mockSendImplementation() : mockSendResult));
   const stream = vi.fn((...args: unknown[]) =>
     mockStreamImplementation
@@ -96,9 +95,10 @@ function createDeferred<T>() {
 
 function createControlledPendingStream() {
   const nextStep = createDeferred<IteratorResult<string, unknown>>();
-  const returnSpy = vi.fn(
-    async (): Promise<IteratorReturnResult<unknown>> => ({ done: true as const, value: undefined }),
-  );
+  const returnSpy = vi.fn(async (): Promise<IteratorReturnResult<unknown>> => ({
+    done: true as const,
+    value: undefined,
+  }));
   let nextCount = 0;
 
   const generator: AsyncGenerator<string, unknown, unknown> = {

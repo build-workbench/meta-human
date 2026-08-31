@@ -164,7 +164,9 @@ export function useChatStream(options: UseChatStreamOptions) {
         releaseCurrentTurn();
       } catch (err: unknown) {
         logger.error('发送消息失败:', err);
-        toast.error(err instanceof Error ? err.message : '发送失败，请重试');
+        const message = err instanceof Error ? err.message : '发送失败，请重试';
+        toast.error(message);
+        onError(message);
         finalizeAssistantMessage(true);
         releaseCurrentTurn();
       }

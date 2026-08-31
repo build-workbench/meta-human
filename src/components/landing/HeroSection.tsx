@@ -75,7 +75,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-6">
               <Sparkles className="w-4 h-4" />
-              <span>开源 3D 数字人引擎 v2.2</span>
+              <span>开源 3D 数字人引擎 v2.3.0</span>
             </div>
 
             {/* Main Heading */}
@@ -203,7 +203,7 @@ export default function HeroSection() {
             <div className="absolute left-0 top-1/4 hidden xl:block">
               <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
                 <div className="text-2xl font-bold text-white">
-                  183<span className="text-blue-400"> tests</span>
+                  248<span className="text-blue-400"> tests</span>
                 </div>
                 <div className="text-xs text-gray-400">单元测试</div>
               </div>

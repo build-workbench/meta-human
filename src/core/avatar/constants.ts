@@ -1,4 +1,4 @@
-import { ACTION_TO_BEHAVIOR, type BehaviorType } from './avatarContract';
+import type { BehaviorType } from './avatarContract';
 
 export const ANIMATION_DURATIONS: Record<string, number> = {
   wave: 3000,
@@ -11,12 +11,13 @@ export const ANIMATION_DURATIONS: Record<string, number> = {
   idle: 0,
 };
 
+/** 动作 → 行为映射（单一数据源，avatarContract 不再维护第二份）。 */
 export const ANIMATION_TO_BEHAVIOR: Record<string, BehaviorType> = {
-  wave: ACTION_TO_BEHAVIOR.wave ?? 'greeting',
-  greet: ACTION_TO_BEHAVIOR.greet ?? 'greeting',
-  nod: ACTION_TO_BEHAVIOR.nod ?? 'listening',
-  shakeHead: ACTION_TO_BEHAVIOR.shakeHead ?? 'idle',
-  dance: ACTION_TO_BEHAVIOR.dance ?? 'excited',
-  think: ACTION_TO_BEHAVIOR.think ?? 'thinking',
-  speak: ACTION_TO_BEHAVIOR.speak ?? 'speaking',
+  wave: 'greeting',
+  greet: 'greeting',
+  nod: 'listening',
+  shakeHead: 'idle',
+  dance: 'excited',
+  think: 'thinking',
+  speak: 'speaking',
 };

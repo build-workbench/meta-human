@@ -23,7 +23,6 @@ const defaultRecordRouting: RecordRoutingFn = (activeEndpoint, didFailover) => {
 
 export class DialogueRouting {
   private endpointRouter: EndpointRouter;
-  private transportOverride: ChatTransport | null = null;
   private readonly recordRouting: RecordRoutingFn;
 
   constructor(endpoints: string[], recordRouting: RecordRoutingFn = defaultRecordRouting) {
@@ -53,7 +52,6 @@ export class DialogueRouting {
 
   reset(endpoint?: string): void {
     this.endpointRouter.reset(endpoint);
-    this.transportOverride = null;
   }
 
   applyEndpoints(baseUrl: string, fallbacks: string = ''): void {
@@ -63,12 +61,7 @@ export class DialogueRouting {
     }
   }
 
-  setTransportOverride(transport: ChatTransport | null): void {
-    this.transportOverride = transport;
-  }
-
   getTransport(mode: ChatTransportMode = getPreferredChatTransportMode()): ChatTransport {
-    if (this.transportOverride) return this.transportOverride;
     if (mode === 'http') return httpChatTransport;
     return sseChatTransport;
   }

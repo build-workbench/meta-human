@@ -111,16 +111,17 @@ export const useSystemStore = create<SystemState>()(
 
       setChatTransportMode: (chatTransportMode) => set({ chatTransportMode }),
 
-      recordConnectionHealth: ({ status, checkedAt = Date.now(), latencyMs = null }) =>
+      recordConnectionHealth: ({ status, checkedAt = Date.now(), latencyMs = null }) => {
+        // 状态收口到 setConnectionStatus，避免 connectionStatus/isConnected 双写漂移
+        get().setConnectionStatus(status);
         set((state) => ({
-          connectionStatus: status,
-          isConnected: status === 'connected',
           connectionDiagnostics: {
             ...state.connectionDiagnostics,
             lastHealthCheckAt: checkedAt,
             lastHealthCheckLatencyMs: latencyMs,
           },
-        })),
+        }));
+      },
 
       recordEndpointRouting: ({ activeEndpoint, didFailover = false, recordedAt = Date.now() }) =>
         set((state) => ({
