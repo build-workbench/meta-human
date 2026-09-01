@@ -9,7 +9,7 @@
 **[在线体验 →](https://vibe-knight.github.io/meta-human/)**
 
 <p align="center">
-  <img src="public/preview.svg" width="720" alt="MetaHuman Engine 预览" />
+  <img src="docs/screenshots/viewer-chat.png" width="720" alt="MetaHuman Engine 预览" />
 </p>
 
 打开页面，一个赛博风格的 3D 数字人站在场景中央。你在底部输入框打字或按下麦克风说话，它会逐字回复你，说话时嘴巴跟着张合，语气带上表情和肢体动作。你也可以让它打招呼、跳舞、点头，或者换一套自己的 GLB 模型上去。
@@ -17,10 +17,6 @@
 不需要后端、不需要 API Key，克隆下来就能跑。接入后端后解锁 LLM 对话。
 
 ## 截图
-
-<p align="center">
-  <img src="docs/screenshots/viewer-chat.png" width="720" alt="与数字人对话" />
-</p>
 
 <p align="center">
   <img src="docs/screenshots/viewer-idle.png" width="720" alt="3D 数字人形象" />
