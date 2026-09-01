@@ -28,7 +28,7 @@
 
 ### 📚 文档
 
-- **README 截图重制** — 重新截取产品截图并套浏览器边框：`viewer-chat.png` 更新为连接后端后的在线对话状态（原为离线/带 localhost 端点信息的旧图），新增 `viewer-idle.png` 展示 3D 数字人形象
+- **README 截图重制** — 重新截取产品截图并套深色浏览器边框：顶部预览图从静态 `preview.svg`（含未转义 `&` 导致渲染失败）换成真实对话截图 `viewer-chat.png`，删除 `public/preview.svg`；截图区补充 `viewer-idle.png` 展示 3D 数字人形象。配套优化了本地 `wsl-capture` / `shotframe` skill（Chromium wrapper 排除、`--no-proxy-server`、WebGL 软渲染、`--wait-ms` CDP 等待截图、`--theme dark` 深色窗口框）
 
 ---
 
