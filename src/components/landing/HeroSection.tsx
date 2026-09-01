@@ -75,7 +75,7 @@ export default function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-6">
               <Sparkles className="w-4 h-4" />
-              <span>开源 3D 数字人引擎 v2.3.0</span>
+              <span>开源 3D 数字人引擎 v0.1.0</span>
             </div>
 
             {/* Main Heading */}
