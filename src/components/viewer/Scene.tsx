@@ -27,12 +27,12 @@ export function Scene({ autoRotate, modelScene }: SceneProps) {
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
+      <PerspectiveCamera makeDefault position={[0, 0.12, 5.4]} fov={45} />
 
-      {/* 光照 */}
-      <ambientLight intensity={0.5} color="#ffffff" />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} castShadow />
-      <pointLight position={[-10, -10, -10]} intensity={1} color="#3b82f6" />
+      {/* 光照 — 暖白主光 + 柔和补光，适配奶白哑光头像 */}
+      <ambientLight intensity={0.85} color="#ffffff" />
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.6} castShadow />
+      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#7aa3d6" />
 
       {/* 环境反射：程序化光带，离线可用（不依赖外部 CDN 的 HDR 预设） */}
       <Environment resolution={256}>
@@ -76,22 +76,22 @@ export function Scene({ autoRotate, modelScene }: SceneProps) {
         <CyberAvatar prefersReducedMotion={prefersReducedMotion} />
       )}
 
-      {/* 粒子 */}
+      {/* 粒子 — 极简，防抢戏 */}
       <Sparkles
-        count={prefersReducedMotion ? 0 : 50}
+        count={prefersReducedMotion ? 0 : 10}
         scale={8}
-        size={2}
-        speed={0.4}
-        opacity={0.5}
-        color="#bae6fd"
+        size={1.5}
+        speed={0.3}
+        opacity={0.35}
+        color="#dbe8ff"
       />
 
-      {/* 阴影 */}
+      {/* 阴影 — 更柔 */}
       <ContactShadows
         resolution={1024}
         scale={10}
-        blur={2}
-        opacity={0.5}
+        blur={4}
+        opacity={0.28}
         far={10}
         color="#000000"
       />
