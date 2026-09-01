@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   digitalHumanSetExpressionMock: vi.fn(),
   digitalHumanSetExpressionIntensityMock: vi.fn(),
   digitalHumanSetBehaviorMock: vi.fn(),
+  digitalHumanPlayAnimationMock: vi.fn(),
   createObjectUrlMock: vi.fn(),
   revokeObjectUrlMock: vi.fn(),
 }));
@@ -51,7 +52,7 @@ vi.mock('@/services', () => ({
     setExpressionIntensity: mocks.digitalHumanSetExpressionIntensityMock,
     setBehavior: mocks.digitalHumanSetBehaviorMock,
     setEmotion: vi.fn(),
-    playAnimation: vi.fn(),
+    playAnimation: mocks.digitalHumanPlayAnimationMock,
   }),
   useASR: () => ({
     start: mocks.asrStartMock,
@@ -102,6 +103,7 @@ describe('useAdvancedDigitalHumanController', () => {
     mocks.digitalHumanSetExpressionMock.mockReset();
     mocks.digitalHumanSetExpressionIntensityMock.mockReset();
     mocks.digitalHumanSetBehaviorMock.mockReset();
+    mocks.digitalHumanPlayAnimationMock.mockReset();
     mocks.createObjectUrlMock.mockReset();
     mocks.revokeObjectUrlMock.mockReset();
     mocks.asrStartMock.mockReturnValue(true);
@@ -249,6 +251,22 @@ describe('useAdvancedDigitalHumanController', () => {
       avatarLoadError: null,
     });
     expect(mocks.toastSuccessMock).toHaveBeenCalledWith('已切换到自定义头像');
+  });
+
+  it('plays a welcome wave on the first successful model load only', () => {
+    const { result } = renderHook(() => useAdvancedDigitalHumanController());
+
+    act(() => {
+      result.current.handleModelLoad({});
+    });
+    expect(mocks.digitalHumanPlayAnimationMock).toHaveBeenCalledWith('wave');
+
+    // 仅首次加载打招呼，后续切换模型不再触发
+    mocks.digitalHumanPlayAnimationMock.mockClear();
+    act(() => {
+      result.current.handleModelLoad({});
+    });
+    expect(mocks.digitalHumanPlayAnimationMock).not.toHaveBeenCalled();
   });
 
   it('switches back to the builtin avatar and revokes the custom model url', () => {

@@ -64,12 +64,12 @@ vi.mock('three', () => ({
   },
 }));
 
-// 模拟真实 useRef 的跨渲染稳定性：ModelAvatar 每次渲染固定调用 5 个 useRef
-//（hooks 顺序恒定：group/storeRef/intensityRef/actionsRef/activeActionRef），
+// 模拟真实 useRef 的跨渲染稳定性：ModelAvatar 每次渲染固定调用 6 个 useRef
+//（hooks 顺序恒定：group/storeRef/intensityRef/revealRef/actionsRef/activeActionRef），
 // 按槽位持久化；槽位 0（group）由 React 提交 DOM 节点时注入并附加 3D 属性。
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>();
-  const HOOKS_PER_RENDER = 5;
+  const HOOKS_PER_RENDER = 6;
   return {
     ...actual,
     useRef: (initial: unknown) => {
@@ -138,7 +138,11 @@ function makeModel(overrides: Partial<PreparedAvatarModel> = {}): PreparedAvatar
     group: { name: 'fake-root' },
     morphs: {},
     clipMap: {},
-    timeUniform: { value: 0 },
+    holo: {
+      time: { value: 0 },
+      speech: { value: 0 },
+      reveal: { value: 0 },
+    },
     ...overrides,
   } as PreparedAvatarModel;
 }
@@ -155,18 +159,45 @@ describe('ModelAvatar', () => {
     useDigitalHumanStore.setState({
       currentAnimation: 'idle',
       currentExpression: 'neutral',
+      currentBehavior: 'idle',
       isSpeaking: false,
       expressionIntensity: 0.8,
     });
   });
 
-  it('渲染不抛错并注册 useFrame，时间 uniform 持续推进', () => {
+  it('渲染不抛错并注册 useFrame，材质 uniforms 被驱动', () => {
     const model = makeModel();
     render(<ModelAvatar model={model} prefersReducedMotion={false} />);
 
     expect(frameHolder.cb).toBeTypeOf('function');
     runFrame(1);
-    expect(model.timeUniform.value).toBe(1);
+    expect(model.holo.time.value).toBe(1);
+    // 入场显现扫描推进（0 → delta/1.3）
+    expect(model.holo.reveal.value).toBeGreaterThan(0);
+    expect(model.holo.reveal.value).toBeLessThanOrEqual(1.05);
+  });
+
+  it('说话强度平滑跟随口型信号', () => {
+    const model = makeModel();
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    mouthOpenSignal.set(1);
+    runFrame(1);
+    // lerp(0, 1, 0.25) = 0.25，再一帧继续逼近
+    expect(model.holo.speech.value).toBeCloseTo(0.25);
+    runFrame(2);
+    expect(model.holo.speech.value).toBeGreaterThan(0.25);
+  });
+
+  it('thinking 行为驱动程序化思考摆动（无需动画触发）', () => {
+    const model = makeModel(); // clipMap 为空，animation 保持 idle
+    useDigitalHumanStore.setState({ currentBehavior: 'thinking' });
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    runFrame(1);
+    const groupNode = groupRefs[0]?.current as { rotation: { x: number; z: number } };
+    expect(groupNode.rotation.z).not.toBe(0);
+    expect(groupNode.rotation.x).not.toBe(0);
   });
 
   it('存在剪辑的动作播放对应 clip 并交叉淡化', () => {
@@ -252,12 +283,14 @@ describe('ModelAvatar', () => {
     expect(groupNode.rotation.x).not.toBe(0);
   });
 
-  it('reducedMotion 且 idle 非说话时冻结动画（材质时间仍推进）', () => {
+  it('reducedMotion 且 idle 非说话时冻结动画（材质时间仍推进、显现跳过）', () => {
     const model = makeModel();
     render(<ModelAvatar model={model} prefersReducedMotion />);
 
     runFrame(2);
-    expect(model.timeUniform.value).toBe(2);
+    expect(model.holo.time.value).toBe(2);
+    // reduced motion 直接完全显现，不做入场扫描
+    expect(model.holo.reveal.value).toBe(1.05);
     expect(mixerState.instances[0]?.update).not.toHaveBeenCalled();
   });
 
