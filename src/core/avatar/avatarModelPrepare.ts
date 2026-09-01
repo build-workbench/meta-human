@@ -161,6 +161,15 @@ export interface MorphBinding {
   index: number;
 }
 
+/** 面部锚点（容器局部坐标）：无 jawOpen morph 时的全息嘴覆盖层定位依据。 */
+export interface FaceAnchor {
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
+}
+
 export interface PreparedAvatarModel {
   /** 包了一层容器的模型根（归一化变换作用在内层 scene 上）。 */
   group: THREE.Group;
@@ -170,6 +179,8 @@ export interface PreparedAvatarModel {
   clipMap: Partial<Record<string, THREE.AnimationClip>>;
   /** 全息材质共享驱动 uniforms，驱动方每帧写入。 */
   holo: HologramUniforms;
+  /** 面部锚点：由表情 morph 所在网格的包围盒推导；无 morph 网格时缺省。 */
+  faceAnchor?: FaceAnchor;
 }
 
 export function prepareAvatarModel(
@@ -235,5 +246,23 @@ export function prepareAvatarModel(
     if (clip) clipMap[animation] = clip;
   }
 
-  return { group: container, morphs, clipMap, holo };
+  // 面部锚点：取表情 morph 所在网格（即"头部"）的包围盒，锚定下颌区域。
+  // 用于无 jawOpen morph 时的全息嘴覆盖层；有真 mouth morph 的模型不需要。
+  let faceAnchor: FaceAnchor | undefined;
+  const morphMesh = morphs.angry?.[0]?.mesh ?? morphs.surprise?.[0]?.mesh ?? morphs.sad?.[0]?.mesh;
+  if (morphMesh) {
+    const mbox = new THREE.Box3().setFromObject(morphMesh);
+    const msize = mbox.getSize(new THREE.Vector3());
+    if (msize.y > 0) {
+      faceAnchor = {
+        x: 0,
+        y: mbox.min.y + msize.y * 0.24,
+        z: mbox.max.z + 0.01,
+        width: msize.x * 0.26,
+        height: msize.y * 0.18,
+      };
+    }
+  }
+
+  return { group: container, morphs, clipMap, holo, faceAnchor };
 }

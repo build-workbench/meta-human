@@ -22,7 +22,15 @@ const { frameHolder, visibility, mixerState, groupRefs, refState } = vi.hoisted(
   }> = [];
   return {
     frameHolder: {
-      cb: null as ((state: { clock: { elapsedTime: number } }, delta: number) => void) | null,
+      cb: null as
+        | ((
+            state: {
+              clock: { elapsedTime: number };
+              camera: { position: { x: number; y: number; z: number } };
+            },
+            delta: number,
+          ) => void)
+        | null,
     },
     visibility: { current: true },
     mixerState: {
@@ -51,8 +59,12 @@ function makeAction() {
 }
 
 vi.mock('three', () => ({
-  MathUtils: { lerp: (a: number, b: number, t: number) => a + (b - a) * t },
+  MathUtils: {
+    lerp: (a: number, b: number, t: number) => a + (b - a) * t,
+    clamp: (v: number, min: number, max: number) => Math.min(max, Math.max(min, v)),
+  },
   LoopOnce: 'LoopOnce',
+  AdditiveBlending: 'AdditiveBlending',
   AnimationMixer: class {
     update = vi.fn();
     stopAllAction = vi.fn();
@@ -64,19 +76,20 @@ vi.mock('three', () => ({
   },
 }));
 
-// 模拟真实 useRef 的跨渲染稳定性：ModelAvatar 每次渲染固定调用 6 个 useRef
-//（hooks 顺序恒定：group/storeRef/intensityRef/revealRef/actionsRef/activeActionRef），
-// 按槽位持久化；槽位 0（group）由 React 提交 DOM 节点时注入并附加 3D 属性。
+// 模拟真实 useRef 的跨渲染稳定性：ModelAvatar 每次渲染固定调用 8 个 useRef
+//（hooks 顺序恒定：group/gazeRef/mouthRef/storeRef/intensityRef/revealRef/actionsRef/activeActionRef），
+// 按槽位持久化；槽位 0/1/2（group/gaze/mouth）由 React 提交 DOM 节点时注入并附加 3D 属性。
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>();
-  const HOOKS_PER_RENDER = 6;
+  const HOOKS_PER_RENDER = 8;
+  const DECORATED_SLOTS = new Set([0, 1, 2]);
   return {
     ...actual,
     useRef: (initial: unknown) => {
       refState.call += 1;
       const slot = (refState.call - 1) % HOOKS_PER_RENDER;
       if (!refState.slots[slot]) {
-        if (slot === 0) {
+        if (DECORATED_SLOTS.has(slot)) {
           let current: unknown = null;
           const ref: { current: unknown } = {} as { current: unknown };
           Object.defineProperty(ref, 'current', {
@@ -86,6 +99,7 @@ vi.mock('react', async (importOriginal) => {
                 const node = v as Record<string, unknown>;
                 if (!node.rotation) node.rotation = { x: 0, y: 0, z: 0 };
                 if (!node.scale) node.scale = { x: 1, y: 1, z: 1 };
+                if (!node.material) node.material = { opacity: 0 };
                 if (!node.position) node.position = { x: 0, y: 0, z: 0, set: vi.fn() };
                 if (!node.children) node.children = [];
               }
@@ -95,7 +109,7 @@ vi.mock('react', async (importOriginal) => {
             configurable: true,
           });
           groupRefs.push(ref);
-          refState.slots[0] = ref;
+          refState.slots[slot] = ref;
         } else {
           refState.slots[slot] = { current: initial };
         }
@@ -106,7 +120,15 @@ vi.mock('react', async (importOriginal) => {
 });
 
 vi.mock('@react-three/fiber', () => ({
-  useFrame: (cb: (state: { clock: { elapsedTime: number } }, delta: number) => void) => {
+  useFrame: (
+    cb: (
+      state: {
+        clock: { elapsedTime: number };
+        camera: { position: { x: number; y: number; z: number } };
+      },
+      delta: number,
+    ) => void,
+  ) => {
     frameHolder.cb = cb;
   },
 }));
@@ -121,7 +143,10 @@ vi.mock('@/hooks', () => ({
 
 function runFrame(t = 1, delta = 0.016): void {
   act(() => {
-    frameHolder.cb?.({ clock: { elapsedTime: t } }, delta);
+    frameHolder.cb?.(
+      { clock: { elapsedTime: t }, camera: { position: { x: 0, y: 0.12, z: 5.4 } } },
+      delta,
+    );
   });
 }
 
@@ -281,6 +306,58 @@ describe('ModelAvatar', () => {
     const groupNode = groupRefs[0]?.current as { rotation: { x: number; z: number } };
     expect(groupNode.rotation.z).not.toBe(0);
     expect(groupNode.rotation.x).not.toBe(0);
+  });
+
+  it('注视相机：内层 gaze group 朝相机方位小幅偏转', () => {
+    const model = makeModel();
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    // 相机在 +X 侧：atan2(5.4, 0) * 0.35 ≈ 1.099，钳制到 0.5
+    act(() => {
+      frameHolder.cb?.(
+        { clock: { elapsedTime: 1 }, camera: { position: { x: 5.4, y: 0, z: 0 } } },
+        0.016,
+      );
+    });
+    const gazeNode = groupRefs[1]?.current as { rotation: { y: number } };
+    expect(gazeNode.rotation.y).toBeGreaterThan(0);
+    expect(gazeNode.rotation.y).toBeLessThanOrEqual(0.5 * 0.2 + 1e-9);
+  });
+
+  it('无 jawOpen 时全息嘴覆盖层跟随口型开合', () => {
+    const model = makeModel({
+      faceAnchor: { x: 0, y: 0.1, z: 0.6, width: 0.5, height: 0.3 },
+    });
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    const mouth = groupRefs[2]?.current as {
+      scale: { y: number };
+      material: { opacity: number };
+    };
+    expect(mouth).toBeTruthy();
+    // jsdom 中 JSX scale prop 不生效，手动对齐到闭合基线（height*0.3）
+    mouth.scale.y = 0.09;
+    mouth.material.opacity = 0.3;
+
+    runFrame(1); // 闭嘴帧：保持闭合
+    expect(mouth.scale.y).toBeCloseTo(0.09);
+
+    mouthOpenSignal.set(1);
+    runFrame(2); // 张嘴帧：纵向张开 + 变亮
+    expect(mouth.scale.y).toBeGreaterThan(0.09);
+    expect(mouth.material.opacity).toBeGreaterThan(0.3);
+  });
+
+  it('存在 jawOpen morph 时不渲染全息嘴覆盖层', () => {
+    const mouthMesh = { morphTargetInfluences: [0] };
+    const model = makeModel({
+      morphs: { mouth: [{ mesh: mouthMesh as never, index: 0 }] },
+      faceAnchor: { x: 0, y: 0.1, z: 0.6, width: 0.5, height: 0.3 },
+    });
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    // mouthRef 槽位未被 React 赋 DOM 节点（覆盖层未渲染）
+    expect(groupRefs[2]?.current).toBeNull();
   });
 
   it('reducedMotion 且 idle 非说话时冻结动画（材质时间仍推进、显现跳过）', () => {

@@ -39,6 +39,11 @@ vi.mock('@/components/viewer/ModelAvatar', () => ({
   ModelAvatar: () => <div data-testid="model-avatar" />,
 }));
 
+vi.mock('@/components/viewer/HoloGround', () => ({
+  HoloGround: () => <div data-testid="holo-ground" />,
+  GROUND_Y: -1.34,
+}));
+
 vi.mock('@/components/viewer/KeyboardControls', () => ({
   KeyboardControls: () => <div data-testid="keyboard-controls" />,
 }));
@@ -70,11 +75,18 @@ describe('Scene', () => {
       group: new THREE.Group(),
       morphs: {},
       clipMap: {},
-      timeUniform: { value: 0 },
+      holo: { time: { value: 0 }, speech: { value: 0 }, reveal: { value: 0 } },
     } as unknown as import('@/core/avatar/avatarModelPrepare').PreparedAvatarModel;
     render(<Scene model={model} />);
     expect(screen.queryByTestId('cyber-avatar')).not.toBeInTheDocument();
     expect(screen.getByTestId('model-avatar')).toBeInTheDocument();
+    expect(screen.getByTestId('holo-ground')).toBeInTheDocument();
     expect(screen.getByTestId('keyboard-controls')).toBeInTheDocument();
+  });
+
+  it('程序化头像模式下不渲染地面投影环', () => {
+    render(<Scene />);
+    expect(screen.getByTestId('cyber-avatar')).toBeInTheDocument();
+    expect(screen.queryByTestId('holo-ground')).not.toBeInTheDocument();
   });
 });
