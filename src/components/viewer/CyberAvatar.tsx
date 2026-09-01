@@ -1,10 +1,12 @@
 /**
- * 程序化数字人头像组件。
+ * 程序化数字人头像组件 — 极简可爱版 v2。
  *
- * 使用 Three.js 基础几何体构建的软萌可爱风格头像，
- * 支持表情、动画和语音同步。
+ * 设计契约（防丑）：
+ * - 全哑光（roughness 0.9+，无 emissive/金属）
+ * - 3色组：奶白脸 #f6efe7 / 炭灰发 #383a40 / 雾蓝身 #eef2fb
+ * - 部件极简、无天线/光环/wireframe
+ * - 扁椭球眼 + 深色扁豆嘴，侧面不贴纸
  */
-
 import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
@@ -23,7 +25,7 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   const headRef = useRef<THREE.Mesh>(null);
   const leftEyeRef = useRef<THREE.Mesh>(null);
   const rightEyeRef = useRef<THREE.Mesh>(null);
-  const ringsRef = useRef<THREE.Group>(null);
+  const browRef = useRef<THREE.Group>(null);
   const mouthRef = useRef<THREE.Mesh>(null);
 
   // 使用 ref 避免 useFrame 中触发重渲染
@@ -31,8 +33,6 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   const intensityRef = useRef(storeRef.current.expressionIntensity ?? 0.8);
   const isVisibleRef = useIsTabVisibleRef();
 
-  // 精细订阅：仅在 useFrame 实际读取的字段变化时更新 ref。
-  // 嘴型开合度走 mouthOpenSignal（useFrame 直读），不经过 store 订阅。
   useEffect(() => {
     const unsubscribe = useDigitalHumanStore.subscribe(
       (s) => ({
@@ -51,50 +51,43 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
   }, []);
 
   useFrame((state) => {
-    // 标签页不可见时跳过动画
     if (!isVisibleRef.current) return;
 
     const t = state.clock.elapsedTime;
-    // 从 ref 读取状态，避免重渲染
     const { currentExpression, isSpeaking, currentAnimation } = storeRef.current;
     const intensity = Math.max(0, Math.min(1, intensityRef.current));
 
-    // 减少动画模式且非必要动画时跳过
     if (prefersReducedMotion && currentAnimation === 'idle' && !isSpeaking) {
       return;
     }
 
-    // 漂浮逻辑由 <Float> 组件处理
     if (group.current) {
-      // 基于动画状态的头部运动
       const anim = currentAnimation;
       if (anim === 'nod') {
-        group.current.rotation.x = Math.sin(t * 5) * 0.2;
+        group.current.rotation.x = Math.sin(t * 5) * 0.15;
         group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, 0, 0.1);
         group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, 0, 0.1);
       } else if (anim === 'shakeHead') {
-        group.current.rotation.y = Math.sin(t * 5) * 0.3;
+        group.current.rotation.y = Math.sin(t * 5) * 0.22;
         group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, 0, 0.1);
         group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, 0, 0.1);
       } else if (anim === 'think') {
-        group.current.rotation.z = Math.sin(t * 1.5) * 0.15;
-        group.current.rotation.x = Math.sin(t * 0.8) * 0.1;
+        group.current.rotation.z = Math.sin(t * 1.5) * 0.12;
+        group.current.rotation.x = Math.sin(t * 0.8) * 0.08;
         group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, 0, 0.1);
       } else if (anim === 'speak') {
-        group.current.rotation.x = Math.sin(t * 3) * 0.03;
+        group.current.rotation.x = Math.sin(t * 3) * 0.025;
         group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, 0, 0.1);
         group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, 0, 0.1);
       } else {
-        // idle — 平滑返回中立旋转
         group.current.rotation.x = THREE.MathUtils.lerp(group.current.rotation.x, 0, 0.1);
         group.current.rotation.y = THREE.MathUtils.lerp(group.current.rotation.y, 0, 0.1);
         group.current.rotation.z = THREE.MathUtils.lerp(group.current.rotation.z, 0, 0.1);
       }
     }
 
-    // 说话动画（下巴/头部摆动）；停止后平滑归零，避免冻结在最后一个采样点
     if (headRef.current) {
-      const targetHeadX = !prefersReducedMotion && isSpeaking ? Math.sin(t * 15) * 0.05 : 0;
+      const targetHeadX = !prefersReducedMotion && isSpeaking ? Math.sin(t * 15) * 0.04 : 0;
       headRef.current.rotation.x = THREE.MathUtils.lerp(
         headRef.current.rotation.x,
         targetHeadX,
@@ -102,193 +95,230 @@ export function CyberAvatar({ prefersReducedMotion }: CyberAvatarProps) {
       );
     }
 
-    // 表情
     if (leftEyeRef.current?.scale && rightEyeRef.current?.scale) {
       const baseScaleY = 1;
       let targetScaleY = baseScaleY;
-
-      // 眨眼逻辑
       const blink = Math.sin(t * 3);
       const isBlinking = blink > 0.98 || currentExpression === 'blink';
-
-      // 情绪逻辑
       if (currentExpression === 'smile') {
-        targetScaleY = 0.5;
+        targetScaleY = 0.55;
       } else if (currentExpression === 'surprise') {
-        targetScaleY = 1.3;
+        targetScaleY = 1.25;
       }
-
-      const scaleY = isBlinking ? 0.1 : THREE.MathUtils.lerp(baseScaleY, targetScaleY, intensity);
-
+      const scaleY = isBlinking ? 0.12 : THREE.MathUtils.lerp(baseScaleY, targetScaleY, intensity);
       leftEyeRef.current.scale.y = THREE.MathUtils.lerp(leftEyeRef.current.scale.y, scaleY, 0.2);
       rightEyeRef.current.scale.y = THREE.MathUtils.lerp(rightEyeRef.current.scale.y, scaleY, 0.2);
     }
 
-    // 嘴型 Lipsync：由 TTS 驱动 mouthOpenSignal（0-1），渲染层每帧直读并平滑跟随
-    if (mouthRef.current?.scale) {
-      const mouthOpen = mouthOpenSignal.value;
-      const targetMouthY = 0.15 + mouthOpen * 0.85;
-      mouthRef.current.scale.y = THREE.MathUtils.lerp(mouthRef.current.scale.y, targetMouthY, 0.3);
-      // 嘴部张开时略变窄
-      const targetMouthX = 1 - mouthOpen * 0.2;
-      mouthRef.current.scale.x = THREE.MathUtils.lerp(mouthRef.current.scale.x, targetMouthX, 0.3);
+    if (browRef.current) {
+      let browY = 0;
+      let browRot = 0;
+      if (currentExpression === 'surprise') {
+        browY = 0.06;
+      } else if (currentExpression === 'sad') {
+        browRot = 0.18;
+        browY = -0.02;
+      } else if (currentExpression === 'angry') {
+        browRot = -0.22;
+        browY = -0.03;
+      } else if (currentExpression === 'smile') {
+        browY = 0.02;
+      }
+      browRef.current.position.y = THREE.MathUtils.lerp(browRef.current.position.y, browY, 0.15);
+      browRef.current.rotation.z = THREE.MathUtils.lerp(browRef.current.rotation.z, browRot, 0.15);
     }
 
-    // 光环动画
-    if (!prefersReducedMotion && ringsRef.current?.rotation) {
-      const anim = currentAnimation;
-      let ringSpeed = 0.2;
-      let ringTilt = 0;
-      let ringWobble = 0;
-
-      if (anim === 'waveHand' || anim === 'wave' || anim === 'greet') {
-        ringSpeed = 2.0;
-        ringWobble = 0.5;
-      } else if (anim === 'raiseHand') {
-        ringTilt = Math.PI / 6;
-        ringSpeed = 0.5;
-      } else if (anim === 'excited' || anim === 'dance') {
-        ringSpeed = 3.0;
-        ringWobble = 0.3;
-      } else if (anim === 'think') {
-        ringSpeed = 0.5;
-        ringTilt = Math.PI / 12;
-      }
-
-      ringsRef.current.rotation.y += ringSpeed * 0.05;
-      ringsRef.current.rotation.z =
-        Math.sin(t * 0.5 + ringSpeed) * 0.1 + Math.sin(t * 10) * ringWobble;
-      ringsRef.current.rotation.x = THREE.MathUtils.lerp(
-        ringsRef.current.rotation.x,
-        ringTilt,
-        0.1,
-      );
+    if (mouthRef.current?.scale) {
+      const mouthOpen = mouthOpenSignal.value;
+      const targetMouthY = 0.7 + mouthOpen * 0.4;
+      mouthRef.current.scale.y = THREE.MathUtils.lerp(mouthRef.current.scale.y, targetMouthY, 0.32);
+      const targetMouthX = 1 - mouthOpen * 0.08;
+      mouthRef.current.scale.x = THREE.MathUtils.lerp(mouthRef.current.scale.x, targetMouthX, 0.32);
     }
   });
 
   return (
     <group ref={group}>
-      {/* 漂浮容器 */}
       <Float
-        speed={prefersReducedMotion ? 0 : 2}
-        rotationIntensity={0.2}
-        floatIntensity={prefersReducedMotion ? 0 : 0.5}
+        speed={prefersReducedMotion ? 0 : 0.9}
+        rotationIntensity={0.04}
+        floatIntensity={prefersReducedMotion ? 0 : 0.22}
       >
-        {/* --- 天线 --- */}
-        <mesh position={[0, 0.9, 0]}>
-          <cylinderGeometry args={[0.02, 0.03, 0.35, 16]} />
-          <meshStandardMaterial color="#ffb3c1" metalness={0.4} roughness={0.3} />
-        </mesh>
-        <mesh position={[0, 1.12, 0]}>
-          <sphereGeometry args={[0.08, 24, 24]} />
-          <meshStandardMaterial
-            color="#ff8fab"
-            emissive="#ff8fab"
-            emissiveIntensity={1.2}
-            toneMapped={false}
-          />
+        {/* 头部 */}
+        <mesh
+          ref={headRef}
+          position={[0, 0, 0]}
+          castShadow
+          receiveShadow
+          scale={[1.06, 0.97, 0.96]}
+        >
+          <sphereGeometry args={[0.62, 64, 64]} />
+          <meshStandardMaterial color="#f6efe7" roughness={0.92} metalness={0} />
         </mesh>
 
-        {/* --- 头部：圆润的大头，往可爱方向的比例 --- */}
-        <mesh ref={headRef} position={[0, 0, 0]} castShadow receiveShadow scale={[1, 0.95, 1]}>
-          <sphereGeometry args={[0.8, 64, 64]} />
-          <meshStandardMaterial color="#fff3ea" metalness={0.05} roughness={0.55} />
+        {/* 头发 — 顶部球冠，炭灰（碗盖，留出额头呼吸感） */}
+        <mesh position={[0, 0.26, -0.06]}>
+          <sphereGeometry args={[0.68, 48, 32, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
+          <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
         </mesh>
 
-        {/* --- 眼睛：大圆眼 + 高光 --- */}
-        <group position={[0, 0.12, 0.72]}>
-          <mesh ref={leftEyeRef} position={[-0.28, 0, 0]}>
-            <sphereGeometry args={[0.11, 24, 24]} />
-            <meshStandardMaterial color="#26262e" roughness={0.25} />
-            <mesh position={[0.035, 0.045, 0.075]} scale={[0.42, 0.42, 0.42]}>
-              <sphereGeometry args={[0.05, 12, 12]} />
-              <meshStandardMaterial
-                color="#ffffff"
-                emissive="#ffffff"
-                emissiveIntensity={0.8}
-                toneMapped={false}
-              />
+        {/* 刘海 — 打破头盔硬切线 */}
+        <mesh position={[-0.14, 0.36, 0.42]} rotation={[0.22, 0, 0.18]}>
+          <capsuleGeometry args={[0.042, 0.11, 8, 16]} />
+          <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+        </mesh>
+        <mesh position={[0.14, 0.36, 0.42]} rotation={[0.22, 0, -0.18]}>
+          <capsuleGeometry args={[0.042, 0.11, 8, 16]} />
+          <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+        </mesh>
+        <mesh position={[0, 0.38, 0.46]} rotation={[0.2, 0, 0]}>
+          <capsuleGeometry args={[0.038, 0.09, 8, 16]} />
+          <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+        </mesh>
+
+        {/* 呆毛 — 放大且更俏皮，明确是设计 */}
+        <mesh position={[0.12, 0.86, 0.06]} rotation={[0, 0, -0.58]}>
+          <capsuleGeometry args={[0.022, 0.3, 8, 16]} />
+          <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+        </mesh>
+
+        {/* 眉毛 */}
+        <group ref={browRef} position={[0, 0.28, 0.58]}>
+          <mesh position={[-0.22, 0, 0]} rotation={[0, 0, 0.08]}>
+            <capsuleGeometry args={[0.016, 0.14, 4, 12]} />
+            <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+          </mesh>
+          <mesh position={[0.22, 0, 0]} rotation={[0, 0, -0.08]}>
+            <capsuleGeometry args={[0.016, 0.14, 4, 12]} />
+            <meshStandardMaterial color="#383a40" roughness={0.95} metalness={0} />
+          </mesh>
+        </group>
+
+        {/* 眼睛 — 扁椭球眼白 + 虹膜 + 瞳孔 + 高光 */}
+        <group position={[0, 0.08, 0.56]}>
+          {/* 左眼 */}
+          <mesh ref={leftEyeRef} position={[-0.22, 0, 0]} scale={[1, 1.18, 0.35]}>
+            <sphereGeometry args={[0.13, 32, 24]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.9} metalness={0} />
+            <mesh position={[0, -0.02, 0.085]}>
+              <sphereGeometry args={[0.075, 24, 24]} />
+              <meshStandardMaterial color="#6ea8e6" roughness={0.9} metalness={0} />
+              <mesh position={[0, 0, 0.045]}>
+                <sphereGeometry args={[0.038, 20, 20]} />
+                <meshStandardMaterial color="#14161c" roughness={0.9} metalness={0} />
+              </mesh>
+              <mesh position={[0.028, 0.028, 0.058]}>
+                <sphereGeometry args={[0.022, 14, 14]} />
+                <meshStandardMaterial color="#ffffff" roughness={1} metalness={0} />
+              </mesh>
+              <mesh position={[-0.018, -0.018, 0.05]}>
+                <sphereGeometry args={[0.01, 12, 12]} />
+                <meshStandardMaterial
+                  color="#ffffff"
+                  transparent
+                  opacity={0.85}
+                  roughness={1}
+                  metalness={0}
+                />
+              </mesh>
             </mesh>
           </mesh>
-          <mesh ref={rightEyeRef} position={[0.28, 0, 0]}>
-            <sphereGeometry args={[0.11, 24, 24]} />
-            <meshStandardMaterial color="#26262e" roughness={0.25} />
-            <mesh position={[0.035, 0.045, 0.075]} scale={[0.42, 0.42, 0.42]}>
-              <sphereGeometry args={[0.05, 12, 12]} />
-              <meshStandardMaterial
-                color="#ffffff"
-                emissive="#ffffff"
-                emissiveIntensity={0.8}
-                toneMapped={false}
-              />
+
+          {/* 右眼 */}
+          <mesh ref={rightEyeRef} position={[0.22, 0, 0]} scale={[1, 1.18, 0.35]}>
+            <sphereGeometry args={[0.13, 32, 24]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.9} metalness={0} />
+            <mesh position={[0, -0.02, 0.085]}>
+              <sphereGeometry args={[0.075, 24, 24]} />
+              <meshStandardMaterial color="#6ea8e6" roughness={0.9} metalness={0} />
+              <mesh position={[0, 0, 0.045]}>
+                <sphereGeometry args={[0.038, 20, 20]} />
+                <meshStandardMaterial color="#14161c" roughness={0.9} metalness={0} />
+              </mesh>
+              <mesh position={[0.028, 0.028, 0.058]}>
+                <sphereGeometry args={[0.022, 14, 14]} />
+                <meshStandardMaterial color="#ffffff" roughness={1} metalness={0} />
+              </mesh>
+              <mesh position={[-0.018, -0.018, 0.05]}>
+                <sphereGeometry args={[0.01, 12, 12]} />
+                <meshStandardMaterial
+                  color="#ffffff"
+                  transparent
+                  opacity={0.85}
+                  roughness={1}
+                  metalness={0}
+                />
+              </mesh>
             </mesh>
           </mesh>
         </group>
 
-        {/* --- 腮红：软粉脸颊 --- */}
-        <mesh position={[-0.52, -0.18, 0.64]} scale={[0.5, 0.25, 0.2]}>
-          <sphereGeometry args={[0.12, 16, 16]} />
+        {/* 腮红 — 淡粉扁球，无 emissive */}
+        <mesh position={[-0.36, -0.14, 0.52]} scale={[1, 0.55, 0.22]}>
+          <sphereGeometry args={[0.09, 20, 16]} />
           <meshStandardMaterial
-            color="#ffb3c1"
+            color="#e8a3a8"
             transparent
-            opacity={0.85}
-            emissive="#ffb3c1"
-            emissiveIntensity={0.3}
-            toneMapped={false}
+            opacity={0.32}
+            roughness={1}
+            metalness={0}
           />
         </mesh>
-        <mesh position={[0.52, -0.18, 0.64]} scale={[0.5, 0.25, 0.2]}>
-          <sphereGeometry args={[0.12, 16, 16]} />
+        <mesh position={[0.36, -0.14, 0.52]} scale={[1, 0.55, 0.22]}>
+          <sphereGeometry args={[0.09, 20, 16]} />
           <meshStandardMaterial
-            color="#ffb3c1"
+            color="#e8a3a8"
             transparent
-            opacity={0.85}
-            emissive="#ffb3c1"
-            emissiveIntensity={0.3}
-            toneMapped={false}
+            opacity={0.32}
+            roughness={1}
+            metalness={0}
           />
         </mesh>
 
-        {/* --- 嘴部（Lipsync 驱动，椭圆小嘴） --- */}
-        <mesh ref={mouthRef} position={[0, -0.3, 0.78]} scale={[0.85, 0.2, 0.15]}>
-          <sphereGeometry args={[0.2, 24, 24]} />
-          <meshStandardMaterial
-            color="#ff6b9d"
-            emissive="#ff6b9d"
-            emissiveIntensity={0.6}
-            toneMapped={false}
-          />
-        </mesh>
-
-        {/* --- 软萌小身体 --- */}
-        <mesh position={[0, -0.8, 0]} scale={[1, 1.15, 1]} castShadow>
-          <sphereGeometry args={[0.5, 32, 32]} />
-          <meshStandardMaterial color="#fde8e0" metalness={0.05} roughness={0.55} />
-        </mesh>
-
-        {/* --- 全息光环 --- */}
-        <group ref={ringsRef}>
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <torusGeometry args={[1.2, 0.02, 16, 100]} />
-            <meshBasicMaterial
-              color="#ffb3c1"
-              transparent
-              opacity={0.35}
-              side={THREE.DoubleSide}
-              wireframe
-            />
-          </mesh>
-          <mesh rotation={[Math.PI / 2.2, 0, 0]}>
-            <torusGeometry args={[1.4, 0.01, 16, 100]} />
-            <meshBasicMaterial
-              color="#ffd6e0"
-              transparent
-              opacity={0.3}
-              side={THREE.DoubleSide}
-              wireframe
-            />
+        {/* 嘴 — 微笑弧（torus 半环），张口时随 mouthOpen 纵向张开 */}
+        <group
+          ref={mouthRef as unknown as React.RefObject<THREE.Group>}
+          position={[0, -0.24, 0.58]}
+        >
+          <mesh rotation={[0, 0, Math.PI]}>
+            <torusGeometry args={[0.068, 0.016, 10, 24, Math.PI]} />
+            <meshStandardMaterial color="#3b2f33" roughness={0.9} metalness={0} />
           </mesh>
         </group>
+
+        {/* 颈 */}
+        <mesh position={[0, -0.55, 0]}>
+          <cylinderGeometry args={[0.13, 0.15, 0.18, 24]} />
+          <meshStandardMaterial color="#f6efe7" roughness={0.92} metalness={0} />
+        </mesh>
+
+        {/* 身体 — 胶囊 */}
+        <mesh position={[0, -0.98, 0]} castShadow>
+          <capsuleGeometry args={[0.34, 0.58, 8, 24]} />
+          <meshStandardMaterial color="#eef2fb" roughness={0.92} metalness={0} />
+        </mesh>
+
+        {/* 小短手 */}
+        <mesh position={[-0.42, -0.92, 0]} rotation={[0, 0, 0.38]}>
+          <capsuleGeometry args={[0.09, 0.26, 8, 16]} />
+          <meshStandardMaterial color="#eef2fb" roughness={0.92} metalness={0} />
+        </mesh>
+        <mesh position={[0.42, -0.92, 0]} rotation={[0, 0, -0.38]}>
+          <capsuleGeometry args={[0.09, 0.26, 8, 16]} />
+          <meshStandardMaterial color="#eef2fb" roughness={0.92} metalness={0} />
+        </mesh>
+
+        {/* 落地基座 — 极淡柔光圆，解决悬浮感 */}
+        <mesh position={[0, -1.38, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.85, 48]} />
+          <meshStandardMaterial
+            color="#8ea8d8"
+            transparent
+            opacity={0.08}
+            roughness={1}
+            metalness={0}
+          />
+        </mesh>
       </Float>
     </group>
   );
