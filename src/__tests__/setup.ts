@@ -50,6 +50,9 @@ Object.defineProperty(window, 'webkitSpeechRecognition', {
 
 // Mock Three.js related modules
 vi.mock('three', () => ({
+  AdditiveBlending: 'AdditiveBlending',
+  DoubleSide: 'DoubleSide',
+  MathUtils: { lerp: (a: number, b: number, t: number) => a + (b - a) * t },
   BoxGeometry: vi.fn(),
   SphereGeometry: vi.fn(),
   MeshStandardMaterial: vi.fn(() => ({ color: 0xffffff, metalness: 0, roughness: 1 })),

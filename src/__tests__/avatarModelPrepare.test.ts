@@ -11,6 +11,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const boxState = vi.hoisted(() => ({
   size: { x: 1, y: 4.8, z: 1 },
   center: { x: 0.1, y: 2.4, z: -0.05 },
+  // 头网格包围盒（min/max 与 size 一致：y ∈ [-1, 3.8]）
+  min: { x: -0.5, y: -1, z: -0.5 },
+  max: { x: 0.5, y: 3.8, z: 0.5 },
 }));
 
 vi.mock('three', () => {
@@ -32,6 +35,8 @@ vi.mock('three', () => {
       add = vi.fn();
     },
     Box3: class {
+      min = boxState.min;
+      max = boxState.max;
       setFromObject = vi.fn(() => this);
       getSize(target: { x: number; y: number; z: number }) {
         Object.assign(target, boxState.size);
@@ -188,6 +193,22 @@ describe('prepareAvatarModel', () => {
     // 模型没有 smile/laugh → 降级信号
     expect(prepared.morphs.smile).toBeUndefined();
     expect(prepared.morphs.laugh).toBeUndefined();
+    // 面部锚点从表情 morph 网格包围盒推导（下颌区域 + 前方 + 尺寸缩放）
+    expect(prepared.faceAnchor).toEqual({
+      x: 0,
+      y: -1 + 4.8 * 0.24,
+      z: 0.5 + 0.01,
+      width: 1 * 0.26,
+      height: 4.8 * 0.18,
+    });
+  });
+
+  it('无 morph 网格时不推导面部锚点', () => {
+    const plain: FakeMesh = { isMesh: true, material: new THREE.Material() };
+    const prepared = prepareAvatarModel(makeScene([plain]) as never, []);
+
+    expect(prepared.morphs.angry).toBeUndefined();
+    expect(prepared.faceAnchor).toBeUndefined();
   });
 
   it('解析存在的动画剪辑，缺失动作缺席（think/speak 降级信号）', () => {

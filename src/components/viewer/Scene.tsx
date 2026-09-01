@@ -15,6 +15,7 @@ import {
 import { usePrefersReducedMotion } from '@/hooks';
 import { CyberAvatar } from './CyberAvatar';
 import { ModelAvatar } from './ModelAvatar';
+import { HoloGround, GROUND_Y } from './HoloGround';
 import { KeyboardControls } from './KeyboardControls';
 import type { PreparedAvatarModel } from '@/core/avatar/avatarModelPrepare';
 
@@ -76,6 +77,8 @@ export function Scene({ autoRotate, model }: SceneProps) {
       ) : (
         <CyberAvatar prefersReducedMotion={prefersReducedMotion} />
       )}
+      {/* 地面投影环 — 仅 GLB 模型模式（程序化头像自带基座光盘） */}
+      {model && <HoloGround prefersReducedMotion={prefersReducedMotion} />}
 
       {/* 粒子 — 极简，防抢戏 */}
       <Sparkles
@@ -87,8 +90,10 @@ export function Scene({ autoRotate, model }: SceneProps) {
         color="#dbe8ff"
       />
 
-      {/* 阴影 — 更柔 */}
+      {/* 阴影 — 更柔。平面必须落在地面高度：深度相机从平面向上采集，
+          放在 y=0 会横穿身体且下半身投不上影 */}
       <ContactShadows
+        position={[0, GROUND_Y - 0.01, 0]}
         resolution={1024}
         scale={10}
         blur={4}

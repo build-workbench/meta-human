@@ -39,9 +39,16 @@ const MORPH_LERP = 0.2;
 const REVEAL_DURATION = 1.3;
 /** 显现终值略超 1，保证扫描线越过头顶后全身完全可见。 */
 const REVEAL_END = 1.05;
+/** 注视相机强度（对相机方位角的跟随比例）与最大偏转角。 */
+const GAZE_FACTOR = 0.35;
+const GAZE_MAX_YAW = 0.5;
 
 export function ModelAvatar({ model, prefersReducedMotion }: ModelAvatarProps) {
   const group = useRef<THREE.Group>(null);
+  // 内层注视 group：独立于外层摆动 group，避免与 think/speak 旋转打架
+  const gazeRef = useRef<THREE.Group>(null);
+  // 全息嘴覆盖层（仅当模型无 jawOpen morph 时渲染）
+  const mouthRef = useRef<THREE.Mesh>(null);
   const storeRef = useRef(useDigitalHumanStore.getState());
   const intensityRef = useRef(storeRef.current.expressionIntensity ?? 0.8);
   const isVisibleRef = useIsTabVisibleRef();
@@ -148,6 +155,33 @@ export function ModelAvatar({ model, prefersReducedMotion }: ModelAvatarProps) {
       }
     }
 
+    // 注视相机：模型正面朝 +Z，按相机方位角做小幅偏转（OrbitControls
+    // 转视角/自动旋转时机器人"跟着看"）；reduced motion 下跳过
+    if (gazeRef.current && !prefersReducedMotion) {
+      const targetYaw = THREE.MathUtils.clamp(
+        Math.atan2(state.camera.position.x, state.camera.position.z) * GAZE_FACTOR,
+        -GAZE_MAX_YAW,
+        GAZE_MAX_YAW,
+      );
+      gazeRef.current.rotation.y = THREE.MathUtils.lerp(
+        gazeRef.current.rotation.y,
+        targetYaw,
+        0.05,
+      );
+    }
+
+    // 全息嘴覆盖层：无 jawOpen morph 时的真口型降级 — 开合直接跟随口型信号。
+    // 属于语音反馈而非环境运动，reduced motion 下也保持。
+    const anchor = model.faceAnchor;
+    if (mouthRef.current && anchor) {
+      const open = mouthOpenSignal.value;
+      const mesh = mouthRef.current;
+      const material = mesh.material as THREE.MeshBasicMaterial;
+      const targetHeight = anchor.height * (0.3 + open * 0.9);
+      mesh.scale.y = THREE.MathUtils.lerp(mesh.scale.y, targetHeight, 0.35);
+      material.opacity = THREE.MathUtils.lerp(material.opacity, 0.3 + open * 0.45, 0.35);
+    }
+
     // morph：表情通道 + 口型（无 jawOpen 时降级写 surprise × 0.3）
     const expressionChannel = EXPRESSION_TO_MORPH_CHANNEL[currentExpression];
     for (const channel of Object.keys(model.morphs) as MorphChannel[]) {
@@ -176,7 +210,34 @@ export function ModelAvatar({ model, prefersReducedMotion }: ModelAvatarProps) {
         rotationIntensity={0.04}
         floatIntensity={prefersReducedMotion ? 0 : 0.22}
       >
-        <primitive object={model.group} position={[0, MODEL_Y_OFFSET, 0]} />
+        <group ref={gazeRef}>
+          <primitive object={model.group} position={[0, MODEL_Y_OFFSET, 0]} />
+          {/* 全息嘴覆盖层：仅当模型无 jawOpen morph 时渲染（有真 mouth morph 走 morph 驱动） */}
+          {!model.morphs.mouth && model.faceAnchor && (
+            <mesh
+              ref={mouthRef}
+              position={[
+                model.faceAnchor.x,
+                model.faceAnchor.y + MODEL_Y_OFFSET,
+                model.faceAnchor.z,
+              ]}
+              scale={[
+                model.faceAnchor.width,
+                model.faceAnchor.height * 0.3,
+                model.faceAnchor.width * 0.35,
+              ]}
+            >
+              <sphereGeometry args={[0.5, 16, 12]} />
+              <meshBasicMaterial
+                color="#22d3ee"
+                transparent
+                opacity={0.3}
+                blending={THREE.AdditiveBlending}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+        </group>
       </Float>
     </group>
   );

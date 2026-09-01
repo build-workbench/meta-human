@@ -7,6 +7,7 @@ import { ChatResponsePayload, type StreamCallbacks } from './dialogueService';
 import { getDefaultChatTransport, type ChatTransport } from './dialogueService';
 import type { DialogueServiceResult } from './dialogueService';
 import type { DigitalHumanEngine } from '@/core/avatar/DigitalHumanEngine';
+import { deriveEmotionFromText } from '@/core/avatar/emotionHeuristics';
 import { loggers } from '@/lib/logger';
 import {
   createIdleDialogueTurnSnapshot,
@@ -494,9 +495,10 @@ export async function handleDialogueResponse(
     onAddAssistantMessage?.(res.replyText);
   }
 
-  if (res.emotion) {
-    engine?.setEmotion(res.emotion);
-  }
+  // 情绪：后端明确给出的标签优先；缺失/neutral 时从回复文本本地推导兜底
+  const emotion =
+    res.emotion && res.emotion !== 'neutral' ? res.emotion : deriveEmotionFromText(res.replyText);
+  engine?.setEmotion(emotion);
 
   if (res.action && res.action !== 'idle') {
     engine?.playAnimation(res.action);
