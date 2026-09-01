@@ -24,6 +24,7 @@
 
 - **manifest 路径去硬编码** — `public/manifest.json` 的 `start_url`/`scope`/图标路径从绝对 `/meta-human/` 改为相对路径，dev（base `/`）不再 404，且任意部署子路径都可用
 - **CSP 清理** — 移除 `<meta>` CSP 中无效的 `frame-ancestors` 指令（meta 方式强制不了该指令，浏览器直接忽略并告警；如需禁 iframe 嵌入须走 HTTP 响应头）
+- **自托管字体接线** — `public/fonts/` 的 3 个 woff2（此前无任何引用，1.2MB 死重）通过 `@font-face`（`font-display: swap`）接入：`Resource Han Rounded CN`（Regular/Bold，中文圆体）作为全局 UI 字体（`--font-sans`），`Code New Roman` 作为等宽/代码字体（`--font-mono`）；`/fonts/...` 绝对路径由 Vite 在构建时自动拼 base（pages 构建验证为 `/meta-human/fonts/...`）；移除 `index.html` 首屏关键 CSS 中从未加载的 `'Inter'` 幻影声明
 
 ---
 
