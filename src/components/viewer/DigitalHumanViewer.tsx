@@ -12,6 +12,7 @@ import { Html } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 import { loggers } from '@/lib/logger';
+import { prepareAvatarModel, type PreparedAvatarModel } from '@/core/avatar/avatarModelPrepare';
 import { Scene } from './Scene';
 
 const logger = loggers.app;
@@ -29,7 +30,7 @@ export default function DigitalHumanViewer({
   showControls = true,
   onModelLoad,
 }: DigitalHumanViewerProps) {
-  const [modelScene, setModelScene] = useState<THREE.Group | null>(null);
+  const [model, setModel] = useState<PreparedAvatarModel | null>(null);
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>(
     modelUrl ? 'idle' : 'ready',
   );
@@ -39,10 +40,10 @@ export default function DigitalHumanViewer({
   const onModelLoadRef = useRef(onModelLoad);
   onModelLoadRef.current = onModelLoad;
 
-  // 模型加载逻辑
+  // 模型加载逻辑（加载后做归一化 + 全息材质 + morph/clip 能力探测）
   useEffect(() => {
     if (!modelUrl) {
-      setModelScene(null);
+      setModel(null);
       setLoadStatus('ready');
       onModelLoadRef.current?.({ type: 'procedural-cyber-avatar' });
       return;
@@ -58,9 +59,21 @@ export default function DigitalHumanViewer({
       modelUrl,
       (gltf) => {
         if (cancelled) return;
-        setModelScene(gltf.scene);
+        let prepared: PreparedAvatarModel;
+        try {
+          prepared = prepareAvatarModel(gltf.scene, gltf.animations);
+        } catch (error) {
+          logger.error('模型预处理失败', error);
+          setModel(null);
+          setLoadStatus('error');
+          const message = error instanceof Error ? error.message : '模型预处理失败';
+          setLoadError(message);
+          onModelLoadRef.current?.({ type: 'procedural-fallback', error: message });
+          return;
+        }
+        setModel(prepared);
         setLoadStatus('ready');
-        onModelLoadRef.current?.(gltf.scene);
+        onModelLoadRef.current?.(prepared.group);
       },
       undefined,
       (error) => {
@@ -72,7 +85,7 @@ export default function DigitalHumanViewer({
             : typeof error === 'object' && error && 'message' in error
               ? String((error as { message: unknown }).message)
               : '未知错误';
-        setModelScene(null);
+        setModel(null);
         setLoadStatus('error');
         setLoadError(message);
         onModelLoadRef.current?.({ type: 'procedural-fallback', error: message });
@@ -87,7 +100,7 @@ export default function DigitalHumanViewer({
   // 模型卸载时释放资源
   useEffect(() => {
     return () => {
-      modelScene?.traverse((child) => {
+      model?.group.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
           const mesh = child as THREE.Mesh;
           try {
@@ -118,7 +131,7 @@ export default function DigitalHumanViewer({
         }
       });
     };
-  }, [modelScene]);
+  }, [model]);
 
   return (
     <div
@@ -146,7 +159,7 @@ export default function DigitalHumanViewer({
             </div>
           </Html>
         )}
-        <Scene autoRotate={autoRotate} modelScene={modelScene} />
+        <Scene autoRotate={autoRotate} model={model} />
       </Canvas>
 
       {showControls && (

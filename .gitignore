@@ -39,3 +39,6 @@ __pycache__/
 
 # Local config
 *.local
+
+# AI tool local state
+.commandcode/

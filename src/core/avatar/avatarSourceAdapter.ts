@@ -1,7 +1,10 @@
 import type { AvatarSource } from '@/store/digitalHumanStore';
+import { DEFAULT_AVATAR_MODEL_URL } from './constants';
 
 export function getAvatarViewerModelUrl(avatarSource: AvatarSource): string | undefined {
-  return avatarSource.kind === 'custom' ? avatarSource.modelUrl : undefined;
+  if (avatarSource.kind === 'custom') return avatarSource.modelUrl;
+  if (avatarSource.kind === 'builtin') return DEFAULT_AVATAR_MODEL_URL;
+  return undefined;
 }
 
 export function revokeCustomAvatarObjectUrl(

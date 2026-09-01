@@ -4,7 +4,6 @@
  * 配置光照、相机、粒子和轨道控制。
  */
 
-import * as THREE from 'three';
 import {
   OrbitControls,
   PerspectiveCamera,
@@ -15,14 +14,16 @@ import {
 } from '@react-three/drei';
 import { usePrefersReducedMotion } from '@/hooks';
 import { CyberAvatar } from './CyberAvatar';
+import { ModelAvatar } from './ModelAvatar';
 import { KeyboardControls } from './KeyboardControls';
+import type { PreparedAvatarModel } from '@/core/avatar/avatarModelPrepare';
 
 interface SceneProps {
   autoRotate?: boolean;
-  modelScene?: THREE.Group | null;
+  model?: PreparedAvatarModel | null;
 }
 
-export function Scene({ autoRotate, modelScene }: SceneProps) {
+export function Scene({ autoRotate, model }: SceneProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
@@ -70,8 +71,8 @@ export function Scene({ autoRotate, modelScene }: SceneProps) {
       </Environment>
 
       {/* 数字人 */}
-      {modelScene ? (
-        <primitive object={modelScene} position={[0, -1.2, 0]} />
+      {model ? (
+        <ModelAvatar model={model} prefersReducedMotion={prefersReducedMotion} />
       ) : (
         <CyberAvatar prefersReducedMotion={prefersReducedMotion} />
       )}
