@@ -193,7 +193,7 @@ export default function SettingsDrawer({
                 </div>
 
                 <div className="rounded-lg border border-dashed border-white/15 bg-black/20 p-3 text-xs text-gray-300">
-                  当前头像: {avatarFileName ?? '内置程序化头像'}
+                  当前头像: {avatarFileName ?? '内置 3D 模型（RobotExpressive）'}
                 </div>
 
                 <label className="block text-sm font-medium text-gray-300" htmlFor="avatar-upload">

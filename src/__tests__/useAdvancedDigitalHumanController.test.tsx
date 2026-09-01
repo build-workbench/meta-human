@@ -251,6 +251,30 @@ describe('useAdvancedDigitalHumanController', () => {
     expect(mocks.toastSuccessMock).toHaveBeenCalledWith('已切换到自定义头像');
   });
 
+  it('switches back to the builtin avatar and revokes the custom model url', () => {
+    useDigitalHumanStore.setState({
+      avatarSource: {
+        kind: 'custom',
+        fileName: 'old.glb',
+        modelUrl: 'blob:old-avatar',
+      },
+      avatarLoadStatus: 'ready',
+    });
+    const { result } = renderHook(() => useAdvancedDigitalHumanController());
+
+    act(() => {
+      result.current.handleUseBuiltInAvatar();
+    });
+
+    expect(mocks.revokeObjectUrlMock).toHaveBeenCalledWith('blob:old-avatar');
+    expect(useDigitalHumanStore.getState() as unknown as Record<string, unknown>).toMatchObject({
+      avatarSource: { kind: 'builtin' },
+      avatarLoadStatus: 'idle',
+      avatarLoadError: null,
+    });
+    expect(mocks.toastSuccessMock).toHaveBeenCalledWith('已切换到内置头像');
+  });
+
   it('falls back to the built-in avatar when custom model loading fails', () => {
     useDigitalHumanStore.setState({
       avatarSource: {

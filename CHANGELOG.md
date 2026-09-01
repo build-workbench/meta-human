@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+### ✨ 新增
+
+- **内置 3D 头像** — 默认形象从程序化几何体升级为自托管 CC0 模型 `RobotExpressive.glb`（453KB，Tomás Laulhé / Don McCurdy，无贴图纯材质），加载后整体覆盖全息材质（Fresnel 边缘光 + 流动扫描线，`onBeforeCompile` 注入标准管线，蒙皮/阴影不受影响）。能力自动探测 + 降级：表情走 morph target（`Angry`/`Surprised`/`Sad`，缺失的 smile/blink 静默降级）；口型优先 jawOpen 类 morph，缺失时借 surprise 通道 ×0.3 模拟；动作优先播放模型剪辑（`Idle`/`Yes`/`No`/`Wave`/`Dance`），无剪辑的 think/speak 降级为程序化旋转；模型加载失败仍回退程序化 `CyberAvatar`。上传自定义 GLB 的既有链路不变，新增 `AvatarSource kind: 'builtin'`。
+
 ### 🐛 修复与清理
 
 - **连接状态收口** — `systemStore.recordConnectionHealth` 改由 `setConnectionStatus` 统一维护 `connectionStatus`/`isConnected`，消除双写漂移

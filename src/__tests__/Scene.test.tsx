@@ -35,6 +35,10 @@ vi.mock('@/components/viewer/CyberAvatar', () => ({
   CyberAvatar: () => <div data-testid="cyber-avatar" />,
 }));
 
+vi.mock('@/components/viewer/ModelAvatar', () => ({
+  ModelAvatar: () => <div data-testid="model-avatar" />,
+}));
+
 vi.mock('@/components/viewer/KeyboardControls', () => ({
   KeyboardControls: () => <div data-testid="keyboard-controls" />,
 }));
@@ -61,10 +65,16 @@ describe('Scene', () => {
     expect(orbitProps.autoRotateSpeed).toBe(0.5);
   });
 
-  it('提供 modelScene 时使用外部模型而非程序化头像', () => {
-    const modelScene = new THREE.Group();
-    render(<Scene modelScene={modelScene} />);
+  it('提供 model 时使用模型头像而非程序化头像', () => {
+    const model = {
+      group: new THREE.Group(),
+      morphs: {},
+      clipMap: {},
+      timeUniform: { value: 0 },
+    } as unknown as import('@/core/avatar/avatarModelPrepare').PreparedAvatarModel;
+    render(<Scene model={model} />);
     expect(screen.queryByTestId('cyber-avatar')).not.toBeInTheDocument();
+    expect(screen.getByTestId('model-avatar')).toBeInTheDocument();
     expect(screen.getByTestId('keyboard-controls')).toBeInTheDocument();
   });
 });

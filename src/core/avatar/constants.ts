@@ -1,5 +1,12 @@
 import type { BehaviorType } from './avatarContract';
 
+/**
+ * 内置 3D 头像模型（RobotExpressive.glb，CC0：Tomás Laulhé / Don McCurdy 修改）。
+ * GitHub Pages 部署在子路径 /meta-human/，必须用 import.meta.env.BASE_URL 拼 URL，
+ * 硬编码 /models/... 会在 Pages 上 404。
+ */
+export const DEFAULT_AVATAR_MODEL_URL = `${import.meta.env.BASE_URL}models/RobotExpressive.glb`;
+
 export const ANIMATION_DURATIONS: Record<string, number> = {
   wave: 3000,
   greet: 3000,

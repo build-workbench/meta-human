@@ -18,7 +18,9 @@ export interface SpeechConfigSnapshot {
 }
 
 export type AvatarSource =
-  { kind: 'procedural' } | { kind: 'custom'; modelUrl: string; fileName: string };
+  | { kind: 'procedural' }
+  | { kind: 'builtin' }
+  | { kind: 'custom'; modelUrl: string; fileName: string };
 
 export type AvatarLoadStatus = 'idle' | 'ready' | 'error';
 
@@ -59,6 +61,7 @@ interface DigitalHumanState {
   setBehavior: (behavior: BehaviorType) => void;
   setSpeechConfig: (config: Partial<SpeechConfigSnapshot>) => void;
   setCustomAvatar: (input: { modelUrl: string; fileName: string }) => void;
+  useBuiltinAvatar: () => void;
   useProceduralAvatar: () => void;
   setAvatarLoadState: (status: AvatarLoadStatus, error?: string | null) => void;
   setActiveCharacter: (id: string) => void;
@@ -91,8 +94,8 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
         pitch: DEFAULT_TTS_CONFIG.pitch,
         volume: DEFAULT_TTS_CONFIG.volume,
       },
-      avatarSource: { kind: 'procedural' },
-      avatarLoadStatus: 'ready',
+      avatarSource: { kind: 'builtin' },
+      avatarLoadStatus: 'idle',
       avatarLoadError: null,
       activeCharacterId: 'lively-assistant',
 
@@ -120,6 +123,12 @@ export const useDigitalHumanStore = create<DigitalHumanState>()(
       setCustomAvatar: ({ modelUrl, fileName }) =>
         set({
           avatarSource: { kind: 'custom', modelUrl, fileName },
+          avatarLoadStatus: 'idle',
+          avatarLoadError: null,
+        }),
+      useBuiltinAvatar: () =>
+        set({
+          avatarSource: { kind: 'builtin' },
           avatarLoadStatus: 'idle',
           avatarLoadError: null,
         }),

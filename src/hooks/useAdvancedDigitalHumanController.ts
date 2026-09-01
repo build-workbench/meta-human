@@ -38,6 +38,7 @@ export function useAdvancedDigitalHumanController(
   const avatarSource = useDigitalHumanStore((s) => s.avatarSource);
   const setCustomAvatar = useDigitalHumanStore((s) => s.setCustomAvatar);
   const activateProceduralAvatar = useDigitalHumanStore((s) => s.useProceduralAvatar);
+  const activateBuiltinAvatar = useDigitalHumanStore((s) => s.useBuiltinAvatar);
   const setAvatarLoadState = useDigitalHumanStore((s) => s.setAvatarLoadState);
   const error = useSystemStore((s) => s.error);
   const clearError = useSystemStore((s) => s.clearError);
@@ -160,10 +161,10 @@ export function useAdvancedDigitalHumanController(
 
   const handleUseBuiltInAvatar = useCallback(() => {
     revokeCustomAvatarObjectUrl(avatarSource, URL.revokeObjectURL);
-    activateProceduralAvatar();
-    setAvatarLoadState('ready');
+    activateBuiltinAvatar();
+    setAvatarLoadState('idle');
     toast.success('已切换到内置头像');
-  }, [activateProceduralAvatar, avatarSource, setAvatarLoadState]);
+  }, [activateBuiltinAvatar, avatarSource, setAvatarLoadState]);
 
   const handleAvatarLoad = useCallback(
     (model: unknown) => {
@@ -176,7 +177,7 @@ export function useAdvancedDigitalHumanController(
         const error =
           'error' in model && typeof (model as { error?: unknown }).error === 'string'
             ? (model as { error: string }).error
-            : '自定义头像加载失败';
+            : '模型加载失败，已回退到程序化头像';
         revokeCustomAvatarObjectUrl(avatarSource, URL.revokeObjectURL);
         activateProceduralAvatar();
         setAvatarLoadState('error', error);
