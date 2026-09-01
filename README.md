@@ -22,6 +22,10 @@
   <img src="docs/screenshots/viewer-chat.png" width="720" alt="与数字人对话" />
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/viewer-idle.png" width="720" alt="3D 数字人形象" />
+</p>
+
 ## 特性
 
 - **开箱即用** — 内置程序化 3D 形象，不依赖任何外部模型文件
