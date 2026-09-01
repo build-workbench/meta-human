@@ -15,7 +15,6 @@
   - **说话联动** — TTS 播报时头部微摆由 `isSpeaking` 直接触发（原先只有 `speak` 动画才摆）
   - **全息呼吸** — 说话时扫描线加速（×1+1.8·speech）、Fresnel 边缘光增强，强度平滑跟随口型信号
   - **入场显现** — 模型加载后自下而上"全息聚合"（约 1.3s，带扫描亮边），reduced motion 直接跳过；首次加载完成播放 Wave 欢迎动作（每次会话一次）
-- **内置 3D 头像** — 默认形象从程序化几何体升级为自托管 CC0 模型 `RobotExpressive.glb`（453KB，Tomás Laulhé / Don McCurdy，无贴图纯材质），加载后整体覆盖全息材质（Fresnel 边缘光 + 流动扫描线，`onBeforeCompile` 注入标准管线，蒙皮/阴影不受影响）。能力自动探测 + 降级：表情走 morph target（`Angry`/`Surprised`/`Sad`，缺失的 smile/blink 静默降级）；口型优先 jawOpen 类 morph，缺失时借 surprise 通道 ×0.3 模拟；动作优先播放模型剪辑（`Idle`/`Yes`/`No`/`Wave`/`Dance`），无剪辑的 think/speak 降级为程序化旋转；模型加载失败仍回退程序化 `CyberAvatar`。上传自定义 GLB 的既有链路不变，新增 `AvatarSource kind: 'builtin'`。
 
 ### 🐛 修复与清理
 
@@ -31,6 +30,20 @@
 - **文案更新** — 行为/表情控制面板中文化；落地页徽章 `v2.2`→`v2.3.0`、测试数 `183`→`248`
 - **工程** — 新增 `tsconfig.node.json` 让 vite/vitest/eslint 配置文件纳入 typecheck；prettier 格式化对齐
 - **测试补强** — 新增 `createServices` / `systemStore` / `digitalHumanStore.reset` / `useVoiceCommandHandler` 测试（248 → 258）
+
+---
+
+## [0.1.0] - 2026-09-01
+
+> 版本基线重置：删除全部历史 tag（原最新 `v2.3.0`），以本次形象重做为新起点重新从 `v0.1.0` 计版本。
+
+### ✨ 新增
+
+- **内置 3D 头像** — 默认形象从程序化几何体升级为自托管 CC0 模型 `RobotExpressive.glb`（453KB，Tomás Laulhé / Don McCurdy，无贴图纯材质），加载后整体覆盖全息材质（Fresnel 边缘光 + 流动扫描线，`onBeforeCompile` 注入标准管线，蒙皮/阴影不受影响）。能力自动探测 + 降级：表情走 morph target（`Angry`/`Surprised`/`Sad`，缺失的 smile/blink 静默降级）；口型优先 jawOpen 类 morph，缺失时借 surprise 通道 ×0.3 模拟；动作优先播放模型剪辑（`Idle`/`Yes`/`No`/`Wave`/`Dance`），无剪辑的 think/speak 降级为程序化旋转；模型加载失败仍回退程序化 `CyberAvatar`。上传自定义 GLB 的既有链路不变，新增 `AvatarSource kind: 'builtin'`
+
+### 🔧 变更
+
+- **版本基线** — `package.json` 与落地页徽章版本统一为 `0.1.0`
 
 ---
 
@@ -198,6 +211,7 @@
 
 ---
 
+[0.1.0]: https://github.com/build-workbench/meta-human/releases/tag/v0.1.0
 [2.3.0]: https://github.com/vibe-knight/meta-human/releases/tag/v2.3.0
 [2.2.0]: https://github.com/vibe-knight/meta-human/releases/tag/v2.2.0
 [2.1.0]: https://github.com/vibe-knight/meta-human/releases/tag/v2.1.0

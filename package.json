@@ -1,6 +1,6 @@
 {
   "name": "metahuman-engine",
-  "version": "2.3.0",
+  "version": "0.1.0",
   "description": "浏览器原生 3D 数字人引擎，集成语音与对话",
   "type": "module",
   "scripts": {
