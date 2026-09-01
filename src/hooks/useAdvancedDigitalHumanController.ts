@@ -5,7 +5,7 @@
  * 聊天流与语音识别文本上报走 useChatStream（页面层），键盘快捷键在此处理。
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useDigitalHumanStore } from '@/store/digitalHumanStore';
 import { useSystemStore } from '@/store/systemStore';
@@ -117,10 +117,15 @@ export function useAdvancedDigitalHumanController(
     return () => clearTimeout(id);
   }, [error, clearError]);
 
-  // 模型加载回调
+  // 模型加载回调（首次加载完成后播放 Wave 欢迎动作，每次会话仅一次）
+  const hasGreetedRef = useRef(false);
   const handleModelLoad = useCallback(() => {
     setAvatarLoadState('ready');
-  }, [setAvatarLoadState]);
+    if (!hasGreetedRef.current) {
+      hasGreetedRef.current = true;
+      engine.playAnimation('wave');
+    }
+  }, [engine, setAvatarLoadState]);
 
   const handleAvatarUpload = useCallback(
     (file: File) => {

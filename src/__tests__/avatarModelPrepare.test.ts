@@ -82,21 +82,35 @@ function makeClip(name: string) {
 }
 
 describe('createHologramMaterial', () => {
-  it('注入 Fresnel/扫描线 shader 并共享 uTime uniform', () => {
-    const timeUniform = { value: 0 };
-    const material = createHologramMaterial(timeUniform);
+  it('注入 Fresnel/扫描线/显现 shader 并共享驱动 uniforms', () => {
+    const uniforms = {
+      time: { value: 0 },
+      speech: { value: 0 },
+      reveal: { value: 0 },
+    };
+    const material = createHologramMaterial(uniforms, { minY: -1.9, maxY: 1.7 });
     const shader = {
       uniforms: {} as Record<string, unknown>,
       vertexShader: '#include <common>\n#include <skinning_vertex>\n',
-      fragmentShader: '#include <common>\n#include <emissivemap_fragment>\n',
+      fragmentShader:
+        '#include <common>\n#include <alphamap_fragment>\n#include <emissivemap_fragment>\n',
     };
 
     material.onBeforeCompile(shader as never, {} as never);
 
-    expect(shader.uniforms.uTime).toBe(timeUniform);
+    expect(shader.uniforms.uTime).toBe(uniforms.time);
+    expect(shader.uniforms.uSpeech).toBe(uniforms.speech);
+    expect(shader.uniforms.uReveal).toBe(uniforms.reveal);
+    expect(shader.uniforms.uRevealMinY).toEqual({ value: -1.9 });
+    expect(shader.uniforms.uRevealMaxY).toEqual({ value: 1.7 });
     expect(shader.vertexShader).toContain('vHoloPos = (modelMatrix * vec4(transformed, 1.0)).xyz');
     expect(shader.fragmentShader).toContain('holoFresnel');
     expect(shader.fragmentShader).toContain('holoScan');
+    // 说话时扫描线加速（uSpeech 调制）
+    expect(shader.fragmentShader).toContain('uScanSpeed * (1.0 + uSpeech * 1.8)');
+    // 入场显现：alpha 按扫描线裁剪 + 显现亮边
+    expect(shader.fragmentShader).toContain('diffuseColor.a *= holoVis');
+    expect(shader.fragmentShader).toContain('holoEdgeBand');
   });
 });
 
@@ -138,7 +152,13 @@ describe('prepareAvatarModel', () => {
     const holo = head.material;
     expect(holo).toBeInstanceOf(THREE.MeshStandardMaterial);
     expect(body.material).toBe(holo);
-    expect(prepared.timeUniform).toEqual({ value: 0 });
+    // holo uniforms 共享驱动通道，reveal 范围由归一化常量推导（含 primitive 偏移与余量）
+    expect(prepared.holo).toEqual({
+      time: { value: 0 },
+      speech: { value: 0 },
+      reveal: { value: 0 },
+    });
+    expect(prepared.holo.time).not.toBe(prepared.holo.speech);
   });
 
   it('按候选名探测 morph 通道，缺失通道不产生绑定', () => {

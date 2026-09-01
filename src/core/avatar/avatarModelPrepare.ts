@@ -14,8 +14,12 @@ import type { ExpressionType } from './avatarContract';
 
 /** 归一化后模型高度（世界单位）。CyberAvatar 视觉跨度约 2.3，保持接近。 */
 export const TARGET_HEIGHT = 2.4;
-/** 归一化后包围盒中心的本地 Y（primitive 偏移 -1.2 后世界 Y ≈ -0.1，落地在阴影盘上方）。 */
+/** 归一化后包围盒中心的本地 Y（primitive 偏移 MODEL_Y_OFFSET 后世界 Y ≈ -0.1）。 */
 export const CENTER_Y = 1.1;
+/** primitive 在场景中的 Y 偏移（ModelAvatar 与显现范围共用的单一来源）。 */
+export const MODEL_Y_OFFSET = -1.2;
+/** 显现扫描范围超出包围盒的安全余量（Float 浮动 + 骨骼动作抬升）。 */
+const REVEAL_MARGIN = 0.6;
 
 export type MorphChannel = 'angry' | 'surprise' | 'sad' | 'smile' | 'laugh' | 'mouth';
 
@@ -57,12 +61,29 @@ export interface TimeUniform {
   value: number;
 }
 
+/** 全息材质的共享驱动 uniforms（ModelAvatar 每帧写入，全部材质实例共享）。 */
+export interface HologramUniforms {
+  /** 时间（扫描线流动）。 */
+  time: TimeUniform;
+  /** 说话强度 0..1（扫描线加速 + 边缘光增强）。 */
+  speech: TimeUniform;
+  /** 显现进度 0..1（入场时自下而上扫描聚合）。 */
+  reveal: TimeUniform;
+}
+
 /**
  * 全息材质：深蓝基底 + 青色 Fresnel 边缘光 + 流动扫描线。
  * 通过 onBeforeCompile 注入标准管线，蒙皮（skinning）、morph、阴影、
- * 环境反射全部保持可用；uTime 为共享引用，驱动方每帧只更新一次。
+ * 环境反射全部保持可用；uniforms 为共享引用，驱动方每帧只更新一次。
+ *
+ * 两段注入位于 fragment main() 同一作用域：alphamap 段计算 holoRevealY/holoVis
+ * （alpha 裁剪），emissive 段复用（显现扫描亮边）；chunk 顺序 alphamap_fragment
+ * 先于 emissivemap_fragment。
  */
-export function createHologramMaterial(timeUniform: TimeUniform): THREE.MeshStandardMaterial {
+export function createHologramMaterial(
+  uniforms: HologramUniforms,
+  revealRange: { minY: number; maxY: number },
+): THREE.MeshStandardMaterial {
   const material = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#0e1a2b'),
     emissive: new THREE.Color('#0af0ff'),
@@ -75,7 +96,11 @@ export function createHologramMaterial(timeUniform: TimeUniform): THREE.MeshStan
   });
 
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uTime = timeUniform;
+    shader.uniforms.uTime = uniforms.time;
+    shader.uniforms.uSpeech = uniforms.speech;
+    shader.uniforms.uReveal = uniforms.reveal;
+    shader.uniforms.uRevealMinY = { value: revealRange.minY };
+    shader.uniforms.uRevealMaxY = { value: revealRange.maxY };
     shader.uniforms.uRimColor = { value: new THREE.Color('#22d3ee') };
     shader.uniforms.uRimStrength = { value: 1.6 };
     shader.uniforms.uRimPower = { value: 2.5 };
@@ -97,6 +122,10 @@ export function createHologramMaterial(timeUniform: TimeUniform): THREE.MeshStan
         `#include <common>
         varying vec3 vHoloPos;
         uniform float uTime;
+        uniform float uSpeech;
+        uniform float uReveal;
+        uniform float uRevealMinY;
+        uniform float uRevealMaxY;
         uniform vec3 uRimColor;
         uniform float uRimStrength;
         uniform float uRimPower;
@@ -105,11 +134,22 @@ export function createHologramMaterial(timeUniform: TimeUniform): THREE.MeshStan
         uniform float uScanStrength;`,
       )
       .replace(
+        '#include <alphamap_fragment>',
+        `#include <alphamap_fragment>
+        float holoRevealY = uRevealMinY + uReveal * (uRevealMaxY - uRevealMinY);
+        float holoVis = 1.0 - smoothstep(holoRevealY - 0.02, holoRevealY + 0.14, vHoloPos.y);
+        diffuseColor.a *= holoVis * clamp(uReveal * 3.0, 0.0, 1.0);`,
+      )
+      .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
         float holoFresnel = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), uRimPower);
-        float holoScan = 0.5 + 0.5 * sin(vHoloPos.y * uScanFreq - uTime * uScanSpeed);
-        totalEmissiveRadiance += uRimColor * (holoFresnel * uRimStrength + holoScan * uScanStrength);`,
+        float holoScan = 0.5 + 0.5 * sin(vHoloPos.y * uScanFreq - uTime * uScanSpeed * (1.0 + uSpeech * 1.8));
+        totalEmissiveRadiance += uRimColor * (
+          holoFresnel * uRimStrength * (1.0 + uSpeech * 0.5) +
+          holoScan * uScanStrength * (1.0 + uSpeech * 0.8));
+        float holoEdgeBand = clamp(1.0 - abs(vHoloPos.y - holoRevealY) * 7.0, 0.0, 1.0);
+        totalEmissiveRadiance += uRimColor * holoEdgeBand * (1.0 - uReveal) * 2.5;`,
       );
   };
 
@@ -128,8 +168,8 @@ export interface PreparedAvatarModel {
   morphs: Partial<Record<MorphChannel, MorphBinding[]>>;
   /** 动作名 → 模型内实际存在的剪辑；缺失动作即降级信号。 */
   clipMap: Partial<Record<string, THREE.AnimationClip>>;
-  /** 全息材质共享时间，驱动方每帧写入。 */
-  timeUniform: TimeUniform;
+  /** 全息材质共享驱动 uniforms，驱动方每帧写入。 */
+  holo: HologramUniforms;
 }
 
 export function prepareAvatarModel(
@@ -149,8 +189,18 @@ export function prepareAvatarModel(
   scene.position.set(-center.x * scale, CENTER_Y - center.y * scale, -center.z * scale);
 
   // 全息材质覆盖（共享一个材质实例；旧材质统一释放，几何体不动）
-  const timeUniform: TimeUniform = { value: 0 };
-  const holoMaterial = createHologramMaterial(timeUniform);
+  const holo: HologramUniforms = {
+    time: { value: 0 },
+    speech: { value: 0 },
+    reveal: { value: 0 },
+  };
+  // 显现扫描的世界 Y 范围：归一化包围盒 + primitive 偏移 + 动作安全余量
+  const half = TARGET_HEIGHT / 2;
+  const revealRange = {
+    minY: CENTER_Y - half + MODEL_Y_OFFSET - REVEAL_MARGIN,
+    maxY: CENTER_Y + half + MODEL_Y_OFFSET + REVEAL_MARGIN,
+  };
+  const holoMaterial = createHologramMaterial(holo, revealRange);
   const disposed = new Set<THREE.Material>();
   const morphs: Partial<Record<MorphChannel, MorphBinding[]>> = {};
 
@@ -185,5 +235,5 @@ export function prepareAvatarModel(
     if (clip) clipMap[animation] = clip;
   }
 
-  return { group: container, morphs, clipMap, timeUniform };
+  return { group: container, morphs, clipMap, holo };
 }
