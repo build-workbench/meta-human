@@ -18,6 +18,7 @@ const { frameHolder, visibility, mixerState, groupRefs, refState } = vi.hoisted(
     update: ReturnType<typeof vi.fn>;
     stopAllAction: ReturnType<typeof vi.fn>;
     uncacheRoot: ReturnType<typeof vi.fn>;
+    uncacheClip: ReturnType<typeof vi.fn>;
     clipAction: ReturnType<typeof vi.fn>;
   }> = [];
   return {
@@ -46,10 +47,11 @@ const { frameHolder, visibility, mixerState, groupRefs, refState } = vi.hoisted(
   };
 });
 
-function makeAction() {
+function makeAction(clip?: unknown) {
   const action: Record<string, unknown> = {
     clampWhenFinished: false,
   };
+  action.getClip = vi.fn(() => clip);
   action.reset = vi.fn(() => action);
   action.fadeIn = vi.fn(() => action);
   action.play = vi.fn(() => action);
@@ -69,7 +71,8 @@ vi.mock('three', () => ({
     update = vi.fn();
     stopAllAction = vi.fn();
     uncacheRoot = vi.fn();
-    clipAction = vi.fn(() => makeAction());
+    uncacheClip = vi.fn();
+    clipAction = vi.fn((clip: unknown) => makeAction(clip));
     constructor() {
       mixerState.instances.push(this as never);
     }
@@ -380,5 +383,61 @@ describe('ModelAvatar', () => {
 
     expect(mixer.stopAllAction).toHaveBeenCalled();
     expect(mixer.uncacheRoot).toHaveBeenCalledWith(model.group);
+  });
+
+  it('从有剪辑动作切到无剪辑动作时旧 action 仍 fadeOut', () => {
+    // 修复回归点：原版 `if (!clip) return;` 早返回导致 wave→think 时
+    // 旧 wave action 残留，叠加程序化旋转。
+    const waveClip = { name: 'Wave' };
+    const model = makeModel({
+      clipMap: { wave: waveClip as never, idle: { name: 'Idle' } as never },
+    });
+    render(<ModelAvatar model={model} prefersReducedMotion={false} />);
+
+    act(() => {
+      useDigitalHumanStore.getState().setAnimation('wave');
+    });
+    const mixer = mixerState.instances[0];
+    const waveAction = mixer.clipAction.mock.results.find(
+      (r) => (r.value as { getClip?: () => unknown }).getClip?.() === waveClip,
+    )?.value as { play: ReturnType<typeof vi.fn>; fadeOut: ReturnType<typeof vi.fn> };
+    expect(waveAction.play).toHaveBeenCalled();
+
+    act(() => {
+      useDigitalHumanStore.getState().setAnimation('think'); // 无剪辑
+    });
+
+    // 旧 wave action 被 fadeOut 收尾；不创建新 action
+    expect(waveAction.fadeOut).toHaveBeenCalledWith(0.2);
+    // wave 之后没有再 clipAction（只在切换到有剪辑动作时才创建）
+    expect(mixer.clipAction.mock.calls.length).toBe(2); // idle + wave，无 think
+  });
+
+  it('换 model.group 时新建 mixer 并完整清理旧 mixer', () => {
+    // 修复回归点：同组件复用时 actionsRef 不清空导致僵尸 action。
+    const idleClip = { name: 'Idle' };
+    const modelA = makeModel({
+      group: { name: 'groupA' } as never,
+      clipMap: { idle: idleClip as never },
+    });
+    const { rerender } = render(<ModelAvatar model={modelA} prefersReducedMotion={false} />);
+    const mixerA = mixerState.instances[0];
+    // 首次 render 已创建 idle action
+    const actionA = mixerA.clipAction.mock.results[0]?.value as {
+      getClip: ReturnType<typeof vi.fn>;
+    };
+    expect(actionA).toBeTruthy();
+
+    const modelB = makeModel({ group: { name: 'groupB' } as never });
+    rerender(<ModelAvatar model={modelB} prefersReducedMotion={false} />);
+    const mixerB = mixerState.instances[1];
+
+    // 旧 mixerA 完整清理：uncacheClip（每个 action）+ stopAllAction + uncacheRoot(groupA)
+    expect(mixerA.uncacheClip).toHaveBeenCalledWith(actionA.getClip());
+    expect(mixerA.stopAllAction).toHaveBeenCalled();
+    expect(mixerA.uncacheRoot).toHaveBeenCalledWith(modelA.group);
+    // 新 mixerB 已就绪
+    expect(mixerB).toBeTruthy();
+    expect(mixerB).not.toBe(mixerA);
   });
 });

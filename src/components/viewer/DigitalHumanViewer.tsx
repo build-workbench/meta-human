@@ -12,6 +12,7 @@ import { Html } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as THREE from 'three';
 import { loggers } from '@/lib/logger';
+import { useIsTabVisible } from '@/hooks';
 import { prepareAvatarModel, type PreparedAvatarModel } from '@/core/avatar/avatarModelPrepare';
 import { Scene } from './Scene';
 
@@ -35,6 +36,9 @@ export default function DigitalHumanViewer({
     modelUrl ? 'idle' : 'ready',
   );
   const [loadError, setLoadError] = useState<string | null>(null);
+  // 标签页不可见时停止 R3F 渲染循环（'never'），useFrame 内部已短路，
+  // 这里再把 Float / ContactShadows / shadow 渲染一起暂停。
+  const isTabVisible = useIsTabVisible();
 
   // 使用 ref 存储回调以避免重新触发加载效果
   const onModelLoadRef = useRef(onModelLoad);
@@ -144,8 +148,9 @@ export default function DigitalHumanViewer({
         使用方向键旋转视图，加减键缩放，R键重置视角。按Tab键切换到其他控件。
       </div>
       <Canvas
-        shadows
-        dpr={[1, 2]}
+        shadows="percentage"
+        dpr={[1, 1.5]}
+        frameloop={isTabVisible ? 'always' : 'never'}
         gl={{
           antialias: true,
           powerPreference: 'high-performance',

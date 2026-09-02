@@ -42,3 +42,23 @@ export function useIsTabVisibleRef(): { readonly current: boolean } {
 
   return ref;
 }
+
+/**
+ * 状态版标签页可见性 — 用于驱动重渲染（如 R3F `<Canvas frameloop>` 切换）。
+ * 高频消费请用 `useIsTabVisibleRef` 避免每帧重渲。
+ */
+export function useIsTabVisible(): boolean {
+  const [visible, setVisible] = useState(
+    typeof document !== 'undefined' ? document.visibilityState === 'visible' : true,
+  );
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setVisible(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  return visible;
+}
