@@ -14,17 +14,20 @@
 - [x] **流式回复的 emotion/action 解析链路** — 后端 `===META===` 段已约定携带 `emotion`/`action` JSON（见 CHANGELOG「真流式对话」），`handleDialogueResponse` 已支持读取，但当前后端返回 `neutral`/`idle`。前端侧确认流式 transport 是否正确解析 META 段并填充 `ChatResponsePayload.emotion/action`，后端加字段后可直接生效。本轮已验证链路通（mock 后端 done 事件 → `setEmotion` + `playAnimation` 生效），并修复了两条传输路径的归一化不一致：HTTP 的 `parseChatResponse` 原本直接 `as EmotionType` 强转、完全不校验 action，非法值会一路带进 store 再在 `DigitalHumanEngine` 里 warn 一次；现统一走 `normalizeAvatarEmotion` / `normalizeAvatarAction`，与 SSE 的 done 事件对齐。
 - [ ] **本地情绪启发式兜底已上线** — `src/core/avatar/emotionHeuristics.ts`（`?`→surprised / 负面词→sad / 正面词→happy），后端标签优先。若后端协议落地，可评估该兜底是否需要收窄。
 
-## P3 换模型实现真口型（需用户拍板）
+## P3 换模型实现真口型 — 【暂不实施，2026-09-02 拍板】
 
-- [ ] **RobotExpressive 无嘴部几何**，当前全息嘴覆盖层（`ModelAvatar` 的 `faceAnchor` + 发光嘴）是视觉模拟。
-- [ ] 要驱动模型自身骨骼/形变口型需换带 **ARKit blendshape（jawOpen 等）** 的模型（如 Ready Player Me 导出 GLB）。卡点：**许可核实**（RPM 分发条款）与体积（几 MB vs 453KB）。上传链路已就绪——带 jawOpen 的模型会被 `avatarModelPrepare` 自动识别并走真 morph、覆盖层自动关闭。
+- [x] **决策：维持 RobotExpressive + 全息嘴覆盖层不变。**
+      理由：① 写实 RPM 形象与现有「极简科技感 + 全息材质」风格冲突；② 体积从 453KB 涨到几 MB；③ RPM 分发条款未拿到确凿依据（官方文档页被网络策略拦截，只搜到中文教程）。
+- [x] **RobotExpressive 无嘴部几何**，当前全息嘴覆盖层（`ModelAvatar` 的 `faceAnchor` + 发光嘴）是视觉模拟 — 保留。
+- [x] **换模型的代码改动量已核实为零**：`avatarModelPrepare.ts:33` 的 mouth 通道候选名是 `['jawopen','mouthopen','mouth_open']`，`ModelAvatar.tsx:216` 的 `{!model.morphs.mouth && model.faceAnchor && ...}` 会在探测到真 mouth morph 时自动关闭覆盖层。将来若要换，只需替换 GLB 资源 + 走上传链路，无需改代码。
+- 备选调研记录：`arkit-face-blendshapes.com`（VRoid + ARKit blendshapes）是 **VRM 格式**而非纯 GLB，需额外加载器，且 VRoid 有独立使用条款，不适配当前架构。
 
 ## 场景化表现（依赖 P2 的 action/emotion）
 
-- [ ] 开场 Wave 欢迎（已完成）
-- [ ] 提问时 think 姿态（已完成）
-- [ ] 答对/答错情绪反应 — 后端 `action`/`emotion` 驱动，如 excited/sad 时的肢体动作
-- [ ] 长回答分段肢体动作 — 长回复按句切分触发不同 action
+- [x] 开场 Wave 欢迎（已完成）
+- [x] 提问时 think 姿态（已完成）
+- [x] 答对/答错情绪反应 — 后端 `action`/`emotion` 驱动，如 excited/sad 时的肢体动作
+- [x] 长回答分段肢体动作 — `src/core/avatar/speechActionPlanner.ts` 按句末标点切分回复，按字数估算每句触发时刻，逐句驱动 `playAnimation`（问句→think / 否定→shakeHead / 感叹→nod / 默认轮转 nod↔greet）。单句短回复完全不动，保持原有单次动作。新一轮调度前自动取消旧定时器，`cancelPendingTurn` 也清理。运行时验证 70 字回复播报期间行为持续变化（idle→greeting→listening→thinking→idle→listening）。
 
 ## 已归档（完成项，勿重复做）
 
