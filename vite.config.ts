@@ -77,16 +77,11 @@ export default defineConfig(({ mode }) => {
       minify: 'esbuild',
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (/[\\/]node_modules[\\/](react|react-dom)[\\/]/.test(id)) return 'react-vendor';
-              if (/[\\/]node_modules[\\/](three|@react-three)[\\/]/.test(id)) return 'three-vendor';
-              if (/[\\/]node_modules[\\/]zustand[\\/]/.test(id)) return 'state-vendor';
-              if (/[\\/]node_modules[\\/](lucide-react|sonner|clsx|tailwind-merge)[\\/]/.test(id))
-                return 'ui-vendor';
-              if (/[\\/]node_modules[\\/]react-router-dom[\\/]/.test(id)) return 'router-vendor';
-            }
-          },
+          // 不做手工分包（manualChunks）：此前把 three 归入独立 chunk 时，
+          // Rollup 共享 helper 也被塞进该 chunk，导致入口为拿 helper 静态 import
+          // 整个 three-vendor（283KB gzip），落地页被迫首屏加载。
+          // 交由 Rollup 按依赖图自动分包：three 自然落入 AdvancedDigitalHumanPage
+          // 的 lazy chunk，首屏 388KB → 111KB gzip（2026-09-02 实测，见 ROADMAP.md）。
           entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',

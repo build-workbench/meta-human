@@ -251,8 +251,8 @@ useChatStream → DialogueOrchestrator (turnId 所有权隔离)
 
 ### Phase 1 — 首屏体验（P0）
 
-- [ ] **[P0]** 移除 `vite.config.ts:80-89` 的 `manualChunks`，改由 Rollup 自动分包 — **已实测 388 → 111 kB gzip**
-- [ ] **[P0]** 验证落地页首屏不再加载 three（检查 `dist/index.html` 无 three 相关 `modulepreload`）
+- [x] **[P0]** 移除 `vite.config.ts:80-89` 的 `manualChunks`，改由 Rollup 自动分包 — **已实测 388 → 111 kB gzip**
+- [x] **[P0]** 验证落地页首屏不再加载 three（检查 `dist/index.html` 无 three 相关 `modulepreload`）
 - [ ] 中文圆体子集化（GB2312 一级字库）+ `unicode-range` 分片
 - [ ] 关键字重 `preload` + 其余按需加载
 - [ ] CI 加首屏体积门禁（gzip 超阈值 fail）
