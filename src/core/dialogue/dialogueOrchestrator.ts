@@ -8,6 +8,11 @@ import { getDefaultChatTransport, type ChatTransport } from './dialogueService';
 import type { DialogueServiceResult } from './dialogueService';
 import type { DigitalHumanEngine } from '@/core/avatar/DigitalHumanEngine';
 import { deriveEmotionFromText } from '@/core/avatar/emotionHeuristics';
+import {
+  planSpeechActions,
+  startSegmentedSpeechActions,
+  stopSegmentedSpeechActions,
+} from '@/core/avatar/speechActionPlanner';
 import { loggers } from '@/lib/logger';
 import {
   createIdleDialogueTurnSnapshot,
@@ -462,6 +467,8 @@ export class DialogueOrchestrator {
     this.pendingTurn.abortController.abort();
     void this.closeStreamGenerator(this.pendingTurn.streamGenerator);
     this.pendingTurn.finalize();
+    // 打断/重置时一并取消上一回复残留的分段动作调度，防止旧动作串到下一轮
+    stopSegmentedSpeechActions();
     return true;
   }
 
@@ -500,7 +507,11 @@ export async function handleDialogueResponse(
     res.emotion && res.emotion !== 'neutral' ? res.emotion : deriveEmotionFromText(res.replyText);
   engine?.setEmotion(emotion);
 
-  if (res.action && res.action !== 'idle') {
+  // 动作：长回复按句切分逐句触发，避免播报十几秒却只有开头 3 秒有肢体反馈。
+  // 短回复（单句）走原有的一次性 playAnimation，planSpeechActions 返回空数组时不介入。
+  if (res.replyText && planSpeechActions(res.replyText, res.action).length > 0) {
+    startSegmentedSpeechActions(res.replyText, (name) => engine?.playAnimation(name), res.action);
+  } else if (res.action && res.action !== 'idle') {
     engine?.playAnimation(res.action);
   }
 
