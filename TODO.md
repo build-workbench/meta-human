@@ -2,6 +2,9 @@
 
 数字人后续完善清单（2026-09-01 记录）。按优先级排序，完成一项勾一项。
 
+> **后期路线图（Phase 0–4）与完整任务清单见 [`ROADMAP.md`](./ROADMAP.md)。**
+> 本文件保留历史条目与已完成项归档；新的中长��任务一律在 `ROADMAP.md` 的「Tasks 总清单」维护，避免两处漂移。
+
 ## P1 性能优化（纯前端，零风险）
 
 - [x] **WebGL DPR 动态上限** — `DigitalHumanViewer.tsx` 的 `<Canvas dpr={[1, 2]}>`：高分屏 2x 全量渲染开销大，可降到 `[1, 1.5]` 或按设备动态。gl 选项 `powerPreference: 'high-performance'` 可保留。
