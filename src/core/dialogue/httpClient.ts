@@ -4,7 +4,12 @@
  * 纯函数工具，不持有模块级可变状态。故障转移副作用通过回调注入。
  */
 import { loggers } from '@/lib/logger';
-import type { EmotionType } from '@/core/avatar/avatarContract';
+import {
+  normalizeAvatarAction,
+  normalizeAvatarEmotion,
+  type AvatarAction,
+  type EmotionType,
+} from '@/core/avatar/avatarContract';
 import type { ChatRequestPayload, ChatResponsePayload, DialogueMessage } from './dialogueService';
 
 const logger = loggers.dialogue;
@@ -132,12 +137,19 @@ export function shouldAbort(error: unknown, signal?: AbortSignal): boolean {
 // Response parsing & HTTP requests
 // ============================================================================
 
+/**
+ * 解析后端聊天响应。
+ *
+ * emotion/action 一律归一化到前端白名单（与 SSE 路径的 done 事件保持一致）：
+ * 后端 LLM 可能吐出白名单外的词，不归一化会把非法值一路带进 store，
+ * 最终在 DigitalHumanEngine 里再降级一次并打 warn 日志。
+ */
 export function parseChatResponse(data: unknown): ChatResponsePayload {
   const r = (data as Partial<ChatResponsePayload>) || {};
   return {
     replyText: r.replyText ?? '',
-    emotion: (r.emotion as EmotionType) ?? 'neutral',
-    action: r.action ?? 'idle',
+    emotion: normalizeAvatarEmotion(r.emotion ?? 'neutral') as EmotionType,
+    action: normalizeAvatarAction(r.action ?? 'idle') as AvatarAction,
   };
 }
 

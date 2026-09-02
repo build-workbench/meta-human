@@ -8,7 +8,11 @@
  */
 import { sleep } from '@/lib/utils';
 import { loggers } from '@/lib/logger';
-import { normalizeAvatarEmotion, type EmotionType } from '@/core/avatar/avatarContract';
+import {
+  normalizeAvatarAction,
+  normalizeAvatarEmotion,
+  type EmotionType,
+} from '@/core/avatar/avatarContract';
 
 import {
   fetchWithTimeout,
@@ -409,7 +413,7 @@ export async function* streamUserInput(
                   finalResponse = {
                     replyText: event.replyText ?? '',
                     emotion: normalizeAvatarEmotion(event.emotion ?? 'neutral') as EmotionType,
-                    action: event.action ?? 'idle',
+                    action: normalizeAvatarAction(event.action ?? 'idle'),
                   };
                   callbacks.onDone?.(finalResponse);
                 }
