@@ -78,7 +78,7 @@ three 本身仍留在 `AdvancedDigitalHumanPage` chunk 里按需加载，`/app` 
 | 覆盖率门禁     | 60 / 68 / 73 / 60（`vitest.config.ts:27-32`）                               |
 | CI             | 1 个 workflow，3 job（ci / deploy / release）                               |
 | 生产依赖       | 9 个（three / drei / fiber / react×2 / router / zustand / lucide / sonner） |
-| `public/` 字体 | 1.2 MB（中文圆体 2 字重全量加载，**无 `unicode-range` 子集化**）            |
+| `public/` 字体 | ~~1.2 MB 全量~~ → 切片后两页 UI 实测下载 303 KB（-74%，见 Phase 1）         |
 | `docs/`        | 仅 2 张截图，**零技术文档**                                                 |
 | E2E            | 无                                                                          |
 | bundle 分析    | 无（仅 `chunkSizeWarningLimit: 1500`）                                      |
@@ -170,13 +170,13 @@ useChatStream → DialogueOrchestrator (turnId 所有权隔离)
 
 **目标**：落地页首屏 gzip 从 388 kB 降到 120 kB 以内。这是展示项目的生命线。
 
-| Task                         | 技术方案                                                                                                                                       | 预期              |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| **移除/重构 `manualChunks`** | 删掉 `vite.config.ts:80-89` 的手工分包，让 Rollup 按依赖图自动分包；three 自然落入 `AdvancedDigitalHumanPage` 的 lazy chunk。**已实测 −71%**   | 388 → 111 kB gzip |
-| 字体子集化                   | 中文圆体 1.2 MB 是首屏第二大负担。用 `fonttools pyftsubset` 按 GB2312 一级字库（3500 字）切分，配 `unicode-range` 声明多段；或直接换系统字体栈 | 1.2 MB → ~300 kB  |
-| 字体加载策略                 | 已有 `font-display: swap`；子集化后加 `<link rel="preload">` 关键字重，其余按需                                                                | 消除 FOUT 抖动    |
-| 落地页图片优化               | 当前 `public/` 无位图，`docs/` 的 PNG 不参与构建。若后续加预览图需走 WebP/AVIF + 响应式 `srcset`                                               | 预防回归          |
-| 首屏骨架                     | 落地页已有 lazy fallback；评估是否加轻量骨架屏替代全黑 loading                                                                                 | 感知速度          |
+| Task                         | 技术方案                                                                                                                                                                                                                                                                            | 预期                       |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **移除/重构 `manualChunks`** | 删掉 `vite.config.ts:80-89` 的手工分包，让 Rollup 按依赖图自动分包；three 自然落入 `AdvancedDigitalHumanPage` 的 lazy chunk。**已实测 −71%**                                                                                                                                        | 388 → 111 kB gzip          |
+| 字体切片（✅ 2026-09-02）    | 原字体已是 GB2312 一级字库（3782 字），字符集子集化无收益；改为 Google Fonts 式切片：片 0 = 源码 UI 实际用字（932 字含全角标点），片 1-7 按码点 450 字/片，`unicode-range` 按需加载。字形全集保留，聊天生僻字自动拉对应片、永不 fallback。再生成：`python3 scripts/subset-fonts.py` | 实测 1188 → 303 KB（-74%） |
+| 字体加载策略                 | 已有 `font-display: swap`；子集化后加 `<link rel="preload">` 关键字重，其余按需                                                                                                                                                                                                     | 消除 FOUT 抖动             |
+| 落地页图片优化               | 当前 `public/` 无位图，`docs/` 的 PNG 不参与构建。若后续加预览图需走 WebP/AVIF + 响应式 `srcset`                                                                                                                                                                                    | 预防回归                   |
+| 首屏骨架                     | 落地页已有 lazy fallback；评估是否加轻量骨架屏替代全黑 loading                                                                                                                                                                                                                      | 感知速度                   |
 
 **验收**：`npm run build` 后首屏 gzip < 120 kB；Lighthouse Performance ≥ 90（桌面端）。
 
@@ -253,8 +253,8 @@ useChatStream → DialogueOrchestrator (turnId 所有权隔离)
 
 - [x] **[P0]** 移除 `vite.config.ts:80-89` 的 `manualChunks`，改由 Rollup 自动分包 — **已实测 388 → 111 kB gzip**
 - [x] **[P0]** 验证落地页首屏不再加载 three（检查 `dist/index.html` 无 three 相关 `modulepreload`）
-- [ ] 中文圆体子集化（GB2312 一级字库）+ `unicode-range` 分片
-- [ ] 关键字重 `preload` + 其余按需加载
+- [x] 中文字体切片（UI 片 0 + 码点片 1-7）+ `unicode-range` 分片 — 实测 1188 → 303 KB；顺带修复落地页字体从未生效的 bug（index.html 内联 unlayered 规则压掉 @layer base 的 :root 声明）
+- [ ] 关键字重 `preload`（可选优化：`font-display: swap` 已消除 FOUT，不阻塞验收）
 - [ ] CI 加首屏体积门禁（gzip 超阈值 fail）
 - [ ] Lighthouse 桌面端 Performance ≥ 90 验收
 
