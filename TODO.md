@@ -4,9 +4,10 @@
 
 ## P1 性能优化（纯前端，零风险）
 
-- [ ] **WebGL DPR 动态上限** — `DigitalHumanViewer.tsx` 的 `<Canvas dpr={[1, 2]}>`：高分屏 2x 全量渲染开销大，可降到 `[1, 1.5]` 或按设备动态。gl 选项 `powerPreference: 'high-performance'` 可保留。
-- [ ] **标签页不可见时暂停渲染循环** — 现在 `ModelAvatar`/`CyberAvatar` 有 `useIsTabVisibleRef` 跳过逻辑，但 Canvas 渲染循环仍在跑。可在 `DigitalHumanViewer` 里根据可见性切换 `frameloop`（`'always'` ↔ `'demand'`），或 `gl.setAnimationLoop(null)`。
-- [ ] **释放 AnimationMixer 缓存** — `ModelAvatar` 卸载时已 `stopAllAction + uncacheRoot`；确认切模型（custom↔builtin）时旧 mixer 是否完全释放，`actionsRef` 中的 `AnimationAction` 是否需要显式 `mixer.uncacheClip`。
+- [x] **WebGL DPR 动态上限** — `DigitalHumanViewer.tsx` 的 `<Canvas dpr={[1, 2]}>`：高分屏 2x 全量渲染开销大，可降到 `[1, 1.5]` 或按设备动态。gl 选项 `powerPreference: 'high-performance'` 可保留。
+- [x] **标签页不可见时暂停渲染循环** — 现在 `ModelAvatar`/`CyberAvatar` 有 `useIsTabVisibleRef` 跳过逻辑，但 Canvas 渲染循环仍在跑。可在 `DigitalHumanViewer` 里根据可见性切换 `frameloop`（`'always'` ↔ `'demand'`），或 `gl.setAnimationLoop(null)`。本轮用 `frameloop={isTabVisible ? 'always' : 'never'}`，比 demand 更彻底。
+- [x] **释放 AnimationMixer 缓存** — 修复：同组件复用（custom↔builtin 都是 model 时 ModelAvatar 不卸载）导致 `actionsRef` 中绑旧 mixer 的僵尸 action 残留，会与程序化旋转打架。清理 effect 改为先 `uncacheClip` 每个 action，再 `clear()` + `stopAllAction` + `uncacheRoot`；同时 `if (!clip) return` 早返回导致 wave→think 时旧 action 不 fadeOut 的回归也修了。
+- [x] **控制台警告清理** — `<Canvas shadows>` 默认 PCFSoftShadowMap 在 three 0.185 弃用，改 `shadows="percentage"`（映射 PCFShadowMap）。视觉差异由 ContactShadows 主导可忽略。
 
 ## P2 后端情绪/动作协议（前端侧补齐）
 
@@ -36,3 +37,8 @@
 - [x] 日志修复：manifest 路径 404、CSP 无效指令
 - [x] 自托管字体接线（Resource Han Rounded CN + Code New Roman）
 - [x] 技能安装：wsl-capture / shotframe / archify
+- [x] P1 性能与控制台警告（详见 P1 段三条 + shadows 警告）
+
+## 跟踪项
+
+- [ ] `THREE.Clock` 弃用警告 — 来源 R3F 内部 `new THREE.Clock()`（`events-*.esm.js:1016`），需 R3F 18 升级到 `THREE.Timer`。本仓不降 three、不改 R3F 内部，先记账。

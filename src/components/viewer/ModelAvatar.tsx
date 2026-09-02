@@ -79,28 +79,45 @@ export function ModelAvatar({ model, prefersReducedMotion }: ModelAvatarProps) {
   }, []);
 
   // 剪辑切换（低频事件，走 React 订阅触发；0.2s 交叉淡化）
+  // 修复：原版 `if (!clip) return;` 在切到无剪辑动作时（wave → think）早返回，
+  // 旧 action 不 fadeOut，残留旋转与程序化旋转打架。改为：无论是否有剪辑都做一次
+  // 旧 action 的 fadeOut，无剪辑时 next=null 即完全停下。
   const currentAnimation = useDigitalHumanStore((s) => s.currentAnimation);
   useEffect(() => {
-    const clip = model.clipMap[currentAnimation];
-    if (!clip) return; // 无剪辑 → useFrame 内程序化旋转降级
-
-    let action = actionsRef.current.get(currentAnimation);
-    if (!action) {
-      action = mixer.clipAction(clip);
+    const clip = model.clipMap[currentAnimation] ?? null;
+    let next: THREE.AnimationAction | null = null;
+    if (clip) {
+      next = actionsRef.current.get(currentAnimation) ?? mixer.clipAction(clip);
       if (currentAnimation !== 'idle') {
-        action.setLoop(THREE.LoopOnce, 1);
-        action.clampWhenFinished = true;
+        next.setLoop(THREE.LoopOnce, 1);
+        next.clampWhenFinished = true;
       }
-      actionsRef.current.set(currentAnimation, action);
+      actionsRef.current.set(currentAnimation, next);
     }
     activeActionRef.current?.fadeOut(0.2);
-    action.reset().fadeIn(0.2).play();
-    activeActionRef.current = action;
+    if (next) next.reset().fadeIn(0.2).play();
+    activeActionRef.current = next;
   }, [currentAnimation, mixer, model.clipMap]);
 
-  // 卸载清理
+  // 卸载 / 换 model.group 时的清理。
+  // 修复：原版只 stopAllAction + uncacheRoot，但 actionsRef 是 useRef，
+  // 同组件复用（custom↔builtin 切换且都是 model 时 ModelAvatar 不卸载）
+  // 会让 Map 里的 action 绑在旧 mixer 上，新 mixer 命中旧 action 调 play() 静默失效。
   useEffect(() => {
+    // 拷贝 actionsMap 引用与本次 action 列表，避免 cleanup 时 actionsRef 已变。
+    const actionsMap = actionsRef.current;
+    const active = activeActionRef.current;
+    const cachedActions = Array.from(actionsMap.values());
     return () => {
+      for (const action of cachedActions) {
+        try {
+          mixer.uncacheClip(action.getClip());
+        } catch {
+          // clip 已被卸载 / 跨 mixer 复用，忽略
+        }
+      }
+      actionsMap.clear();
+      if (active) active.fadeOut(0.2);
       mixer.stopAllAction();
       mixer.uncacheRoot(model.group);
     };
