@@ -11,7 +11,7 @@
 
 ## P2 后端情绪/动作协议（前端侧补齐）
 
-- [ ] **流式回复的 emotion/action 解析链路** — 后端 `===META===` 段已约定携带 `emotion`/`action` JSON（见 CHANGELOG「真流式对话」），`handleDialogueResponse` 已支持读取，但当前后端返回 `neutral`/`idle`。前端侧确认流式 transport 是否正确解析 META 段并填充 `ChatResponsePayload.emotion/action`，后端加字段后可直接生效。
+- [x] **流式回复的 emotion/action 解析链路** — 后端 `===META===` 段已约定携带 `emotion`/`action` JSON（见 CHANGELOG「真流式对话」），`handleDialogueResponse` 已支持读取，但当前后端返回 `neutral`/`idle`。前端侧确认流式 transport 是否正确解析 META 段并填充 `ChatResponsePayload.emotion/action`，后端加字段后可直接生效。本轮已验证链路通（mock 后端 done 事件 → `setEmotion` + `playAnimation` 生效），并修复了两条传输路径的归一化不一致：HTTP 的 `parseChatResponse` 原本直接 `as EmotionType` 强转、完全不校验 action，非法值会一路带进 store 再在 `DigitalHumanEngine` 里 warn 一次；现统一走 `normalizeAvatarEmotion` / `normalizeAvatarAction`，与 SSE 的 done 事件对齐。
 - [ ] **本地情绪启发式兜底已上线** — `src/core/avatar/emotionHeuristics.ts`（`?`→surprised / 负面词→sad / 正面词→happy），后端标签优先。若后端协议落地，可评估该兜底是否需要收窄。
 
 ## P3 换模型实现真口型（需用户拍板）

@@ -76,6 +76,9 @@ export const normalizeAvatarExpression = (value: string): ExpressionType =>
 export const normalizeAvatarBehavior = (value: string): BehaviorType =>
   normalizeFromList(value, AVATAR_BEHAVIORS, 'idle');
 
+export const normalizeAvatarAction = (value: string): AvatarAction =>
+  normalizeFromList(value, AVATAR_ACTIONS, 'idle');
+
 export const mapEmotionToExpression = (emotion: EmotionType): ExpressionType =>
   EMOTION_TO_EXPRESSION[emotion];
 

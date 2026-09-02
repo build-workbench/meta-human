@@ -409,6 +409,49 @@ describe('streamUserInput', () => {
     });
   });
 
+  it('normalizes out-of-whitelist emotion/action from done event', async () => {
+    // 与 HTTP 路径 parseChatResponse 保持一致：后端 LLM 吐白名单外的词时降级，
+    // 而不是把非法值一路带进 store，最后在 DigitalHumanEngine 里再 warn 一次。
+    const stream = buildSSEStream([
+      { type: 'token', content: 'Hi' },
+      { type: 'done', replyText: 'Hi', emotion: 'confused', action: 'jump' },
+    ]);
+
+    mockFetchStream(stream);
+
+    const onDone = vi.fn();
+    const gen = streamUserInput({ userText: 'hello' }, { maxRetries: 0 }, { onDone });
+
+    for await (const _ of gen) {
+      // consume
+    }
+
+    expect(onDone).toHaveBeenCalledWith({
+      replyText: 'Hi',
+      emotion: 'neutral',
+      action: 'idle',
+    });
+  });
+
+  it('defaults missing emotion/action on done event to neutral/idle', async () => {
+    const stream = buildSSEStream([{ type: 'done', replyText: 'Hi' }]);
+
+    mockFetchStream(stream);
+
+    const onDone = vi.fn();
+    const gen = streamUserInput({ userText: 'hello' }, { maxRetries: 0 }, { onDone });
+
+    for await (const _ of gen) {
+      // consume
+    }
+
+    expect(onDone).toHaveBeenCalledWith({
+      replyText: 'Hi',
+      emotion: 'neutral',
+      action: 'idle',
+    });
+  });
+
   it('calls onConnected when stream starts', async () => {
     const stream = buildSSEStream([
       { type: 'token', content: 'X' },
