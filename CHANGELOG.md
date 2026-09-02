@@ -8,7 +8,31 @@
 
 ## [Unreleased]
 
+### ⚡ 性能
+
+- **分包修复：首屏 388 → 100 KB gzip（-73%）** — `vite.config.ts` 的 `manualChunks` 把 Rollup 共享 helper 塞进 `three-vendor` chunk，入口为拿 helper 静态 import 整个 chunk（283 KB gzip），落地页被迫首屏预加载根本不需要的 three。删除手工分包改由 Rollup 按依赖图自动分包，three 落入 `AdvancedDigitalHumanPage` 的 lazy chunk 按需加载，`/app` 总量持平
+- **中文字体切片按需加载：1188 → 303 KB（-74%）** — 原 woff2 全量（Regular/Bold 各 ~600K）改为 Google Fonts 式切片 + `unicode-range`：片 0 = 源码 UI 实际用字（932 字含全角标点），片 1-7 按码点 450 字/片，浏览器只下载页面用到的片；字形全集保留（GB2312 一级字库 3782 字），聊天遇生僻字自动拉对应片、永不 fallback。全量源字体保留在 `scripts/fonts/`（不部署），再生成脚本 `scripts/subset-fonts.py`
+
+### 🐛 修复
+
+- **落地页字体从未生效** — `index.html` 内联关键 CSS 的 `html { font-family: 系统栈 }` 是 unlayered 规则，按 CSS Layer 规范恒胜 `@layer base` 里的 `:root { font-family: var(--font-sans) }`，落地页一直渲染系统字体（`/app` 因根元素显式 `font-sans` class 而幸免）。修复：`:root` 声明移出 `@layer base`，unlayered 同层下按特异性 `:root`(0,1,0) > `html`(0,0,1) 生效，内联系统栈继续在 CSS 加载前兜底
+
 ### ✨ 新增
+
+- **长回答分段肢体动作** — 新增 `core/avatar/speechActionPlanner.ts`：长回复按句末标点切分，按字数估算每句触发时刻，逐句驱动 `playAnimation`（问句→think / 否定→shakeHead / 感叹→nod / 默认轮转 nod↔greet，相邻去重），避免长回答播报十几秒却只有开头 3 秒有肢体反馈。单句短回复走原有单次动作零侵入；新一轮调度前自动取消旧定时器，`cancelPendingTurn` 一并清理
+
+### 🔧 变更
+
+- **emotion/action 归一化对齐** — HTTP 路径 `parseChatResponse` 原本直接 `as EmotionType` 强转且不校验 action，非法值会一路带进 store 再在 engine 里 warn；SSE 路径只归一化 emotion。现两条传输路径统一走 `normalizeAvatarEmotion` / `normalizeAvatarAction`（`avatarContract` 新增后者），后端返回白名单外的值时在入口降级为 neutral/idle
+
+### 📚 文档
+
+- **新增 `ROADMAP.md`** — 开源展示项目定位下的 Phase 0-4 路线图：现状实测基线、技术架构、任务总清单、技术决策记录与明确不做的事
+- **TODO.md 职责划分** — 中长期任务统一在 ROADMAP 维护，TODO 保留历史归档
+
+---
+
+### ✨ 新增（2026-09-01 批次）
 
 - **数字人活力增强** — 四项联动让模型"活起来"：
   - **思考联动** — 等待 LLM 回复期间（`behavior: 'thinking'`，编排器已有信号）持续歪头思考摆动，回复到达自动恢复
