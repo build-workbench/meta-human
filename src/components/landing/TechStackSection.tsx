@@ -69,7 +69,7 @@ export default function TechStackSection() {
   ];
 
   return (
-    <section id="tech-stack" className="relative overflow-hidden py-24 bg-[#050508]">
+    <section id="tech-stack" className="relative overflow-hidden py-24 bg-[#050508] light:bg-white">
       {/* Background Gradient */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[min(1000px,100vw)] h-[500px] bg-indigo-600/5 rounded-full blur-[100px]" />
@@ -78,29 +78,35 @@ export default function TechStackSection() {
       <div className="landing-shell relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">技术架构</h2>
-          <p className="text-lg text-gray-400">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 light:text-zinc-900">
+            技术架构
+          </h2>
+          <p className="text-lg text-gray-400 light:text-zinc-600">
             基于业界领先的开源技术构建，确保性能、可维护性和扩展性
           </p>
         </div>
 
         {/* Architecture Diagram */}
         <div className="landing-center mb-20 max-w-5xl">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.02] to-transparent p-6 sm:p-8">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.02] to-transparent p-6 light:border-zinc-900/10 light:from-zinc-900/[0.03] sm:p-8">
             {/* Layers */}
             <div className="grid gap-5">
               {techLayers.map((layer, index) => (
                 <div key={layer.title} className="relative">
                   {/* Connection Line */}
                   {index < techLayers.length - 1 && (
-                    <div className="absolute left-8 top-full w-px h-5 bg-gradient-to-b from-white/20 to-transparent" />
+                    <div className="absolute left-8 top-full w-px h-5 bg-gradient-to-b from-white/20 to-transparent light:from-zinc-900/20" />
                   )}
 
-                  <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 sm:flex-row sm:items-center sm:gap-8">
+                  <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 light:border-zinc-900/5 light:bg-zinc-900/[0.02] light:hover:border-zinc-900/20 sm:flex-row sm:items-center sm:gap-8">
                     {/* Layer Title */}
                     <div className="sm:w-56 flex-shrink-0">
-                      <h3 className="text-white font-semibold">{layer.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{layer.description}</p>
+                      <h3 className="text-white font-semibold light:text-zinc-900">
+                        {layer.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5 light:text-zinc-500">
+                        {layer.description}
+                      </p>
                     </div>
 
                     {/* Tech Items */}
@@ -108,10 +114,12 @@ export default function TechStackSection() {
                       {layer.items.map((item) => (
                         <div
                           key={item.name}
-                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors light:bg-zinc-50 light:border-zinc-900/10 light:hover:bg-zinc-100"
                         >
                           <item.icon className="w-5 h-5" style={{ color: item.color }} />
-                          <span className="text-sm text-gray-300">{item.name}</span>
+                          <span className="text-sm text-gray-300 light:text-zinc-700">
+                            {item.name}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -132,15 +140,19 @@ export default function TechStackSection() {
         {/* Browser APIs */}
         <div className="landing-center max-w-5xl grid gap-8 lg:grid-cols-2 lg:items-start [&>*]:min-w-0">
           <div>
-            <h3 className="text-xl font-semibold text-white mb-6">浏览器原生 API</h3>
+            <h3 className="text-xl font-semibold text-white mb-6 light:text-zinc-900">
+              浏览器原生 API
+            </h3>
             <div className="space-y-3">
               {browserApis.map((api) => (
                 <div
                   key={api.name}
-                  className="flex flex-col items-start gap-1.5 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col items-start gap-1.5 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:border-white/10 light:border-zinc-900/5 light:bg-zinc-900/[0.02] light:hover:border-zinc-900/20 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span className="text-white font-medium">{api.name}</span>
-                  <span className="text-sm text-gray-500 sm:text-right">{api.desc}</span>
+                  <span className="text-white font-medium light:text-zinc-900">{api.name}</span>
+                  <span className="text-sm text-gray-500 light:text-zinc-500 sm:text-right light:text-zinc-500">
+                    {api.desc}
+                  </span>
                 </div>
               ))}
             </div>
@@ -148,7 +160,9 @@ export default function TechStackSection() {
 
           {/* Code Example */}
           <div>
-            <h3 className="text-xl font-semibold text-white mb-6">极简 API 设计</h3>
+            <h3 className="text-xl font-semibold text-white mb-6 light:text-zinc-900">
+              极简 API 设计
+            </h3>
             <div className="rounded-xl overflow-hidden bg-[#0d1117] border border-white/10 max-w-full">
               <div className="flex items-center gap-2 px-4 py-2 bg-[#161b22] border-b border-white/5">
                 <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -178,8 +192,10 @@ engine.playAnimation(response.action);`}</code>
         {/* Engineering Practices */}
         <div className="landing-center max-w-5xl mt-20">
           <div className="text-center mb-12">
-            <h3 className="text-xl font-semibold text-white mb-2">工程化实践</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="text-xl font-semibold text-white mb-2 light:text-zinc-900">
+              工程化实践
+            </h3>
+            <p className="text-sm text-gray-500 light:text-zinc-500">
               从提交到部署的全链路质量守护，每一项均可在仓库中验证
             </p>
           </div>
@@ -187,11 +203,15 @@ engine.playAnimation(response.action);`}</code>
             {engineeringPractices.map((item) => (
               <div
                 key={item.title}
-                className="rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10"
+                className="rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10 light:border-zinc-900/5 light:bg-zinc-900/[0.02] light:hover:border-zinc-900/20"
               >
-                <item.icon className="w-7 h-7 text-blue-400 mb-3" />
-                <h4 className="text-white font-semibold text-sm mb-1.5">{item.title}</h4>
-                <p className="text-xs leading-relaxed text-gray-500">{item.desc}</p>
+                <item.icon className="w-7 h-7 text-blue-400 light:text-blue-600 mb-3" />
+                <h4 className="text-white font-semibold light:text-zinc-900 text-sm mb-1.5">
+                  {item.title}
+                </h4>
+                <p className="text-xs leading-relaxed text-gray-500 light:text-zinc-500">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>

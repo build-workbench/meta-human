@@ -49,10 +49,10 @@ export default function CTASection() {
   ];
 
   return (
-    <section id="quickstart" className="relative overflow-hidden py-24 bg-black">
+    <section id="quickstart" className="relative overflow-hidden py-24 bg-black light:bg-[#f4f5f9]">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-indigo-950/20 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-indigo-950/20 to-black light:from-[#f4f5f9] light:via-indigo-100/50 light:to-[#f4f5f9]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(600px,80vw)] h-[min(600px,80vh)] bg-blue-600/10 rounded-full blur-[100px]" />
       </div>
 
@@ -60,11 +60,15 @@ export default function CTASection() {
         <div className="landing-center max-w-5xl grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
           {/* Left: CTA Content */}
           <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">开始构建你的数字人</h2>
-            <p className="text-lg text-gray-400 mb-8">几分钟即可拥有功能完整的 3D 交互体验</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 light:text-zinc-900">
+              开始构建你的数字人
+            </h2>
+            <p className="text-lg text-gray-400 mb-8 light:text-zinc-600">
+              几分钟即可拥有功能完整的 3D 交互体验
+            </p>
 
             {/* Quick Install */}
-            <div className="p-4 rounded-xl bg-[#0d1117] border border-white/10 mb-6">
+            <div className="p-4 rounded-xl bg-[#0d1117] border border-white/10 mb-6 light:border-zinc-900/20 light:shadow-lg light:shadow-zinc-900/10">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-500 font-mono">Quick Start</span>
                 <div className="flex items-center gap-1.5">
@@ -97,7 +101,7 @@ export default function CTASection() {
                 href="https://github.com/vibe-knight/meta-human"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 hover:border-white/20 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 hover:border-white/20 transition-all light:bg-white light:hover:bg-zinc-50 light:text-zinc-900 light:border-zinc-900/15 light:hover:border-zinc-900/25 light:shadow-sm"
               >
                 <Github className="w-5 h-5" />
                 GitHub
@@ -110,18 +114,18 @@ export default function CTASection() {
             {featureCards.map((item) => (
               <div
                 key={item.title}
-                className="h-full rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10"
+                className="h-full rounded-xl border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-white/10 light:border-zinc-900/5 light:bg-zinc-900/[0.02] light:hover:border-zinc-900/20"
               >
-                <item.icon className="w-8 h-8 text-blue-400 mb-3" />
-                <h3 className="text-white font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.desc}</p>
+                <item.icon className="w-8 h-8 text-blue-400 light:text-blue-600 mb-3" />
+                <h3 className="text-white font-semibold mb-1 light:text-zinc-900">{item.title}</h3>
+                <p className="text-sm text-gray-500 light:text-zinc-500">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Bottom: Links */}
-        <div className="mt-16 pt-8 border-t border-white/10">
+        <div className="mt-16 pt-8 border-t border-white/10 light:border-zinc-900/10">
           <div className="flex flex-wrap justify-center gap-4 text-sm sm:gap-8">
             {footerLinks.map((link) => (
               <a
@@ -129,7 +133,7 @@ export default function CTASection() {
                 href={link.href}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
               >
                 {link.label}
               </a>

@@ -46,15 +46,15 @@ export default function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="relative overflow-hidden py-24 bg-black">
+    <section id="features" className="relative overflow-hidden py-24 bg-black light:bg-[#f4f5f9]">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a0f] to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a0f] to-black light:from-[#f4f5f9] light:via-[#eef0f8] light:to-[#f4f5f9]" />
 
       {/* Grid Pattern */}
       <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(128,128,140,0.35) 1px, transparent 0)`,
           backgroundSize: '40px 40px',
         }}
       />
@@ -62,8 +62,10 @@ export default function FeaturesSection() {
       <div className="landing-shell relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">核心功能</h2>
-          <p className="text-lg text-gray-400">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 light:text-zinc-900">
+            核心功能
+          </h2>
+          <p className="text-lg text-gray-400 light:text-zinc-600">
             从 3D 渲染到智能对话，从语音交互到视觉感知，
             <br className="hidden sm:block" />
             一站式构建你的数字人应用
@@ -88,11 +90,15 @@ export default function FeaturesSection() {
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="flex-1 text-sm leading-relaxed text-gray-400">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-white mb-2 light:text-zinc-900">
+                {feature.title}
+              </h3>
+              <p className="flex-1 text-sm leading-relaxed text-gray-400 light:text-zinc-600">
+                {feature.description}
+              </p>
 
               {/* Learn More Link */}
-              <div className="mt-4 flex items-center gap-1 text-sm text-gray-500 group-hover:text-white transition-colors">
+              <div className="mt-4 flex items-center gap-1 text-sm text-gray-500 group-hover:text-white transition-colors light:text-zinc-500 light:group-hover:text-zinc-900">
                 <span>了解更多</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -109,7 +115,7 @@ export default function FeaturesSection() {
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text light:from-blue-600 light:to-purple-600 text-transparent">
                 {stat.value}
               </div>
               <div className="text-sm text-gray-500 mt-1">{stat.label}</div>

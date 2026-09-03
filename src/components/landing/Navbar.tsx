@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Menu, X, Github, Play } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,7 +39,9 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/80 backdrop-blur-lg border-b border-white/10' : 'bg-transparent'
+        isScrolled
+          ? 'bg-black/80 backdrop-blur-lg border-b border-white/10 light:bg-white/80 light:border-zinc-900/10'
+          : 'bg-transparent'
       }`}
     >
       <div className="landing-shell">
@@ -46,11 +49,13 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <Activity className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
+              <Activity className="w-6 h-6 text-blue-400 light:text-blue-600 group-hover:text-blue-300 transition-colors" />
               <div className="absolute inset-0 bg-blue-400/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <span className="text-lg font-semibold text-white tracking-tight">MetaHuman</span>
-            <span className="hidden sm:inline-flex text-xs bg-blue-500/20 px-2 py-0.5 rounded text-blue-300 border border-blue-500/30">
+            <span className="text-lg font-semibold text-white tracking-tight light:text-zinc-900">
+              MetaHuman
+            </span>
+            <span className="hidden sm:inline-flex text-xs bg-blue-500/20 px-2 py-0.5 rounded text-blue-300 border border-blue-500/30 light:text-blue-700">
               ENGINE
             </span>
           </Link>
@@ -62,7 +67,7 @@ export default function Navbar() {
                 <a
                   key={link.label}
                   href={link.href}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                  className="text-sm text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
                 >
                   {link.label}
                 </a>
@@ -70,7 +75,7 @@ export default function Navbar() {
                 <button
                   key={link.label}
                   onClick={() => scrollToSection(link.href)}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                  className="text-sm text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
                 >
                   {link.label}
                 </button>
@@ -80,11 +85,13 @@ export default function Navbar() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
+
             <a
               href="https://github.com/vibe-knight/meta-human"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-gray-400 hover:text-white transition-colors"
+              className="p-2 text-gray-400 hover:text-white transition-colors light:text-zinc-500 light:hover:text-zinc-900"
               aria-label="GitHub"
             >
               <Github className="w-5 h-5" />
@@ -102,7 +109,7 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-gray-300 hover:text-white transition-colors"
+            className="md:hidden p-2 text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
             aria-label="Toggle menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -117,13 +124,13 @@ export default function Navbar() {
           isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="landing-shell space-y-3 border-t border-white/10 bg-black/95 py-4 backdrop-blur-lg">
+        <div className="landing-shell space-y-3 border-t border-white/10 bg-black/95 py-4 backdrop-blur-lg light:border-zinc-900/10 light:bg-white/95">
           {navLinks.map((link) =>
             link.external ? (
               <a
                 key={link.label}
                 href={link.href}
-                className="block w-full text-left py-2 text-gray-300 hover:text-white transition-colors"
+                className="block w-full text-left py-2 text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.label}
@@ -132,18 +139,19 @@ export default function Navbar() {
               <button
                 key={link.label}
                 onClick={() => scrollToSection(link.href)}
-                className="block w-full text-left py-2 text-gray-300 hover:text-white transition-colors"
+                className="block w-full text-left py-2 text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
               >
                 {link.label}
               </button>
             ),
           )}
-          <div className="pt-3 border-t border-white/10 flex items-center gap-3">
+          <div className="pt-3 border-t border-white/10 flex items-center gap-3 light:border-zinc-900/10">
+            <ThemeToggle variant="segmented" />
             <a
               href="https://github.com/vibe-knight/meta-human"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"
             >
               <Github className="w-5 h-5" />
               <span>GitHub</span>

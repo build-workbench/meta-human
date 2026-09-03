@@ -73,7 +73,12 @@ describe('useConnectionHealth', () => {
     });
 
     expect(useSystemStore.getState().error).toBe('服务器连接不稳定，部分功能可能受限');
-    expect(mocks.toastWarningMock).toHaveBeenCalledWith('服务器连接不稳定，部分功能可能受限');
+    expect(mocks.toastWarningMock).toHaveBeenCalledWith(
+      '服务器连接不稳定，部分功能可能受限',
+      expect.objectContaining({
+        action: expect.objectContaining({ label: '重连', onClick: expect.any(Function) }),
+      }),
+    );
 
     unmount();
   });

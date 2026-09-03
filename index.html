@@ -6,9 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- 主题色 -->
-    <meta name="theme-color" content="#6366f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1e1b4b" media="(prefers-color-scheme: dark)" />
+    <!-- 主题色（内容由 useTheme / 下方内联脚本按当前主题更新） -->
+    <meta name="theme-color" content="#000000" />
+
+    <!-- 首帧前预置主题 class（localStorage 覆盖系统偏好），避免浅色用户闪黑屏。
+         与 src/hooks/useTheme.ts 共用 'theme' 键和同一解析规则。 -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.classList.add(theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta && theme === 'light') meta.setAttribute('content', '#f4f5f9');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
 
     <!-- 描述和关键词 -->
     <meta
@@ -123,6 +140,20 @@
         background: #0a0a0a;
         color: #fafafa;
         overflow-x: hidden;
+      }
+
+      /* 浅色主题（class 由上方内联脚本预置） */
+      html.light body {
+        background: #f4f5f9;
+        color: #18181b;
+      }
+
+      html.light .loading-screen {
+        background: linear-gradient(135deg, #f4f5f9 0%, #e4e6f5 100%);
+      }
+
+      html.light .loading-text {
+        color: #52525b;
       }
 
       #root {

@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* 主题切换：class 模式（<html> 上的 light/dark 由 useTheme 写入，index.html 内联脚本
+   在首帧前预置）。dark 变体覆盖 Tailwind 4 默认的 prefers-color-scheme 媒体查询，
+   使已有 dark: 工具类跟随手动切换；light 变体用于给深色优先的存量组件加浅色覆盖。 */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
 /* 自托管字体（public/fonts，SIL OFL 1.1）— 切片按需加载：
    - Resource Han Rounded CN：中文圆体（Regular 400 / Bold 700），原全量 woff2 各 ~600K。
      切片方案（Google Fonts 式）：片 0 = 源码 UI 实际用字（932 个含全角标点，~145K），
@@ -807,6 +813,11 @@
     overflow-x: clip;
   }
 
+  /* 浅色主题（html.light）。深色为默认基线：存量深色优先组件无需改动即保持原样 */
+  html.light {
+    background-color: #f4f5f9;
+  }
+
   html,
   body,
   #root {
@@ -822,6 +833,11 @@
     overflow-x: clip;
     background-color: #000;
     color: #fff;
+  }
+
+  html.light body {
+    background-color: #f4f5f9;
+    color: #18181b;
   }
 
   #root {
@@ -908,6 +924,14 @@
     background: rgba(255, 255, 255, 0.2);
   }
 
+  html.light .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  html.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
   .mask-gradient-bottom {
     -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%);
     mask-image: linear-gradient(to bottom, transparent, black 20%);
@@ -928,5 +952,9 @@
     animation: cursor-blink 0.8s step-end infinite;
     margin-left: 2px;
     color: rgba(147, 197, 253, 0.8);
+  }
+
+  html.light .streaming-cursor::after {
+    color: rgba(37, 99, 235, 0.8);
   }
 }
