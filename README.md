@@ -75,15 +75,6 @@ uvicorn app.main:app --reload --port 8000
 - **界面配置**：在页面右上角「设置 → API 配置」中输入后端地址（如 `http://localhost:8000`），即时生效并保存在 LocalStorage。
 - **环境变量**：或在前端项目根目录 `.env` 中设置 `VITE_API_BASE_URL=http://localhost:8000`。
 
-## 浏览器兼容性
-
-| 能力                | Chrome / Edge | Firefox | Safari | 说明                               |
-| ------------------- | :-----------: | :-----: | :----: | ---------------------------------- |
-| 3D 渲染 (WebGL2)    |     支持      |  支持   |  支持  | 基于 Three.js 与 React Three Fiber |
-| 文本对话 / 本地模拟 |     支持      |  支持   |  支持  | 全平台支持                         |
-| 语音合成 (TTS)      |     支持      |  支持   |  支持  | 基于 Web Speech API                |
-| 语音识别 (ASR)      |     支持      | 不支持  | 不支持 | 依赖浏览器 SpeechRecognition 引擎  |
-
 ## 技术栈
 
 | 模块     | 技术选型                            |
