@@ -29,40 +29,52 @@ export function Scene({ autoRotate, modelScene }: SceneProps) {
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
 
-      {/* 光照 */}
-      <ambientLight intensity={0.5} color="#ffffff" />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} castShadow />
-      <pointLight position={[-10, -10, -10]} intensity={1} color="#3b82f6" />
+      {/* 光照：暖调三点布光，肤色不再泛青 */}
+      <ambientLight intensity={0.72} color="#FFF6ED" />
+      <directionalLight
+        position={[4, 6, 5]}
+        intensity={1.15}
+        color="#FFF0E0"
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+      />
+      <spotLight
+        position={[2, 5, 4]}
+        angle={0.32}
+        penumbra={0.85}
+        intensity={1.4}
+        color="#FFE8D8"
+        castShadow={false}
+      />
+      <pointLight position={[-3.5, 2, -2]} intensity={0.55} color="#FFD6E0" />
+      <pointLight position={[0, -1, 3]} intensity={0.45} color="#FFB3C8" distance={6} decay={2} />
 
-      {/* 环境反射：程序化光带，离线可用（不依赖外部 CDN 的 HDR 预设） */}
+      {/* 环境反射：暖粉光带，离线可用（不依赖外部 HDR） */}
       <Environment resolution={256}>
-        {/* 顶部主光带 */}
         <Lightformer
-          intensity={1.5}
-          color="#ffffff"
+          intensity={1.15}
+          color="#FFF7ED"
           rotation-x={Math.PI / 2}
           position={[0, 5, 0]}
           scale={[10, 10, 1]}
         />
-        {/* 前方主色调光带 */}
         <Lightformer
-          intensity={1.2}
-          color="#38bdf8"
+          intensity={0.85}
+          color="#FFB3C8"
           rotation-y={Math.PI}
           position={[0, 1, 5]}
-          scale={[8, 3, 1]}
+          scale={[8, 3.2, 1]}
         />
-        {/* 左右侧补光 */}
         <Lightformer
-          intensity={0.8}
-          color="#0ea5e9"
+          intensity={0.45}
+          color="#FFD6B8"
           rotation-y={-Math.PI / 2}
           position={[-5, 1, -1]}
           scale={[6, 2, 1]}
         />
         <Lightformer
-          intensity={0.6}
-          color="#3b82f6"
+          intensity={0.38}
+          color="#FFD6E2"
           rotation-y={Math.PI / 2}
           position={[5, 0, -1]}
           scale={[6, 2, 1]}
@@ -76,24 +88,24 @@ export function Scene({ autoRotate, modelScene }: SceneProps) {
         <CyberAvatar prefersReducedMotion={prefersReducedMotion} />
       )}
 
-      {/* 粒子 */}
+      {/* 粒子：减量+暖粉，减少杂乱 */}
       <Sparkles
-        count={prefersReducedMotion ? 0 : 50}
-        scale={8}
-        size={2}
-        speed={0.4}
-        opacity={0.5}
-        color="#bae6fd"
+        count={prefersReducedMotion ? 0 : 24}
+        scale={7}
+        size={1.7}
+        speed={0.28}
+        opacity={0.38}
+        color="#FFD6E6"
       />
 
-      {/* 阴影 */}
+      {/* 阴影：更柔和 */}
       <ContactShadows
         resolution={1024}
         scale={10}
-        blur={2}
-        opacity={0.5}
-        far={10}
-        color="#000000"
+        blur={2.6}
+        opacity={0.34}
+        far={9}
+        color="#2A1810"
       />
 
       <OrbitControls
