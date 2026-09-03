@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN" dir="ltr">
+  <head>
+    <!-- 基础元数据 -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- 主题色（内容由 useTheme / 下方内联脚本按当前主题更新） -->
+    <meta name="theme-color" content="#000000" />
+
+    <!-- 首帧前预置主题 class（localStorage 覆盖系统偏好），避免浅色用户闪黑屏。
+         与 src/hooks/useTheme.ts 共用 'theme' 键和同一解析规则。 -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.classList.add(theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta && theme === 'light') meta.setAttribute('content', '#f4f5f9');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
+    <!-- 描述和关键词 -->
+    <meta
+      name="description"
+      content="MetaHuman Engine - 开源 3D 数字人交互引擎，支持语音和对话能力。零配置，离线可用，开源 MIT。"
+    />
+    <meta
+      name="keywords"
+      content="digital human, 3D avatar, AI, voice interaction, WebGL, Three.js, React, TypeScript, 数字人, 3D形象, 人工智能, 语音交互"
+    />
+    <meta name="author" content="LessUp" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- 开放图谱 / Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MetaHuman Engine" />
+    <meta
+      property="og:title"
+      content="MetaHuman Engine - 3D数字人交互引擎"
+    />
+    <meta
+      property="og:description"
+      content="浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。"
+    />
+    <meta property="og:url" content="https://vibe-knight.github.io/meta-human/" />
+    <meta property="og:locale" content="zh_CN" />
+
+    <!-- Twitter 卡片 -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@LessUpHQ" />
+    <meta name="twitter:creator" content="@LessUpHQ" />
+    <meta name="twitter:title" content="MetaHuman Engine - 3D 数字人交互引擎" />
+    <meta
+      name="twitter:description"
+      content="浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。"
+    />
+
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MetaHuman" />
+
+    <!-- 移动端优化 -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <link rel="mask-icon" href="./favicon.svg" color="#6366f1" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://vibe-knight.github.io/meta-human/" />
+
+    <!-- 安全性 -->
+    <!-- connect-src 含 http:：支持设置面板运行时配置的内网/本机 http 后端 -->
+    <!-- 注意：frame-ancestors 只能由 HTTP 响应头强制，meta 方式会被浏览器忽略，
+         故不在此写（历史遗留的 'none' 是无效指令，已移除）。如需禁 iframe 嵌入，
+         应在部署层（gh-pages _headers / 服务器）配置响应头。 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' http: https: wss:; base-uri 'self'; form-action 'self';"
+    />
+
+    <!-- WebGL 支持检测（供加载屏幕 no-webgl 提示使用） -->
+    <script>
+      (function () {
+        try {
+          var canvas = document.createElement('canvas');
+          var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          window.__WEBGL_SUPPORTED__ = !!gl;
+        } catch (e) {
+          window.__WEBGL_SUPPORTED__ = false;
+        }
+      })();
+    </script>
+
+    <!-- 关键 CSS 内联 -->
+    <style>*,:before,:after{box-sizing:border-box}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizelegibility;scroll-behavior:smooth;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.5;overflow-x:hidden}body{min-height:100vh;color:#fafafa;background:#0a0a0a;width:100%;max-width:100vw;min-height:100dvh;overflow-x:hidden}html.light body{color:#18181b;background:#f4f5f9}html.light .loading-screen{background:linear-gradient(135deg,#f4f5f9 0%,#e4e6f5 100%)}html.light .loading-text{color:#52525b}#root{min-height:100vh;min-height:100dvh}.loading-screen{z-index:9999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 100%);flex-direction:column;justify-content:center;align-items:center;transition:opacity .3s,visibility .3s;display:flex;position:fixed;inset:0}.loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}.loading-spinner{border:3px solid #6366f133;border-top-color:#6366f1;border-radius:50%;width:48px;height:48px;animation:1s linear infinite spin}@keyframes spin{to{transform:rotate(360deg)}}.loading-text{color:#a1a1aa;margin-top:1rem;font-size:.875rem}.no-webgl{text-align:center;padding:2rem;display:none}.no-webgl.visible{display:block}</style>
+
+    <title>MetaHuman Engine - 开源 3D 数字人交互引擎</title>
+    <script type="module" crossorigin src="/meta-human/assets/index-CD4WJ_H7.js"></script>
+    <link rel="stylesheet" crossorigin href="/meta-human/assets/index-5ZxmNGq9.css">
+  </head>
+  <body>
+    <!-- 加载屏幕 -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading MetaHuman Engine...</p>
+      <div id="no-webgl" class="no-webgl">
+        <h2>WebGL Not Supported</h2>
+        <p>Your browser doesn't support WebGL, which is required for 3D rendering.</p>
+        <p>Please use a modern browser like Chrome, Firefox, or Safari.</p>
+      </div>
+    </div>
+
+    <!-- React 挂载点 -->
+    <div id="root"></div>
+
+    <!-- 隐藏加载屏幕脚本 -->
+    <script>
+      window.addEventListener('load', function () {
+        if (!window.__WEBGL_SUPPORTED__) {
+          document.getElementById('no-webgl').classList.add('visible');
+        }
+
+        // 延迟隐藏加载屏幕，确保 React 已挂载
+        setTimeout(function () {
+          var loader = document.getElementById('loading-screen');
+          if (loader) {
+            loader.classList.add('hidden');
+            setTimeout(function () {
+              loader.remove();
+            }, 300);
+          }
+        }, 500);
+      });
+
+      // 加载超时处理
+      setTimeout(function () {
+        var loader = document.getElementById('loading-screen');
+        if (loader && !loader.classList.contains('hidden')) {
+          var text = loader.querySelector('.loading-text');
+          if (text) {
+            text.textContent = 'Taking longer than expected...';
+          }
+        }
+      }, 10000);
+    </script>
+
+    <!-- 主应用脚本 -->
+  </body>
+</html>

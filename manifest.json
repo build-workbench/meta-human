@@ -1,0 +1,24 @@
+{
+  "name": "MetaHuman Engine",
+  "short_name": "MetaHuman",
+  "description": "浏览器原生的 3D 数字人引擎，集成语音、对话能力。零配置，离线可用，开源 MIT。",
+  "start_url": "./#/app",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#6366f1",
+  "orientation": "any",
+  "scope": "./",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["entertainment", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

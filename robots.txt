@@ -1,0 +1,21 @@
+# robots.txt for MetaHuman Engine
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# 站点地图
+Sitemap: https://vibe-knight.github.io/meta-human/sitemap.xml
+
+# 抓取延迟（礼貌性设置，防止服务器过载）
+Crawl-delay: 1
+
+# 针对特定爬虫的设置
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
