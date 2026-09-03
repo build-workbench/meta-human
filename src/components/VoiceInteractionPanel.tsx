@@ -33,7 +33,7 @@ export default function VoiceInteractionPanel({
           <VolumeX size={20} />
           <span className="font-medium">浏览器不支持语音功能</span>
         </div>
-        <p className="text-sm text-yellow-300 mt-2">
+        <p className="text-sm text-yellow-300 light:text-yellow-700 mt-2">
           请使用支持 Web Speech API 的现代浏览器，如 Chrome、Edge 或 Safari。
         </p>
       </div>

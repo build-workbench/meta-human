@@ -79,24 +79,6 @@ export function useConnectionHealth() {
     [clearError, recordConnectionHealth, setChatTransportMode, setError],
   );
 
-  const checkConnection = useCallback(async () => {
-    const previousStatus = lastStatusRef.current;
-    const result = applyRecovery(
-      await runRecovery({
-        unhealthyStatus: 'disconnected',
-        unhealthyReason: DEGRADED_CONNECTION_MESSAGE,
-      }),
-    );
-
-    if (result.status === 'disconnected' && previousStatus !== 'disconnected') {
-      toast.warning(DEGRADED_CONNECTION_MESSAGE);
-    }
-
-    if (result.status === 'connected' && previousStatus && previousStatus !== 'connected') {
-      toast.success('服务器连接已恢复');
-    }
-  }, [applyRecovery, runRecovery]);
-
   const reconnect = useCallback(async () => {
     setConnectionStatus('connecting');
     const toastId = toast.loading('正在重新连接...');
@@ -118,6 +100,26 @@ export function useConnectionHealth() {
       toast.error(RECONNECT_FAILURE_MESSAGE, { id: toastId });
     }
   }, [applyRecovery, runRecovery, setConnectionStatus]);
+
+  const checkConnection = useCallback(async () => {
+    const previousStatus = lastStatusRef.current;
+    const result = applyRecovery(
+      await runRecovery({
+        unhealthyStatus: 'disconnected',
+        unhealthyReason: DEGRADED_CONNECTION_MESSAGE,
+      }),
+    );
+
+    if (result.status === 'disconnected' && previousStatus !== 'disconnected') {
+      toast.warning(DEGRADED_CONNECTION_MESSAGE, {
+        action: { label: '重连', onClick: () => void reconnect() },
+      });
+    }
+
+    if (result.status === 'connected' && previousStatus && previousStatus !== 'connected') {
+      toast.success('服务器连接已恢复');
+    }
+  }, [applyRecovery, reconnect, runRecovery]);
 
   useEffect(() => {
     void checkConnection();

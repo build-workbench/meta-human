@@ -47,58 +47,68 @@ export default function TopHUD({ onToggleSettings, onReconnect, onNewSession }: 
       role="banner"
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="pointer-events-auto max-w-3xl rounded-2xl border border-white/10 bg-black/35 px-4 py-3 shadow-2xl shadow-black/20 backdrop-blur-md">
-          <h1 className="flex flex-wrap items-center gap-3 text-lg font-light tracking-widest text-blue-100/80 uppercase sm:text-2xl">
-            <Activity className="h-5 w-5 animate-pulse text-blue-400" />
+        <div className="pointer-events-auto max-w-3xl rounded-2xl border border-white/10 bg-black/35 px-4 py-3 shadow-2xl shadow-black/20 backdrop-blur-md light:border-zinc-900/10 light:bg-white/70 light:shadow-zinc-900/10">
+          <h1 className="flex flex-wrap items-center gap-3 text-lg font-light tracking-widest text-blue-100/80 uppercase sm:text-2xl light:text-zinc-700">
+            <Activity className="h-5 w-5 animate-pulse text-blue-400 light:text-blue-600" />
             MetaHuman
-            <span className="rounded border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
+            <span className="rounded border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300 light:text-blue-700">
               CORE 1.0
             </span>
           </h1>
 
           <div
-            className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-gray-400"
+            className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-gray-400 light:text-zinc-600"
             aria-live="polite"
             aria-atomic="true"
           >
             <span className="flex items-center gap-1" title={statusText}>
               {connectionStatus === 'connected' ? (
                 <>
-                  <Wifi className="h-3 w-3 text-green-400" aria-hidden="true" />
-                  <span className="text-green-400">在线</span>
+                  <Wifi
+                    className="h-3 w-3 text-green-400 light:text-green-600"
+                    aria-hidden="true"
+                  />
+                  <span className="text-green-400 light:text-green-600">在线</span>
                   <span className="sr-only">{statusText}</span>
                 </>
               ) : connectionStatus === 'connecting' ? (
                 <>
-                  <RefreshCw className="h-3 w-3 animate-spin text-yellow-400" aria-hidden="true" />
-                  <span className="text-yellow-400">连接中</span>
+                  <RefreshCw
+                    className="h-3 w-3 animate-spin text-yellow-400 light:text-yellow-600"
+                    aria-hidden="true"
+                  />
+                  <span className="text-yellow-400 light:text-yellow-600">连接中</span>
                   <span className="sr-only">{statusText}</span>
                 </>
               ) : (
                 <>
-                  <WifiOff className="h-3 w-3 text-red-400" aria-hidden="true" />
-                  <span className="text-red-400">离线</span>
+                  <WifiOff className="h-3 w-3 text-red-400 light:text-red-600" aria-hidden="true" />
+                  <span className="text-red-400 light:text-red-600">离线</span>
                   <span className="sr-only">{statusText}</span>
                 </>
               )}
             </span>
             <span>
-              行为: <span className="text-blue-400">{currentBehavior}</span>
+              行为: <span className="text-blue-400 light:text-blue-600">{currentBehavior}</span>
             </span>
             <span>
-              会话: <span className="text-purple-400">{chatHistory.length}条</span>
+              会话:{' '}
+              <span className="text-purple-400 light:text-purple-600">{chatHistory.length}条</span>
             </span>
             <span>
-              协议: <span className="text-cyan-400">{transportLabel}</span>
+              协议: <span className="text-cyan-400 light:text-cyan-600">{transportLabel}</span>
             </span>
             {activeEndpointLabel && (
               <>
                 <span>
-                  端点: <span className="text-sky-300">{activeEndpointLabel}</span>
+                  端点:{' '}
+                  <span className="text-sky-300 light:text-sky-700">{activeEndpointLabel}</span>
                 </span>
                 <span>
                   切换:{' '}
-                  <span className="text-orange-300">{connectionDiagnostics.failoverCount}次</span>
+                  <span className="text-orange-300 light:text-orange-700">
+                    {connectionDiagnostics.failoverCount}次
+                  </span>
                 </span>
               </>
             )}
@@ -119,25 +129,25 @@ export default function TopHUD({ onToggleSettings, onReconnect, onNewSession }: 
               disabled={connectionStatus === 'connecting'}
             >
               <RefreshCw
-                className={`h-5 w-5 text-yellow-400 ${connectionStatus === 'connecting' ? 'animate-spin' : ''}`}
+                className={`h-5 w-5 text-yellow-400 light:text-yellow-600 ${connectionStatus === 'connecting' ? 'animate-spin' : ''}`}
                 aria-hidden="true"
               />
             </button>
           )}
           <button
             onClick={onNewSession}
-            className="rounded-full border border-white/10 bg-white/5 p-2.5 backdrop-blur-md transition-all hover:bg-white/10 active:scale-95 sm:p-3"
+            className="rounded-full border border-white/10 bg-white/5 p-2.5 backdrop-blur-md transition-all hover:bg-white/10 active:scale-95 sm:p-3 light:border-zinc-900/10 light:bg-white/70 light:hover:bg-white"
             title="开始新会话"
             aria-label="开始新会话，清除当前对话历史"
           >
-            <RotateCcw className="h-5 w-5 text-white/80" aria-hidden="true" />
+            <RotateCcw className="h-5 w-5 text-white/80 light:text-zinc-700" aria-hidden="true" />
           </button>
           <button
             onClick={onToggleSettings}
             aria-label="打开设置面板"
-            className="rounded-full border border-white/10 bg-white/5 p-2.5 backdrop-blur-md transition-all hover:bg-white/10 active:scale-95 sm:p-3"
+            className="rounded-full border border-white/10 bg-white/5 p-2.5 backdrop-blur-md transition-all hover:bg-white/10 active:scale-95 sm:p-3 light:border-zinc-900/10 light:bg-white/70 light:hover:bg-white"
           >
-            <Settings className="h-5 w-5 text-white/80" aria-hidden="true" />
+            <Settings className="h-5 w-5 text-white/80 light:text-zinc-700" aria-hidden="true" />
           </button>
         </div>
       </div>

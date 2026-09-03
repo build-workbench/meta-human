@@ -57,11 +57,11 @@ export default function AdvancedDigitalHumanPage() {
   const { reconnect } = useConnectionHealth();
 
   return (
-    <div className="relative isolate h-[100dvh] min-h-screen w-full overflow-hidden bg-black font-sans text-white selection:bg-blue-500/30">
+    <div className="relative isolate h-[100dvh] min-h-screen w-full overflow-hidden bg-black font-sans text-white selection:bg-blue-500/30 light:bg-[#f4f5f9] light:text-zinc-900">
       {/* Background 3D Viewer */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 z-10 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black/0 to-black/0 z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 z-10 pointer-events-none light:from-white/50 light:to-white/75" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black/0 to-black/0 z-0 pointer-events-none light:from-blue-200/50" />
         <DigitalHumanViewer
           modelUrl={getAvatarViewerModelUrl(avatarSource)}
           autoRotate={autoRotate}

@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+### ✨ 新增
+
+- **主题三态切换菜单** — ThemeToggle 由亮/暗翻转升级为三档菜单（浅色/深色/跟随系统），手动切换后可回到跟随系统（此前 UI 无入口回退）；`theme-color` meta 跟随当前主题更新，移动端浏览器状态栏颜色同步；连接告警 toast 内置「重连」行动按钮
+- **深色/浅色主题切换** — 导航栏与设置抽屉新增主题切换按钮：`useTheme` 重构为 Zustand 单例 store（多消费者共享状态，此前各实例 `useState` 会互相覆盖 `<html>` class），`toggleTheme` 在深浅间直接切换，默认跟随系统偏好并持久化到 localStorage（非法值自动归一化）。Tailwind 4 新增 class 模式 `dark` 变体与 `light` 变体：深色为默认基线（存量深色优先组件零回归），落地页全部区块、`/app` HUD/抽屉/聊天坞/面板通过 `light:` 增量覆盖适配浅色，代码块保持深色终端风；`index.html` 内联脚本首帧前预置主题 class + 关键 CSS 浅色分支，避免浅色用户刷新闪黑屏；Toaster 跟随主题
+- **长回答分段肢体动作** — 新增 `core/avatar/speechActionPlanner.ts`：长回复按句末标点切分，按字数估算每句触发时刻，逐句驱动 `playAnimation`（问句→think / 否定→shakeHead / 感叹→nod / 默认轮转 nod↔greet，相邻去重），避免长回答播报十几秒却只有开头 3 秒有肢体反馈。单句短回复走原有单次动作零侵入；新一轮调度前自动取消旧定时器，`cancelPendingTurn` 一并清理
+
 ### ⚡ 性能
 
 - **分包修复：首屏 388 → 100 KB gzip（-73%）** — `vite.config.ts` 的 `manualChunks` 把 Rollup 共享 helper 塞进 `three-vendor` chunk，入口为拿 helper 静态 import 整个 chunk（283 KB gzip），落地页被迫首屏预加载根本不需要的 three。删除手工分包改由 Rollup 按依赖图自动分包，three 落入 `AdvancedDigitalHumanPage` 的 lazy chunk 按需加载，`/app` 总量持平
@@ -15,11 +21,11 @@
 
 ### 🐛 修复
 
+- **移动端 /app 通知遮挡状态卡** — sonner 在窄屏走 `mobileOffset`（`offset` 会被其媒体查询覆盖），补传后 toast 下移至 HUD 下方，不再遮住连接状态
+- **浅色模式流式占位文字白底白字不可见** — 聊天回复生成中的「正在生成回复...」硬编码 `text-white/90`，落在浅色的白色气泡上完全隐形；补 `light:text-zinc-800`
+- **聊天历史第一条消息被顶部渐隐洗白** — `.mask-gradient-bottom` 无条件作用于历史容器，消息不足一屏时也淡出首条；改为滚动后（上方尚有更早消息）才启用遮罩
+- **设置抽屉标签栏高分屏残影** — 标签按钮的 `transition-all` 在 Chromium 高 DPI（deviceScaleFactor 2）下切换标签并横向滚动时留下白色块状过期栅格。改为 `transition-colors`（语义上本就只过渡颜色）后消失，深浅主题均验证
 - **落地页字体从未生效** — `index.html` 内联关键 CSS 的 `html { font-family: 系统栈 }` 是 unlayered 规则，按 CSS Layer 规范恒胜 `@layer base` 里的 `:root { font-family: var(--font-sans) }`，落地页一直渲染系统字体（`/app` 因根元素显式 `font-sans` class 而幸免）。修复：`:root` 声明移出 `@layer base`，unlayered 同层下按特异性 `:root`(0,1,0) > `html`(0,0,1) 生效，内联系统栈继续在 CSS 加载前兜底
-
-### ✨ 新增
-
-- **长回答分段肢体动作** — 新增 `core/avatar/speechActionPlanner.ts`：长回复按句末标点切分，按字数估算每句触发时刻，逐句驱动 `playAnimation`（问句→think / 否定→shakeHead / 感叹→nod / 默认轮转 nod↔greet，相邻去重），避免长回答播报十几秒却只有开头 3 秒有肢体反馈。单句短回复走原有单次动作零侵入；新一轮调度前自动取消旧定时器，`cancelPendingTurn` 一并清理
 
 ### 🔧 变更
 

@@ -35,7 +35,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a1a] to-black" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a1a] to-black light:from-[#eef0f8] light:via-[#f8f9fd] light:to-[#f4f5f9]" />
 
       {/* Grid Pattern */}
       <div
@@ -73,31 +73,33 @@ export default function HeroSection() {
           {/* Left: Text Content */}
           <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:max-w-none lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 light:text-blue-600 text-sm mb-6 light:bg-blue-500/15 light:text-blue-700">
               <Sparkles className="w-4 h-4" />
               <span>开源 3D 数字人引擎 v0.1.0</span>
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 light:text-zinc-900">
               让 AI 拥有
               <br />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent light:from-blue-600 light:via-indigo-600 light:to-purple-600">
                 实时交互的数字身体
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400 sm:text-xl lg:mx-0 lg:max-w-xl">
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400 sm:text-xl light:text-zinc-600 lg:mx-0 lg:max-w-xl">
               浏览器原生的 3D 数字人交互引擎，支持语音、对话能力。
-              <span className="text-gray-300">零配置启动，离线可用，开源 MIT。</span>
+              <span className="text-gray-300 light:text-zinc-700">
+                零配置启动，离线可用，开源 MIT。
+              </span>
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
               <Link
                 to="/app"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-xl hover:shadow-blue-600/20 hover:-translate-y-0.5"
+                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-xl hover:shadow-blue-600/20 hover:-translate-y-0.5 light:hover:shadow-blue-600/25"
               >
                 <Play className="w-5 h-5" />
                 立即体验
@@ -107,7 +109,7 @@ export default function HeroSection() {
                 href="https://github.com/vibe-knight/meta-human"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all hover:border-white/20"
+                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all hover:border-white/20 light:bg-white light:hover:bg-zinc-50 light:text-zinc-900 light:border-zinc-900/15 light:hover:border-zinc-900/25 light:shadow-sm"
               >
                 <Github className="w-5 h-5" />
                 GitHub
@@ -117,8 +119,11 @@ export default function HeroSection() {
             {/* Highlights */}
             <div className="flex flex-wrap gap-6 justify-center lg:justify-start">
               {highlights.map((item) => (
-                <div key={item.label} className="flex items-center gap-2 text-gray-400">
-                  <item.icon className="w-4 h-4 text-blue-400" />
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 text-gray-400 light:text-zinc-600"
+                >
+                  <item.icon className="w-4 h-4 text-blue-400 light:text-blue-600" />
                   <span className="text-sm">{item.label}</span>
                 </div>
               ))}
@@ -133,13 +138,13 @@ export default function HeroSection() {
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 blur-2xl" />
 
               {/* Card Container */}
-              <div className="relative h-full rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm">
+              <div className="relative h-full rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm light:border-zinc-900/10 light:from-white light:to-zinc-50/60 light:shadow-xl light:shadow-zinc-900/5">
                 {/* Top Bar */}
-                <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/40 to-transparent flex items-center px-4 gap-2">
+                <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black/40 to-transparent flex items-center px-4 gap-2 light:from-zinc-900/[0.06]">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  <div className="flex-1 text-center text-xs text-gray-500 font-mono">
+                  <div className="flex-1 text-center text-xs text-gray-500 font-mono light:text-zinc-500">
                     MetaHuman Engine Preview
                   </div>
                 </div>
@@ -148,9 +153,9 @@ export default function HeroSection() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
                     {/* Central Avatar Icon */}
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-600/30 flex items-center justify-center border border-white/20">
+                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/30 to-purple-600/30 flex items-center justify-center border border-white/20 light:border-zinc-900/10">
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400/40 to-purple-500/40 flex items-center justify-center">
-                        <Sparkles className="w-10 h-10 text-blue-300" />
+                        <Sparkles className="w-10 h-10 text-blue-300 light:text-blue-500" />
                       </div>
                     </div>
 
@@ -173,7 +178,7 @@ export default function HeroSection() {
                 {/* UI Elements Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
                   {/* Chat Input Mock */}
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 backdrop-blur border border-white/10">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-black/40 backdrop-blur border border-white/10 light:bg-zinc-900/85">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
@@ -184,7 +189,7 @@ export default function HeroSection() {
                   </div>
 
                   {/* Status Bar */}
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500 light:text-zinc-500">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                       <span>系统已连接</span>
@@ -201,18 +206,18 @@ export default function HeroSection() {
 
             {/* Floating Stats Cards - values verifiable via npm run test:run / npm run build */}
             <div className="absolute left-0 top-1/4 hidden xl:block">
-              <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
-                <div className="text-2xl font-bold text-white">
-                  248<span className="text-blue-400"> tests</span>
+              <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10 light:bg-white/85 light:border-zinc-900/10 light:shadow-md light:shadow-zinc-900/5">
+                <div className="text-2xl font-bold text-white light:text-zinc-900">
+                  248<span className="text-blue-400 light:text-blue-600"> tests</span>
                 </div>
-                <div className="text-xs text-gray-400">单元测试</div>
+                <div className="text-xs text-gray-400 light:text-zinc-600">单元测试</div>
               </div>
             </div>
 
             <div className="absolute right-0 bottom-1/3 hidden xl:block">
-              <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10">
-                <div className="text-2xl font-bold text-white">~240KB</div>
-                <div className="text-xs text-gray-400">gzip 体积</div>
+              <div className="p-3 rounded-xl bg-black/60 backdrop-blur border border-white/10 light:bg-white/85 light:border-zinc-900/10 light:shadow-md light:shadow-zinc-900/5">
+                <div className="text-2xl font-bold text-white light:text-zinc-900">~240KB</div>
+                <div className="text-xs text-gray-400 light:text-zinc-600">gzip 体积</div>
               </div>
             </div>
           </div>
@@ -222,7 +227,7 @@ export default function HeroSection() {
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-gray-500 md:flex">
         <span className="text-xs">向下滚动了解更多</span>
-        <div className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1">
+        <div className="w-6 h-10 rounded-full border-2 border-white/20 light:border-zinc-900/20 flex items-start justify-center p-1">
           <div className="w-1.5 h-3 bg-blue-400 rounded-full animate-bounce" />
         </div>
       </div>
