@@ -1,0 +1,25 @@
+# MetaHuman Engine - 发布
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: MetaHuman Engine ${{ github.ref_name }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
