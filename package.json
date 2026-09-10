@@ -70,13 +70,13 @@
   ],
   "author": "LessUp",
   "license": "MIT",
-  "homepage": "https://vibe-knight.github.io/meta-human/",
+  "homepage": "https://build-workbench.github.io/meta-human/",
   "bugs": {
-    "url": "https://github.com/vibe-knight/meta-human/issues"
+    "url": "https://github.com/build-workbench/meta-human/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vibe-knight/meta-human.git"
+    "url": "https://github.com/build-workbench/meta-human.git"
   },
   "engines": {
     "node": ">=22.0.0",

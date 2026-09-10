@@ -28,22 +28,22 @@ export default function CTASection() {
   const footerLinks = [
     {
       label: 'README',
-      href: 'https://github.com/vibe-knight/meta-human#readme',
+      href: 'https://github.com/build-workbench/meta-human#readme',
       external: true,
     },
     {
       label: '更新日志',
-      href: 'https://github.com/vibe-knight/meta-human/blob/master/CHANGELOG.md',
+      href: 'https://github.com/build-workbench/meta-human/blob/main/CHANGELOG.md',
       external: true,
     },
     {
       label: '问题反馈',
-      href: 'https://github.com/vibe-knight/meta-human/issues',
+      href: 'https://github.com/build-workbench/meta-human/issues',
       external: true,
     },
     {
       label: '讨论区',
-      href: 'https://github.com/vibe-knight/meta-human/discussions',
+      href: 'https://github.com/build-workbench/meta-human/discussions',
       external: true,
     },
   ];
@@ -79,7 +79,7 @@ export default function CTASection() {
               </div>
               <code className="block overflow-x-auto whitespace-pre-wrap break-words text-sm font-mono text-gray-300">
                 <span className="text-gray-500">$</span> git clone
-                https://github.com/vibe-knight/meta-human.git
+                https://github.com/build-workbench/meta-human.git
                 <br />
                 <span className="text-gray-500">$</span> cd meta-human && npm install
                 <br />
@@ -98,7 +98,7 @@ export default function CTASection() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="https://github.com/vibe-knight/meta-human"
+                href="https://github.com/build-workbench/meta-human"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 hover:border-white/20 transition-all light:bg-white light:hover:bg-zinc-50 light:text-zinc-900 light:border-zinc-900/15 light:hover:border-zinc-900/25 light:shadow-sm"

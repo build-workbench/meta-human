@@ -2,19 +2,19 @@
 
 浏览器原生 3D 数字人交互引擎，支持语音识别、语音合成与流式对话，零配置开箱即用。
 
-[![CI](https://img.shields.io/github/actions/workflow/status/vibe-knight/meta-human/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/vibe-knight/meta-human/actions)
-[![Demo](https://img.shields.io/badge/Demo-在线体验-green?style=flat-square&logo=githubpages)](https://vibe-knight.github.io/meta-human/)
+[![CI](https://img.shields.io/github/actions/workflow/status/build-workbench/meta-human/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/build-workbench/meta-human/actions)
+[![Demo](https://img.shields.io/badge/Demo-在线体验-green?style=flat-square&logo=githubpages)](https://build-workbench.github.io/meta-human/)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)](package.json)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 <p align="center">
-  <a href="https://vibe-knight.github.io/meta-human/#/app">
+  <a href="https://build-workbench.github.io/meta-human/#/app">
     <img src="docs/screenshots/viewer-chat.png" width="760" alt="MetaHuman Engine 数字人对话界面" />
   </a>
 </p>
 
 <p align="center">
-  <a href="https://vibe-knight.github.io/meta-human/#/app">在线体验 Demo</a>
+  <a href="https://build-workbench.github.io/meta-human/#/app">在线体验 Demo</a>
 </p>
 
 ---
@@ -35,7 +35,7 @@ MetaHuman Engine 是运行在浏览器端的轻量级 3D 数字人交互引擎�
 
 ```bash
 # 1. 克隆代码
-git clone https://github.com/vibe-knight/meta-human.git
+git clone https://github.com/build-workbench/meta-human.git
 cd meta-human
 
 # 2. 安装依赖并启动

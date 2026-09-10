@@ -31,7 +31,7 @@ export default function Navbar() {
     { label: '快速开始', href: '#quickstart' },
     {
       label: 'GitHub',
-      href: 'https://github.com/vibe-knight/meta-human',
+      href: 'https://github.com/build-workbench/meta-human',
       external: true,
     },
   ];
@@ -88,7 +88,7 @@ export default function Navbar() {
             <ThemeToggle />
 
             <a
-              href="https://github.com/vibe-knight/meta-human"
+              href="https://github.com/build-workbench/meta-human"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 text-gray-400 hover:text-white transition-colors light:text-zinc-500 light:hover:text-zinc-900"
@@ -148,7 +148,7 @@ export default function Navbar() {
           <div className="pt-3 border-t border-white/10 flex items-center gap-3 light:border-zinc-900/10">
             <ThemeToggle variant="segmented" />
             <a
-              href="https://github.com/vibe-knight/meta-human"
+              href="https://github.com/build-workbench/meta-human"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors light:text-zinc-600 light:hover:text-zinc-900"

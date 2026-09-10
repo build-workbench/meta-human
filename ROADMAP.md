@@ -85,15 +85,14 @@ three 本身仍留在 `AdvancedDigitalHumanPage` chunk 里按需加载，`/app` 
 
 ### 2.4 待清的债
 
-| 债                | 位置                                              | 说明                                                                                                          |
-| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 仓库元数据过期    | `package.json:73-80`                              | `repository`/`homepage`/`bugs` 仍指向 `vibe-knight/meta-human`，实际 remote 已是 `build-workbench/meta-human` |
-| description 单语  | `package.json:4`                                  | 只有中文，组织规范要求 `中文简介 \| English summary` 双语                                                     |
-| coverage 注释过时 | `vitest.config.ts:26`                             | 写「当前实际约 67/78/74/67」，实测已是 72.8/79.79/73.66/72.8                                                  |
-| flaky 测试        | `digitalHuman.test.tsx:600-620`                   | 两个 `performance.now()` 硬阈值断言（100ms / 50ms），CI 负载下随机失败                                        |
-| CHANGELOG 滞后    | `CHANGELOG.md:9`                                  | Unreleased 段未记录 2026-09-02 的 3 个 commit（P1 性能 / 归一化 / 分段动作）                                  |
-| 双份默认端点      | `endpointRouter.ts:19` + `dialogueService.ts:100` | 两处硬编码 `http://localhost:8000`                                                                            |
-| 平行实现          | `ModelAvatar` / `CyberAvatar`                     | 两份驱动逻辑；两个控制面板（Behavior/Expression）结构同构                                                     |
+| 债                | 位置                                              | 说明                                                                         |
+| ----------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| description 单语  | `package.json:4`                                  | 只有中文，组织规范要求 `中文简介 \| English summary` 双语                    |
+| coverage 注释过时 | `vitest.config.ts:26`                             | 写「当前实际约 67/78/74/67」，实测已是 72.8/79.79/73.66/72.8                 |
+| flaky 测试        | `digitalHuman.test.tsx:600-620`                   | 两个 `performance.now()` 硬阈值断言（100ms / 50ms），CI 负载下随机失败       |
+| CHANGELOG 滞后    | `CHANGELOG.md:9`                                  | Unreleased 段未记录 2026-09-02 的 3 个 commit（P1 性能 / 归一化 / 分段动作） |
+| 双份默认端点      | `endpointRouter.ts:19` + `dialogueService.ts:100` | 两处硬编码 `http://localhost:8000`                                           |
+| 平行实现          | `ModelAvatar` / `CyberAvatar`                     | 两份驱动逻辑；两个控制面板（Behavior/Expression）结构同构                    |
 
 ---
 
