@@ -42,3 +42,9 @@ __pycache__/
 
 # AI tool local state
 .commandcode/
+
+# AI tools (local only)
+.claude/
+.codex/
+.agents/
+.superpowers/
