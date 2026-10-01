@@ -1,5 +1,113 @@
 # MetaHuman Engine
 
+A browser-native 3D digital human interaction engine with speech recognition, speech synthesis, and streaming conversation — zero configuration, ready to use out of the box.
+
+[![CI](https://img.shields.io/github/actions/workflow/status/build-workbench/meta-human/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/build-workbench/meta-human/actions)
+[![Demo](https://img.shields.io/badge/Demo-Live%20Demo-green?style=flat-square&logo=githubpages)](https://build-workbench.github.io/meta-human/)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)](package.json)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+<p align="center">
+  <a href="https://build-workbench.github.io/meta-human/#/app">
+    <img src="docs/screenshots/viewer-chat.png" width="760" alt="MetaHuman Engine digital human chat interface" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://build-workbench.github.io/meta-human/#/app">Try the live Demo</a>
+</p>
+
+---
+
+MetaHuman Engine is a lightweight 3D digital human interaction engine that runs in the browser. It ships with a procedural 3D avatar and a local intelligent Mock, so you can experience the full voice and conversation interaction right after cloning the repository; it also supports connecting a backend LLM and importing custom GLB models.
+
+## Core Features
+
+- **Out of the box**: Ships with a procedural 3D avatar and local reply logic; you can run it quickly without downloading external models or configuring API keys.
+- **Streaming conversation**: Supports SSE character-by-character streaming with a typewriter effect for low-latency responses.
+- **Lip sync**: Mouth opening and closing is driven in real time by TTS playback, and closes smoothly when playback ends.
+- **Emotion and motion linkage**: Automatically parses conversation sentiment and intent, linking facial expressions (happy/surprised/thinking) with body motions (waving/nodding/dancing).
+- **Full-duplex voice interaction**: Integrates the Web Speech API, supporting microphone voice input (ASR) and speech playback (TTS), with freely adjustable rate, pitch, and volume.
+- **Preset personas and model import**: Includes 4 built-in character personas, supports drag-and-drop loading of custom GLB/GLTF models, and features fallback protection on load failure.
+- **Offline resilience**: Automatically falls back to the local intelligent Mock mode when the backend is disconnected, keeping the core interaction experience uninterrupted.
+
+## Quick Start
+
+```bash
+# 1. 克隆代码
+git clone https://github.com/build-workbench/meta-human.git
+cd meta-human
+
+# 2. 安装依赖并启动
+npm install
+npm run dev
+```
+
+Once started, open in your browser:
+
+- Landing page: `http://localhost:5173`
+- Digital human interaction viewport: `http://localhost:5173/#/app`
+
+> **Operation tips**:
+>
+> - Viewport control: drag with the left mouse button to rotate, scroll to zoom, press `R` to reset quickly.
+> - Settings panel: in the settings at the top right you can adjust voice parameters, switch characters, trigger motions, or import GLB models.
+
+## Connecting a Backend (Optional)
+
+The frontend uses local mock replies by default. To connect real LLM conversations, you can start the FastAPI reference service in the `examples/backend-python/` directory:
+
+```bash
+cd examples/backend-python
+
+# 1. 创建并激活虚拟环境
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# 2. 安装依赖并启动
+pip install -r requirements.txt
+cp .env.example .env       # 填入 OPENAI_API_KEY（留空则进入 Mock 模式）
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend Connection
+
+- **UI configuration**: In "Settings → API Configuration" at the top right of the page, enter the backend address (e.g. `http://localhost:8000`); it takes effect immediately and is saved in LocalStorage.
+- **Environment variable**: Alternatively, set `VITE_API_BASE_URL=http://localhost:8000` in the `.env` file at the root of the frontend project.
+
+## Tech Stack
+
+| Module            | Technology                          |
+| ----------------- | ----------------------------------- |
+| Frontend framework | React 19 + TypeScript 5 + Vite 6   |
+| 3D engine         | Three.js + React Three Fiber + Drei |
+| State management  | Zustand 5                           |
+| Styling           | Tailwind CSS 4                      |
+| Backend reference | Python FastAPI (SSE streaming)      |
+| Unit testing      | Vitest + Testing Library            |
+
+## Common Commands
+
+```bash
+npm run dev          # 启动开发服务器
+npm run typecheck    # TypeScript 类型检查
+npm run lint         # ESLint 代码检查
+npm run test:run     # Vitest 单元测试
+npm run build        # 生产构建
+npm run format       # Prettier 代码格式化
+```
+
+For the project's architecture layering and contribution guidelines, see [AGENTS.md](AGENTS.md).
+
+## License
+
+This project is open sourced under the [MIT](LICENSE) license.
+
+---
+<a id="chinese"></a>
+
+# MetaHuman Engine
+
 浏览器原生 3D 数字人交互引擎，支持语音识别、语音合成与流式对话，零配置开箱即用。
 
 [![CI](https://img.shields.io/github/actions/workflow/status/build-workbench/meta-human/ci.yml?branch=main&label=CI&style=flat-square)](https://github.com/build-workbench/meta-human/actions)
