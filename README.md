@@ -32,7 +32,7 @@ MetaHuman Engine is a lightweight 3D digital human interaction engine that runs 
 - **Lip sync**: Mouth opening and closing is driven in real time by TTS playback, and closes smoothly when playback ends.
 - **Emotion and motion linkage**: Automatically parses conversation sentiment and intent, linking facial expressions (happy/surprised/thinking) with body motions (waving/nodding/dancing).
 - **Full-duplex voice interaction**: Integrates the Web Speech API, supporting microphone voice input (ASR) and speech playback (TTS), with freely adjustable rate, pitch, and volume.
-- **Preset personas and model import**: Includes 4 built-in character personas, supports drag-and-drop loading of custom GLB/GLTF models, and features fallback protection on load failure.
+- **Preset personas and model import**: Includes 4 built-in character personas, supports drag-and-drop loading of custom GLB/GLTF models, with fallback protection on load failure.
 - **Offline resilience**: Automatically falls back to the local intelligent Mock mode when the backend is disconnected, keeping the core interaction experience uninterrupted.
 
 ## Quick Start
