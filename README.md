@@ -1,3 +1,7 @@
+**English** | [中文](#chinese)
+
+<a id="top"></a>
+
 # MetaHuman Engine
 
 A browser-native 3D digital human interaction engine with speech recognition, speech synthesis, and streaming conversation — zero configuration, ready to use out of the box.
@@ -105,6 +109,7 @@ This project is open sourced under the [MIT](LICENSE) license.
 
 ---
 <a id="chinese"></a>
+[English](#top) | **中文**
 
 # MetaHuman Engine
 
